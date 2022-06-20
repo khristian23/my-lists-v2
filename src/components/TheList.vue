@@ -1,14 +1,15 @@
 <template>
   <div class="full-width">
-    <q-banner inline-actions v-if="header">
-      <div class="text-h6">{{ header }}</div>
+    <q-banner inline-actions v-if="showHeader">
+      <div class="text-h6">{{ headerLabel }}</div>
       <template v-slot:action>
         <q-btn
           flat
           round
+          aria-label="expand/collapse"
           color="black"
-          :icon="toggleHideIcon"
-          @click="showHideButton = !showHideButton"
+          :icon="toggleCollapseIcon"
+          @click="showCollapseButton = !showCollapseButton"
         />
       </template>
     </q-banner>
@@ -17,7 +18,7 @@
       tag="q-list"
       v-model="localItems"
       @end="onDrop"
-      v-if="!showHideButton"
+      v-if="!showCollapseButton"
       handle=".handle"
     >
       <q-item
@@ -82,7 +83,7 @@
 <script lang="ts">
 import { defineComponent, PropType, computed, ref } from 'vue';
 import draggable from 'vuedraggable';
-import { ManageableItem } from './models';
+import { List } from './models';
 
 export default defineComponent({
   name: 'the-list',
@@ -90,10 +91,14 @@ export default defineComponent({
     draggable,
   },
   props: {
-    header: String,
+    showHeader: {
+      type: Boolean,
+      defaul: true,
+    },
+    headerLabel: String,
     items: {
       required: true,
-      type: Array as PropType<Array<ManageableItem>>,
+      type: Array as PropType<Array<List>>,
       default: () => [],
     },
     iconAction: String,
@@ -108,19 +113,19 @@ export default defineComponent({
       return 'item-text' + (props.scratched ? ' scratched' : '');
     });
 
-    const showHideButton = ref(false);
+    const showCollapseButton = ref(false);
 
-    const toggleHideIcon = computed(() => {
-      return showHideButton.value ? 'expand_less' : 'expand_more';
+    const toggleCollapseIcon = computed(() => {
+      return showCollapseButton.value ? 'expand_less' : 'expand_more';
     });
 
     return {
       itemIcon,
       classes,
-      toggleHideIcon,
+      toggleCollapseIcon,
 
       localItems,
-      showHideButton: false,
+      showCollapseButton: false,
 
       onDrop: () => {
         localItems.forEach((item, index) => {
