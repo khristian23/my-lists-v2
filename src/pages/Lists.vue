@@ -3,7 +3,7 @@
     <TheListLoader v-if="isLoadingLists" />
     <the-list
       :items="listsToRender"
-      iconAction="edit"
+      iconAction="{{ $Const.itemActionIcon.edit }}"
       @itemPress="onListPress"
       @itemAction="onListEdit"
       @itemDelete="onListDelete"

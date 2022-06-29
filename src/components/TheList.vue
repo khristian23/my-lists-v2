@@ -40,8 +40,9 @@
             <q-btn
               flat
               round
+              aria-label="action"
               color="primary"
-              :icon="item.actionIcon || iconAction"
+              :icon="item.actionIcon || actionIcon"
               size="12px"
               @click.stop="onItemAction(item.id)"
             />
@@ -63,6 +64,7 @@
             <q-btn
               flat
               round
+              aria-label="delete"
               color="primary"
               align="right"
               icon="delete"
@@ -83,7 +85,7 @@
 <script lang="ts">
 import { defineComponent, PropType, computed, ref } from 'vue';
 import draggable from 'vuedraggable';
-import { List } from './models';
+import { ManageableItem, ActionIcon } from './models';
 
 export default defineComponent({
   name: 'the-list',
@@ -93,21 +95,21 @@ export default defineComponent({
   props: {
     showHeader: {
       type: Boolean,
-      defaul: true,
+      default: true,
     },
     headerLabel: String,
     items: {
       required: true,
-      type: Array as PropType<Array<List>>,
+      type: Array as PropType<Array<ManageableItem>>,
       default: () => [],
     },
-    iconAction: String,
+    actionIcon: Object as PropType<ActionIcon>,
     scratched: Boolean,
   },
   setup(props, { emit }) {
     const localItems = [...props.items];
 
-    const itemIcon = computed(() => props.iconAction || 'çreate');
+    const itemIcon = computed(() => props.actionIcon || 'çreate');
 
     const classes = computed(() => {
       return 'item-text' + (props.scratched ? ' scratched' : '');

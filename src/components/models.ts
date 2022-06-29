@@ -1,15 +1,16 @@
+import constants from 'src/util/constants';
+
+export type ActionIcon = keyof typeof constants.itemActionIcon;
+
 export interface BaseItem {
   id: string;
   name: string;
+  description?: string;
 }
 
 export interface ManageableItem extends BaseItem {
-  priority: number;
-  numberOfItems: number;
-  canBeDeleted: boolean;
-  actionIcon: string;
-}
-
-export interface List extends ManageableItem {
-  description: string;
+  actionIcon?: string;
+  canBeDeleted?: boolean;
+  numberOfItems?: number;
+  priority?: number;
 }

@@ -3,7 +3,7 @@
     <TheList
       header="Pending"
       :items="pendingItems"
-      iconAction="done"
+      iconAction="{{ $Const.itemActionIcon.done }}"
       @itemPress="onItemPress"
       @itemAction="setItemToDone"
       @itemDelete="onItemDelete"
@@ -13,7 +13,7 @@
     <TheList
       header="Done"
       :items="doneItems"
-      iconAction="redo"
+      iconAction="{{ $Const.itemActionIcon.redo }}"
       class="self-end"
       @itemPress="onItemPress"
       @itemAction="setItemToPending"
