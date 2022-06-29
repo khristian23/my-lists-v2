@@ -4,6 +4,7 @@
     "baseUrl": ".",
     "types": ["node", "vite/client", "vitest/globals"],
     "paths": {
+      "@/*": ["./src/*"],
       "src/*": ["src/*"],
       "app/*": ["*"],
       "components/*": ["src/components/*"],
@@ -11,7 +12,8 @@
       "pages/*": ["src/pages/*"],
       "assets/*": ["src/assets/*"],
       "boot/*": ["src/boot/*"],
-      "stores/*": ["src/stores/*"]
+      "stores/*": ["src/stores/*"],
+      "util/*": ["src/util/*"]
     }
   },
   "include": [

@@ -97,4 +97,9 @@ export default {
     profile: 'profile',
     camera: 'profile-picture',
   },
+  itemActionIcon: {
+    edit: 'edit',
+    delete: 'delete',
+    done: 'done',
+  },
 };
