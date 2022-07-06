@@ -13,7 +13,9 @@
       "assets/*": ["src/assets/*"],
       "boot/*": ["src/boot/*"],
       "stores/*": ["src/stores/*"],
-      "util/*": ["src/util/*"]
+      "util/*": ["src/util/*"],
+      "models/*": ["src/models/*"],
+      "composables/*": ["src/composables/*"]
     }
   },
   "include": [

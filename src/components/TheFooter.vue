@@ -14,5 +14,3 @@ export default defineComponent({
   name: 'the-footer',
 });
 </script>
-
-<style></style>

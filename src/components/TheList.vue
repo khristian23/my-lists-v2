@@ -85,7 +85,7 @@
 <script lang="ts">
 import { defineComponent, PropType, computed, ref } from 'vue';
 import draggable from 'vuedraggable';
-import { ManageableItem, ActionIcon } from './models';
+import { ManageableItem, ActionIcon } from '@/models/models';
 
 export default defineComponent({
   name: 'the-list',
