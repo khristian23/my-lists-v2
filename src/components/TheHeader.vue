@@ -49,7 +49,7 @@
   </q-toolbar>
 </template>
 
-<script>
+<script lang="ts">
 import { defineComponent } from 'vue';
 import useUser from '@/composables/useUser';
 import useGlobals from '@/composables/useGlobals';
