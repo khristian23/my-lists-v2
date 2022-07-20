@@ -1,18 +1,16 @@
 <template>
   <q-btn @click="openConfirmation">open</q-btn>
-  <TheConfirmation ref="confirmationDialog">
+  <the-confirmation ref="confirmationDialog">
     {{ message }}
-  </TheConfirmation>
+  </the-confirmation>
   <div>result: {{ confirmationResult }}</div>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
-import TheConfirmation from '@/components/TheConfirmation.vue';
 
 export default defineComponent({
   name: 'the-confirmation-test',
-  components: { TheConfirmation },
   props: {
     message: String,
   },

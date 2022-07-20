@@ -5,7 +5,7 @@ import { GlobalComposableReturnValue } from '@/models/models';
 const title = ref('');
 const displayHeaderBackButton = ref(true);
 
-export default function useGlobals(
+export function useGlobals(
   shouldDisplayBackButton = true
 ): GlobalComposableReturnValue {
   const setTitle = (value: string) => {

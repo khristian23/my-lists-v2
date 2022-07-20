@@ -1,140 +1,160 @@
 <template>
   <q-page class="flex">
-    <TheListLoader v-if="isLoadingLists" />
+    <the-list-loader v-if="isLoadingLists" />
     <the-list
-      :items="listsToRender"
+      :items="lists"
       iconAction="{{ $Const.itemActionIcon.edit }}"
       @itemPress="onListPress"
       @itemAction="onListEdit"
       @itemDelete="onListDelete"
       @orderUpdated="onOrderUpdated"
-      v-else-if="!isLoadingLists && listsToRender.length"
+      v-else-if="!isLoadingLists && lists.length > 0"
     />
 
-    <TheConfirmation ref="confirmation" />
+    <the-confirmation ref="confirmation">
+      Are you sure to delete list '{{ listNameToDelete }}'
+    </the-confirmation>
 
-    <TheFooter>
+    <the-footer>
       <q-btn unelevated icon="add" @click="onCreate">Create</q-btn>
-    </TheFooter>
+    </the-footer>
   </q-page>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
-
-import { TheConfirmation } from 'components/TheConfirmation';
-import { TheFooter } from 'components/TheFooter';
-import { TheListLoader } from 'components/TheListLoader';
-
-// createimport { mapMutations, mapGetters, mapActions } from 'vuex'
+import { defineComponent, ref, watch, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { useGlobals } from '@/composables/useGlobals';
+import Constants from '@/util/constants';
+import { useLists } from '@/composables/useLists';
+import List from 'models/list';
 
 export default defineComponent({
   name: 'lists-page',
-  components: {
-    TheConfirmation,
-    TheFooter,
-    TheListLoader,
-  },
-  data() {
-    return {
-      filterBy: '',
-    };
-  },
-  mounted() {
-    this.filterBy = this.$route.query.type;
-  },
-  watch: {
-    $route() {
-      this.filterBy = this.$route.query.type;
-    },
-    filterBy() {
+  emits: [Constants.events.showError, Constants.events.showToast],
+  setup(_, { emit }) {
+    const confirmation = ref();
+    const filterBy = ref('');
+    const listNameToDelete = ref('');
+    const lists = ref<Array<List>>([]);
+
+    const route = useRoute();
+    const router = useRouter();
+    const { setTitle } = useGlobals();
+    const { isLoadingLists, getListsByType, updateListsOrder, deleteList } =
+      useLists();
+
+    onMounted(async () => {
+      lists.value = await getListsByType();
+    });
+
+    watch(
+      () => route.query?.type,
+      (filterRequest) => {
+        filterBy.value = filterRequest as string;
+        updatePageTitleFromFilter(filterBy.value);
+      }
+    );
+
+    const updatePageTitleFromFilter = (filter: string) => {
       let title = 'All List';
 
-      if (this.filterBy) {
-        title = this.$Const.lists.types.find(
-          ({ value }) => value === this.filterBy
-        ).label;
+      if (filter) {
+        title =
+          Constants.lists.types.find(({ value }) => value === filter)?.label ??
+          '';
       }
 
-      this.setTitle(`${title}s`);
-    },
-  },
-  computed: {
-    ...mapGetters('lists', ['isLoadingLists', 'validLists', 'getListById']),
+      setTitle(`${title}s`);
+    };
 
-    listsToRender() {
-      return this.validLists
-        .filter(({ type }) => {
-          if (this.filterBy) {
-            return type === this.filterBy;
-          }
-          return true;
-        })
-        .map((list) => {
-          const renderList = list.toObject();
-          if (renderList.type === this.$Const.listTypes.note) {
-            renderList.numberOfItems = undefined;
-          } else {
-            renderList.numberOfItems = list.listItems.filter(
-              (item) => item.status === this.$Const.itemStatus.pending
-            ).length;
-          }
-          renderList.actionIcon = list.isShared ? 'share' : 'edit';
-          renderList.canBeDeleted = !list.isShared;
-          return renderList;
-        });
-    },
-  },
-  methods: {
-    ...mapMutations('app', ['setTitle']),
-    ...mapActions('lists', ['saveLists', 'deleteList', 'updateListsOrder']),
+    const getListById = (id: string) => {
+      return lists.value.find((list) => list.id === id);
+    };
 
-    onListPress(listId) {
-      const list = this._getListById(listId);
-      let routeName = this.$Const.routes.listItems;
+    const onListPress = (listId: string) => {
+      const list = getListById(listId);
 
-      if (list.type === this.$Const.listTypes.checklist) {
-        routeName = this.$Const.routes.checklist;
-      } else if (list.type === this.$Const.listTypes.note) {
-        routeName = this.$Const.routes.note;
+      if (!list) {
+        emit(Constants.events.showError, 'No list found');
+        return;
       }
 
-      this.$router.push({ name: routeName, params: { id: listId } });
-    },
-    _getListById(listId) {
-      return this.validLists.find((list) => list.id === listId);
-    },
-    async onListDelete(listId) {
-      const list = this._getListById(listId);
-      const message = 'Are you sure to delete list "' + list.name + '"?';
-      const confirmationAnswer = await this.$refs.confirmation.showDialog(
-        message
-      );
-
-      if (confirmationAnswer) {
-        await this.deleteList(listId);
-        this.$emit('showToast', 'List deleted');
+      let routeName = Constants.routes.listItems;
+      if (list.type === Constants.listTypes.checklist) {
+        routeName = Constants.routes.checklist;
+      } else if (list.type === Constants.listTypes.note) {
+        routeName = Constants.routes.note;
       }
-    },
-    onListEdit(listId) {
-      this.$router.push({
-        name: this.$Const.routes.list,
+
+      router.push({ name: routeName, params: { id: listId } });
+    };
+
+    const onListDelete = async (listId: string) => {
+      const list = getListById(listId);
+      if (!list) {
+        return;
+      }
+
+      if (confirmation.value) {
+        listNameToDelete.value = list.name;
+        const confirmationAnswer = await confirmation.value.showDialog();
+
+        if (confirmationAnswer) {
+          await deleteList(listId);
+          emit(Constants.events.showToast, 'List deleted');
+        }
+      }
+    };
+
+    const onListEdit = (listId: string) => {
+      router.push({
+        name: Constants.routes.list,
         params: { id: listId },
       });
-    },
-    onCreate() {
-      this.$router.push({
-        name: this.$Const.routes.list,
+    };
+
+    const onCreate = () => {
+      router.push({
+        name: Constants.routes.list,
         params: { id: 'new' },
       });
-    },
-    async onOrderUpdated(lists) {
+    };
+
+    const onOrderUpdated = async (listsToUpdate: Array<List>) => {
       try {
-        await this.updateListsOrder(lists);
-      } catch (e) {
-        this.$emit('showError', e.message);
+        await updateListsOrder(listsToUpdate);
+      } catch (e: any) {
+        emit(Constants.events.showError, e.message);
       }
-    },
+    };
+    // onMounted(() => {
+    //   filterBy.value = route.query.type as string;
+    // });
+
+    return {
+      lists,
+      isLoadingLists,
+      confirmation,
+      listNameToDelete,
+      onCreate,
+      onListPress,
+      onListEdit,
+      onListDelete,
+      onOrderUpdated,
+    };
   },
+  //   watch: {
+  //     // $route() {
+  //     //   this.filterBy = this.$route.query.type;
+  //     // },
+  //   },
+  //   computed: {
+  //     ...mapGetters('lists', ['isLoadingLists', 'validLists', 'getListById']),
+
+  //   },
+  //   methods: {
+
+  //   },
 });
 </script>

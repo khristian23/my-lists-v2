@@ -31,7 +31,7 @@ function selectRouterHistoryType(): IReturnRouterHistory {
  * async/await or return a Promise which resolves
  * with the Router instance.
  */
-export default route(function (/* { store, ssrContext } */) {
+export default route(function () {
   const createHistory = selectRouterHistoryType();
 
   return createRouter({

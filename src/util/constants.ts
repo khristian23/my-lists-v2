@@ -2,6 +2,12 @@ export default {
   user: {
     anonymous: 'Anonymous',
   },
+
+  events: {
+    showError: 'show-error',
+    showToast: 'show-toast',
+  },
+
   listTypes: {
     toDoList: 'todo',
     shoppingCart: 'shop',
@@ -9,6 +15,7 @@ export default {
     checklist: 'check',
     note: 'note',
   },
+
   lists: {
     types: [
       {
@@ -75,16 +82,19 @@ export default {
       },
     ],
   },
+
   itemStatus: {
     done: 'Done',
     pending: 'Pending',
   },
+
   changeStatus: {
     none: '',
     new: 'N',
     changed: 'C',
     deleted: 'D',
   },
+
   routes: {
     lists: 'lists',
     list: 'list',
@@ -97,6 +107,7 @@ export default {
     profile: 'profile',
     camera: 'profile-picture',
   },
+
   itemActionIcon: {
     edit: 'edit',
     delete: 'delete',

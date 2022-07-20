@@ -27,6 +27,7 @@
         clickable
         @click="onItemClick(item.id)"
         class="q-px-sm"
+        :data-testid="item.id"
       >
         <q-item-section>
           <div class="row no-wrap">
@@ -107,7 +108,7 @@ export default defineComponent({
     scratched: Boolean,
   },
   setup(props, { emit }) {
-    const localItems = [...props.items];
+    const localItems = computed(() => [...props.items]);
 
     const itemIcon = computed(() => props.actionIcon || 'çreate');
 
@@ -130,7 +131,7 @@ export default defineComponent({
       showCollapseButton: false,
 
       onDrop: () => {
-        localItems.forEach((item, index) => {
+        localItems.value.forEach((item, index) => {
           item.priority = index + 1;
         });
 

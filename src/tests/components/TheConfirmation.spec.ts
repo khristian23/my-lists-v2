@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, cleanup } from '@testing-library/vue';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import TheConfirmationTest from './helpers/TheConfirmationTest.vue';
+import TheConfirmation from '@/components/TheConfirmation.vue';
 import { Quasar } from 'quasar';
 
 const noop = () => undefined;
@@ -14,6 +15,7 @@ describe('The Confirmation', () => {
       props: { message: customMessage },
       global: {
         plugins: [Quasar],
+        components: { TheConfirmation },
       },
     });
   });

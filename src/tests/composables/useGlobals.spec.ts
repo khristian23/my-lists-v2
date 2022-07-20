@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import useGlobals from '@/composables/useGlobals';
+import { useGlobals } from '@/composables/useGlobals';
 
 describe('Globals Composable', () => {
   it('should set and format the title', () => {

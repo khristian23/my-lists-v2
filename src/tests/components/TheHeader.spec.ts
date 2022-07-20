@@ -15,7 +15,7 @@ import { ref } from 'vue';
 import useUser from '@/composables/useUser';
 vi.mock('@/composables/useUser');
 
-import useGlobals from '@/composables/useGlobals';
+import { useGlobals } from '@/composables/useGlobals';
 vi.mock('@/composables/useGlobals');
 
 describe('The header', () => {

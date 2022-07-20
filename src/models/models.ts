@@ -22,6 +22,10 @@ export interface UserData {
   email?: string;
 }
 
+export interface ListData extends BaseItem {
+  type: string;
+}
+
 export interface GlobalComposableReturnValue {
   title: Ref<string>;
   setTitle: (value: string) => void;
