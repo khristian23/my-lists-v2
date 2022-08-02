@@ -12,7 +12,7 @@ import User from '@/models/user';
 import { GlobalComposableReturnValue } from '@/models/models';
 import { ref } from 'vue';
 
-import useUser from '@/composables/useUser';
+import { useUser } from '@/composables/useUser';
 vi.mock('@/composables/useUser');
 
 import { useGlobals } from '@/composables/useGlobals';
@@ -28,8 +28,9 @@ describe('The header', () => {
   }
 
   function mockUser(user: User): void {
-    (useUser as any).mockReturnValue({
+    vi.mocked(useUser).mockReturnValue({
       user: ref<User>(user),
+      getCurrentUserId: vi.fn(),
     });
   }
 
@@ -42,7 +43,7 @@ describe('The header', () => {
   afterEach(() => cleanup());
 
   it('should render the header', () => {
-    mockUser(new User({}));
+    mockUser(new User({ id: 'UserId' }));
     mockGlobalValue({ title: ref(''), displayHeaderBackButton: ref(false) });
 
     const container = renderTheHeader();
@@ -95,7 +96,7 @@ describe('The header', () => {
   });
 
   it('should show loging button is no user logged in', () => {
-    mockUser(new User({}));
+    mockUser(new User({ id: 'UserId' }));
 
     renderTheHeader();
 
@@ -106,6 +107,7 @@ describe('The header', () => {
 
   it('should show logged user avatar', () => {
     const loggedUser = new User({
+      id: 'UserId',
       name: 'TestLoggedUser',
       photoURL: 'http://useravatar/',
     });
@@ -121,7 +123,7 @@ describe('The header', () => {
   });
 
   it('should show logged user initials', () => {
-    const loggedUser = new User({ name: 'AnotherLoggedUser' });
+    const loggedUser = new User({ id: 'UserId', name: 'AnotherLoggedUser' });
 
     mockUser(loggedUser);
 

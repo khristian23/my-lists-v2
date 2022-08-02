@@ -41,8 +41,12 @@ export default defineComponent({
     const route = useRoute();
     const router = useRouter();
     const { setTitle } = useGlobals();
-    const { isLoadingLists, getListsByType, updateListsOrder, deleteList } =
-      useLists();
+    const {
+      isLoadingLists,
+      getListsByType,
+      updateListsPriorities,
+      deleteListById,
+    } = useLists();
 
     onMounted(async () => {
       lists.value = await getListsByType();
@@ -81,9 +85,9 @@ export default defineComponent({
       }
 
       let routeName = Constants.routes.listItems;
-      if (list.type === Constants.listTypes.checklist) {
+      if (list.type === Constants.listType.checklist) {
         routeName = Constants.routes.checklist;
-      } else if (list.type === Constants.listTypes.note) {
+      } else if (list.type === Constants.listType.note) {
         routeName = Constants.routes.note;
       }
 
@@ -101,8 +105,9 @@ export default defineComponent({
         const confirmationAnswer = await confirmation.value.showDialog();
 
         if (confirmationAnswer) {
-          await deleteList(listId);
-          emit(Constants.events.showToast, 'List deleted');
+          await deleteListById(listId)
+            .then(() => emit(Constants.events.showToast, 'List deleted'))
+            .catch((error) => emit(Constants.events.showError, error.message));
         }
       }
     };
@@ -121,16 +126,13 @@ export default defineComponent({
       });
     };
 
-    const onOrderUpdated = async (listsToUpdate: Array<List>) => {
-      try {
-        await updateListsOrder(listsToUpdate);
-      } catch (e: any) {
-        emit(Constants.events.showError, e.message);
-      }
+    const onOrderUpdated = async (
+      listsToUpdate: Array<List>
+    ): Promise<void> => {
+      return updateListsPriorities(listsToUpdate).catch((error) =>
+        emit(Constants.events.showError, error.message)
+      );
     };
-    // onMounted(() => {
-    //   filterBy.value = route.query.type as string;
-    // });
 
     return {
       lists,
@@ -144,17 +146,5 @@ export default defineComponent({
       onOrderUpdated,
     };
   },
-  //   watch: {
-  //     // $route() {
-  //     //   this.filterBy = this.$route.query.type;
-  //     // },
-  //   },
-  //   computed: {
-  //     ...mapGetters('lists', ['isLoadingLists', 'validLists', 'getListById']),
-
-  //   },
-  //   methods: {
-
-  //   },
 });
 </script>

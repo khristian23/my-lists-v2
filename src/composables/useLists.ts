@@ -1,49 +1,59 @@
+import { useUser } from '@/composables/useUser';
 import List from '@/models/list';
-import { ref, toRefs, Ref } from 'vue';
+import { ListType } from '@/models/models';
+import ListService from '@/services/ListService';
+import { ref, Ref } from 'vue';
 
 const isLoadingLists = ref(false);
 
 export interface ListsComposableReturnValue {
   isLoadingLists: Ref<boolean>;
-  getListsByType: (type?: string) => Promise<Array<List>>;
-  getListById: (id: string) => List | undefined;
-  deleteList: (listId: string) => boolean;
-  updateListsOrder: (lists: Array<List>) => boolean;
+  getListsByType: (type?: ListType | undefined) => Promise<Array<List>>;
+  getListById: (id: string) => Promise<List> | null;
+  deleteListById: (listId: string) => Promise<void>;
+  updateListsPriorities: (lists: Array<List>) => Promise<void>;
 }
 
 export function useLists(): ListsComposableReturnValue {
-  const listsToRender = () => {
-    return store.validLists
-      .filter(({ type }) => {
-        if (this.filterBy) {
-          return type === this.filterBy;
-        }
-        return true;
-      })
-      .map((list) => {
-        const renderList = list.toObject();
-        if (renderList.type === this.$Const.listTypes.note) {
-          renderList.numberOfItems = undefined;
-        } else {
-          renderList.numberOfItems = list.listItems.filter(
-            (item) => item.status === this.$Const.itemStatus.pending
-          ).length;
-        }
-        renderList.actionIcon = list.isShared ? 'share' : 'edit';
-        renderList.canBeDeleted = !list.isShared;
-        return renderList;
-      });
+  const { getCurrentUserId } = useUser();
+
+  const getListsByType = async (
+    type: ListType | undefined
+  ): Promise<Array<List>> => {
+    isLoadingLists.value = true;
+
+    const userId = getCurrentUserId();
+    const lists = await ListService.getListsByType(userId, type);
+
+    isLoadingLists.value = false;
+
+    return lists;
   };
 
-  const getListById = (listId: string): List | undefined => {
-    return store.validLists.find((list) => list.id === listId);
+  const getListById = (listId: string): Promise<List> | null => {
+    const userId = getCurrentUserId();
+    return ListService.getListById(userId, listId);
+  };
+
+  const deleteListById = (listId: string): Promise<void> => {
+    const userId = getCurrentUserId();
+    return ListService.deleteListById(userId, listId).catch(() => {
+      throw new Error('Error deleting list by id ' + listId);
+    });
+  };
+
+  const updateListsPriorities = (lists: Array<List>): Promise<void> => {
+    const userId = getCurrentUserId();
+    return ListService.updateListsPriorities(userId, lists).catch(() => {
+      throw new Error('Error updating lists priorities');
+    });
   };
 
   return {
     isLoadingLists,
-    getListsByType: () => true,
+    getListsByType,
     getListById,
-    deleteList: (listId: string) => true,
-    updateListsOrder: (lists: Array<List>) => true,
+    deleteListById,
+    updateListsPriorities,
   };
 }

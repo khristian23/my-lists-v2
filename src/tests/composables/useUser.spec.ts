@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import useUser from '@/composables/useUser';
+import { useUser } from '@/composables/useUser';
 import Constants from '@/util/constants';
 
 describe('User Composable', () => {

@@ -24,6 +24,7 @@ import TheConfirmation from '@/components/TheConfirmation.vue';
 import Consts from '@/util/constants';
 import MainLayoutTest from './helpers/MainLayoutTest.vue';
 import { createRouter, createWebHistory, Router } from 'vue-router';
+import { generateLists } from '../helpers/TestHelpers';
 
 import { useLists } from '@/composables/useLists';
 vi.mock('@/composables/useLists');
@@ -31,32 +32,15 @@ vi.mock('@/composables/useLists');
 const noop = () => undefined;
 Object.defineProperty(window, 'scrollTo', { value: noop, writable: true });
 
-const MAX_NUMBER_OF_LISTS = 20;
-
 let router: Router;
 
-const lists = fillListsWithData();
-
-function fillListsWithData(): Array<List> {
-  const listTypes = Object.values(Consts.listTypes);
-  const mockedLists: Array<List> = [];
-
-  for (let i = 0; i < MAX_NUMBER_OF_LISTS; i++) {
-    mockedLists.push(
-      new List({
-        id: `ListId${i}`,
-        name: `ListName${i}`,
-        type: listTypes[Math.floor(Math.random() * listTypes.length)],
-      })
-    );
-  }
-
-  return mockedLists;
-}
+const MAX_NUMBER_OF_LISTS = 20;
+const lists = generateLists(MAX_NUMBER_OF_LISTS);
 
 interface SetupData {
   customLists: Array<List>;
   mockedRouteQuery: string;
+  mockedDeleteListReturn: () => Promise<void>;
 }
 
 function renderComponent(setupData?: Partial<SetupData>): RenderResult {
@@ -64,8 +48,8 @@ function renderComponent(setupData?: Partial<SetupData>): RenderResult {
     isLoadingLists: ref(false),
     getListsByType: () => Promise.resolve(setupData?.customLists ?? lists),
     getListById: vi.fn(),
-    deleteList: vi.fn(),
-    updateListsOrder: vi.fn(),
+    deleteListById: setupData?.mockedDeleteListReturn ?? vi.fn(),
+    updateListsPriorities: vi.fn(),
   });
 
   return render(MainLayoutTest, {
@@ -134,7 +118,7 @@ describe('The Lists', () => {
   });
 
   describe('Filtering by route is used', () => {
-    const filterByType = Consts.listTypes.toDoList;
+    const filterByType = Consts.listType.toDoList;
     const filteredItems = lists.filter(({ type }) => type === filterByType);
 
     beforeEach(async () => {
@@ -163,7 +147,7 @@ describe('The Lists', () => {
     it('should update page title when change the filter', async () => {
       router.replace({
         path: '/',
-        query: { type: Consts.listTypes.shoppingCart },
+        query: { type: Consts.listType.shoppingCart },
       });
       await router.isReady();
 
@@ -237,11 +221,16 @@ describe('The Lists', () => {
   });
 
   describe('List Management', () => {
-    it('should delete an list entry', async () => {
+    async function triggerDeleteForFirstItem(
+      mockedDeleteListReturn: () => Promise<void>
+    ): Promise<RenderResult> {
       const firstList = lists[0];
-      const { getByTestId, findByText } = renderComponent({
+      const renderResult = renderComponent({
         customLists: [firstList],
+        mockedDeleteListReturn,
       });
+
+      const { getByTestId, findByText, getByText } = renderResult;
 
       await waitFor(() => getByTestId(firstList.id));
 
@@ -254,6 +243,32 @@ describe('The Lists', () => {
       await fireEvent.click(deleteButton);
 
       await findByText(`Are you sure to delete list '${firstList.name}'`);
+
+      await fireEvent.click(getByText('Yes'));
+
+      return renderResult;
+    }
+
+    it('should delete an list entry', async () => {
+      const mockedDeleteListReturn = vi.fn().mockResolvedValue(true);
+
+      const { emitted } = await triggerDeleteForFirstItem(
+        mockedDeleteListReturn
+      );
+
+      waitFor(() => expect(emitted()).toHaveProperty(Consts.events.showError));
+    });
+
+    it('should emit a show error event when error deleting item', async () => {
+      const mockedDeleteListReturn = vi
+        .fn()
+        .mockRejectedValue(new Error('Error updating lists'));
+
+      const { emitted } = await triggerDeleteForFirstItem(
+        mockedDeleteListReturn
+      );
+
+      waitFor(() => expect(emitted()).toHaveProperty(Consts.events.showToast));
     });
   });
 });

@@ -3,11 +3,13 @@ import Constants from '@/util/constants';
 import { format } from 'quasar';
 
 export default class User {
+  id: string;
   private _name: string;
   photoURL: string;
   email: string;
 
   constructor(userData: UserData) {
+    this.id = userData.id ?? '';
     this._name = userData.name ?? '';
     this.photoURL = userData.photoURL ?? '';
     this.email = userData.email ?? '';

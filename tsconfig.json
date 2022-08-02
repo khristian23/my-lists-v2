@@ -15,7 +15,8 @@
       "stores/*": ["src/stores/*"],
       "util/*": ["src/util/*"],
       "models/*": ["src/models/*"],
-      "composables/*": ["src/composables/*"]
+      "composables/*": ["src/composables/*"],
+      "services/*": ["src/services/*"]
     }
   },
   "include": [

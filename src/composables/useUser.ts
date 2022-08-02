@@ -1,10 +1,11 @@
 import { ref } from 'vue';
 import User from '@/models/user';
 
-const user = ref<User>(new User({}));
+const user = ref<User>(new User({ id: '' }));
 
-export default function useUser() {
+export function useUser() {
   return {
     user,
+    getCurrentUserId: () => 'UserId',
   };
 }

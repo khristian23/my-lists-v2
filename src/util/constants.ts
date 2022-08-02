@@ -8,11 +8,11 @@ export default {
     showToast: 'show-toast',
   },
 
-  listTypes: {
+  listType: {
     toDoList: 'todo',
     shoppingCart: 'shop',
     whishlist: 'wish',
-    checklist: 'check',
+    checklist: 'checklist',
     note: 'note',
   },
 
