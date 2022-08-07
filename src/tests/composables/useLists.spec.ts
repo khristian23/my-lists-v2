@@ -14,7 +14,6 @@ import ListService from '@/services/ListService';
 vi.mock('@/services/ListService');
 
 import { useLists } from '@/composables/useLists';
-import ListItemVue from '@/pages/ListItem.vue';
 
 const MAX_NUMBER_OF_LISTS = 30;
 const lists = generateLists(MAX_NUMBER_OF_LISTS);

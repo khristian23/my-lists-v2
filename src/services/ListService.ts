@@ -1,65 +1,65 @@
-import { firebaseStore, firebaseStorage } from '@/boot/firebase';
+import {
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  collection,
+  where,
+  WhereFilterOp,
+  updateDoc,
+  deleteDoc,
+} from 'firebase/firestore';
+import { firestore } from '@/boot/firebase';
 import List from '@/models/list';
 import { ListType } from '@/models/models';
-import { list } from 'postcss';
+import { ListConverter } from './Converters';
 
 export default {
   async getListsByType(
     userId: string,
     type: ListType | undefined
   ): Promise<Array<List>> {
-    const results: Array<List> = [];
-    const ownerArgs = ['owner', '==', userId];
-    const sharedArgs = ['sharedWith', 'array-contains', userId];
+    type firebaseWhereArgs = [string, WhereFilterOp, unknown];
 
-    async function loadListsFromFirebaseDocuments(listDocs, options) {
-      for (const firebaseList of listDocs) {
-        const firebaseListData = firebaseList.data();
-        const list = new List(firebaseListData);
-        list.id = firebaseList.id;
-        list.isShared = list.owner !== userId;
-        list.priority = firebaseListData.userPriorities
-          ? firebaseListData.userPriorities[userId]
-          : 0;
+    const ownerArgs: firebaseWhereArgs = ['owner', '==', userId];
+    const sharedArgs: firebaseWhereArgs = [
+      'sharedWith',
+      'array-contains',
+      userId,
+    ];
+    const typeArgs: firebaseWhereArgs = ['type', '==', type];
 
-        const items = await listsCollection
-          .doc(list.id)
-          .collection('items')
-          .get();
-        for (const item of items.docs) {
-          const firebaseItemData = item.data();
-          const listItem = new ListItem(firebaseItemData);
-          listItem.id = item.id;
-          listItem.listId = list.id;
-          listItem.isShared = item.owner !== userId;
-          listItem.priority = firebaseItemData.userPriorities
-            ? firebaseItemData.userPriorities[userId]
-            : 0;
-          list.addListItem(listItem);
-        }
-        results.push(list);
-      }
-    }
+    const listsCollection = collection(firestore, 'lists').withConverter(
+      new ListConverter(userId)
+    );
+    const ownedListsQuery = query(
+      listsCollection,
+      where(...ownerArgs),
+      where(...typeArgs)
+    );
+    const sharedListsQuery = query(
+      listsCollection,
+      where(...sharedArgs),
+      where(...typeArgs)
+    );
 
-    const listsCollection = firebaseStore.collection('lists');
-    const listsRef = await listsCollection.where(...ownerArgs).get();
-    const sharedListsRef = await listsCollection.where(...sharedArgs).get();
+    const ownedListsSnapshots = await getDocs(ownedListsQuery);
+    const sharedListsSnapshots = await getDocs(sharedListsQuery);
 
-    await loadListsFromFirebaseDocuments(listsRef.docs, ownerArgs);
-    await loadListsFromFirebaseDocuments(sharedListsRef.docs, sharedArgs);
-
-    return results;
+    return ownedListsSnapshots.docs
+      .concat(sharedListsSnapshots.docs)
+      .map((snapshot) => snapshot.data());
   },
 
-  populateList(firebaseData): List {},
-
-  async getListById(userId: string, listId: string): Promise<List> | null {
-    const listsCollection = firebaseStore.collection('lists');
-    const listDocument = await listsCollection.doc(listId).get();
-    if (listDocument.exists) {
-      const listData = listDocument.data();
-      if (listData.owner === userId || listData.sharedWith.contains(userId)) {
-        return populateList(listData);
+  async getListById(userId: string, listId: string): Promise<List | null> {
+    const listReference = doc(firestore, 'lists', listId).withConverter(
+      new ListConverter(userId)
+    );
+    const listSnapshot = await getDoc(listReference);
+    if (listSnapshot.exists()) {
+      const list = listSnapshot.data();
+      if (list.owner === userId || list.isShared) {
+        return list;
       }
     }
     return null;
@@ -67,18 +67,18 @@ export default {
 
   async deleteListById(userId: string, listId: string): Promise<void> {
     try {
-      const listRef = firebaseStore.collection('lists').doc(listId);
-      const items = await listRef
-        .collection('items')
-        .where('owner', '==', userId)
-        .get();
+      const listsCollection = collection(firestore, `lists/${listId}/items`);
 
-      for (const item of items.docs) {
-        await item.ref.delete();
-      }
+      const itemsSnapshots = await getDocs(listsCollection);
 
-      return listRef.delete();
-    } catch (e) {
+      return Promise.all(
+        itemsSnapshots.docs.map((itemSnapshot) => {
+          return deleteDoc(itemSnapshot.ref);
+        })
+      ).then(() => {
+        return deleteDoc(doc(firestore, 'lists', listId));
+      });
+    } catch (e: any) {
       throw new Error(e.message);
     }
   },
@@ -86,26 +86,21 @@ export default {
   async updateListsPriorities(
     userId: string,
     lists: Array<List>
-  ): Promise<void> {
+  ): Promise<void[]> {
     return Promise.all(
       lists.map((list) => {
-        const listRef = firebaseStore.collection('lists').doc(list.id);
+        const listReference = doc(firestore, 'lists', list.id);
 
-        return this.updateObjectPriotity(userId, listRef, list);
+        const objectUpdate: { [k: string]: string | number } = {
+          changedBy: list.changedBy,
+          modifiedAt: list.modifiedAt,
+        };
+        objectUpdate[`userPriorities.${userId}`] = list.priority;
+
+        return updateDoc(listReference, objectUpdate);
       })
-    );
-  },
-
-  async updateObjectPriotity(userId, objectRef, object): Promise<void> {
-    const firebaseObjectUpdate = {};
-    firebaseObjectUpdate.changedBy = object.changedBy;
-    firebaseObjectUpdate.modifiedAt = object.modifiedAt;
-    firebaseObjectUpdate[`userPriorities.${userId}`] = object.priority;
-
-    try {
-      return objectRef.update(firebaseObjectUpdate);
-    } catch (e) {
-      throw new Error(e.message);
-    }
+    ).catch((error) => {
+      throw new Error(error.message);
+    });
   },
 };

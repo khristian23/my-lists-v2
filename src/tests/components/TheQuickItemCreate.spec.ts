@@ -3,8 +3,6 @@ import { fireEvent, render, RenderResult, cleanup } from '@testing-library/vue';
 import { Quasar } from 'quasar';
 import TheQuickItemCreate from '@/components/TheQuickItemCreate.vue';
 
-// interface
-
 describe('The Quick Item Create', () => {
   function renderQuickCreate(): RenderResult {
     return render(TheQuickItemCreate, {

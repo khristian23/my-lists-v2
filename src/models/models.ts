@@ -33,6 +33,13 @@ export interface UserData {
 
 export interface ListData extends BaseItem {
   type: ListType;
+  isShared: boolean;
+  owner: string;
+}
+
+export interface Auditable {
+  changedBy: string;
+  modifiedAt: string;
 }
 
 export interface GlobalComposableReturnValue {
