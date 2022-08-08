@@ -1,0 +1,95 @@
+<template>
+  <q-banner
+    bordered
+    inline-actions
+    rounded
+    class="bg-primary text-white q-ma-sm"
+    v-if="showAppInstallBanner"
+  >
+    <strong>Install?</strong>
+    <template v-slot:action>
+      <q-btn
+        flat
+        color="white"
+        class="q-px-sm"
+        label="Yes"
+        dense
+        @click="installApp"
+      />
+      <q-btn
+        flat
+        color="white"
+        class="q-px-sm"
+        label="Later"
+        dense
+        @click="showAppInstallBanner = false"
+      />
+      <q-btn
+        flat
+        color="white"
+        class="q-px-sm"
+        label="Never"
+        dense
+        @click="neverShowAppInstallBanner"
+      />
+    </template>
+  </q-banner>
+</template>
+
+<script lang="ts">
+import { defineComponent, onMounted, ref } from 'vue';
+import { BeforeInstallPromptEvent } from '@/models/models';
+import { useQuasar } from 'quasar';
+
+let deferredPrompt: BeforeInstallPromptEvent;
+
+export default defineComponent({
+  name: 'the-pwa-install',
+  setup() {
+    const quasar = useQuasar();
+    const showAppInstallBanner = ref(false);
+
+    onMounted(() => {
+      const neverShowAppInstallBannerValue = quasar.localStorage.getItem(
+        'neverShowAppInstallBannerValue'
+      );
+      if (!neverShowAppInstallBannerValue) {
+        hookupBeforePWAInstallEvent();
+      }
+    });
+
+    const neverShowAppInstallBanner = () => {
+      showAppInstallBanner.value = false;
+      quasar.localStorage.set('neverShowAppInstallBannerValue', true);
+    };
+
+    const hookupBeforePWAInstallEvent = () => {
+      window.addEventListener('beforeinstallprompt', (e) => {
+        // Prevent the mini-infobar from appearing on mobile
+        e.preventDefault();
+        // Stash the event so it can be triggered later
+        deferredPrompt = e;
+        // Update UI notify the user they can install the PWA
+        showAppInstallBanner.value = true;
+      });
+    };
+
+    const installApp = async () => {
+      showAppInstallBanner.value = false;
+      // Show the install prompt
+      deferredPrompt.prompt();
+      // Wait for the user to respond to the prompt
+      const choiceResult = await deferredPrompt.userChoice;
+      if (choiceResult.outcome === 'accepted') {
+        neverShowAppInstallBanner();
+      }
+    };
+
+    return {
+      neverShowAppInstallBanner,
+      showAppInstallBanner,
+      installApp,
+    };
+  },
+});
+</script>

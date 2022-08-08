@@ -1,105 +1,87 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <q-header elevated>
-      <q-toolbar>
-        <q-btn
-          flat
-          dense
-          round
-          icon="menu"
-          aria-label="Menu"
-          @click="toggleLeftDrawer"
-        />
-
-        <q-toolbar-title> Quasar App </q-toolbar-title>
-
-        <div>Quasar v{{ $q.version }}</div>
-      </q-toolbar>
+    <q-header elevated class="bg-primary">
+      <the-header @toggle-drawer="leftDrawerOpen = !leftDrawerOpen" />
     </q-header>
 
     <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
       <q-list>
-        <q-item-label header> Essential Links </q-item-label>
-
-        <EssentialLink
-          v-for="link in essentialLinks"
-          :key="link.title"
-          v-bind="link"
-        />
+        <q-item-label header class="text-grey-8">
+          <q-chip clickable @click="onUserNameClicked">
+            <q-avatar color="blue" text-color="white">{{
+              user.initials
+            }}</q-avatar>
+            {{ user.name }}
+          </q-chip>
+        </q-item-label>
+        <MenuLink v-for="link in menuLinks" :key="link.title" v-bind="link" />
       </q-list>
+      <the-pwa-install />
     </q-drawer>
 
     <q-page-container>
-      <router-view />
+      <router-view @showError="showError" @showToast="showToast" />
     </q-page-container>
   </q-layout>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
-import EssentialLink from 'components/EssentialLink.vue';
-
-const linksList = [
-  {
-    title: 'Docs',
-    caption: 'quasar.dev',
-    icon: 'school',
-    link: 'https://quasar.dev',
-  },
-  {
-    title: 'Github',
-    caption: 'github.com/quasarframework',
-    icon: 'code',
-    link: 'https://github.com/quasarframework',
-  },
-  {
-    title: 'Discord Chat Channel',
-    caption: 'chat.quasar.dev',
-    icon: 'chat',
-    link: 'https://chat.quasar.dev',
-  },
-  {
-    title: 'Forum',
-    caption: 'forum.quasar.dev',
-    icon: 'record_voice_over',
-    link: 'https://forum.quasar.dev',
-  },
-  {
-    title: 'Twitter',
-    caption: '@quasarframework',
-    icon: 'rss_feed',
-    link: 'https://twitter.quasar.dev',
-  },
-  {
-    title: 'Facebook',
-    caption: '@QuasarFramework',
-    icon: 'public',
-    link: 'https://facebook.quasar.dev',
-  },
-  {
-    title: 'Quasar Awesome',
-    caption: 'Community Quasar projects',
-    icon: 'favorite',
-    link: 'https://awesome.quasar.dev',
-  },
-];
+import { defineComponent, ref, reactive } from 'vue';
+import Consts from '@/util/constants';
+import { useRouter } from 'vue-router';
+import { useUser } from '@/composables/useUser';
+import { useQuasar } from 'quasar';
 
 export default defineComponent({
-  name: 'MainLayout',
-
-  components: {
-    EssentialLink,
-  },
-
+  name: 'main-layout',
   setup() {
     const leftDrawerOpen = ref(false);
+    const router = useRouter();
+    const { user } = useUser();
+    const quasar = useQuasar();
+
+    const menuLinks = reactive([
+      {
+        title: 'All Lists',
+        icon: 'select_all',
+        link: '/',
+      },
+    ]);
+    menuLinks.push(
+      ...Consts.lists.types.map((type) => {
+        return {
+          title: type.label,
+          icon: type.icon,
+          link: `/?type${type.value}`,
+        };
+      })
+    );
+
+    const showError = (message: string) => {
+      quasar.notify({
+        message: message,
+        type: 'negative',
+      });
+    };
+
+    const showToast = (message: string) => {
+      quasar.notify({
+        message: message,
+        color: 'gray',
+      });
+    };
+
+    const onUserNameClicked = () => {
+      router.push({ name: Consts.routes.profile });
+    };
 
     return {
+      user,
       leftDrawerOpen,
-      essentialLinks: linksList,
-      toggleLeftDrawer() {
-        leftDrawerOpen.value = !leftDrawerOpen.value;
-      },
+      menuLinks,
+      showError,
+      showToast,
+      onUserNameClicked,
     };
   },
 });
