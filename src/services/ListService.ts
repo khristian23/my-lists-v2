@@ -32,16 +32,17 @@ export default {
     const listsCollection = collection(firestore, 'lists').withConverter(
       new ListConverter(userId)
     );
-    const ownedListsQuery = query(
-      listsCollection,
-      where(...ownerArgs),
-      where(...typeArgs)
-    );
-    const sharedListsQuery = query(
-      listsCollection,
-      where(...sharedArgs),
-      where(...typeArgs)
-    );
+
+    const ownedListWhere = [where(...ownerArgs)];
+    const sharedListWhere = [where(...sharedArgs)];
+
+    if (type) {
+      ownedListWhere.push(where(...typeArgs));
+      sharedListWhere.push(where(...typeArgs));
+    }
+
+    const ownedListsQuery = query(listsCollection, ...ownedListWhere);
+    const sharedListsQuery = query(listsCollection, ...sharedListWhere);
 
     const ownedListsSnapshots = await getDocs(ownedListsQuery);
     const sharedListsSnapshots = await getDocs(sharedListsQuery);
@@ -78,8 +79,8 @@ export default {
       ).then(() => {
         return deleteDoc(doc(firestore, 'lists', listId));
       });
-    } catch (e: any) {
-      throw new Error(e.message);
+    } catch (e: unknown) {
+      throw new Error((e as Error).message);
     }
   },
 

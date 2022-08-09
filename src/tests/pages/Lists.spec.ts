@@ -96,9 +96,10 @@ describe('The Lists', () => {
 
     afterEach(() => cleanup());
 
-    it('should render the page', async () => {
-      const { getByText } = renderComponent();
+    it('should render the page with All Lists title', async () => {
+      const { getByText, findByText } = renderComponent();
       await waitFor(() => expect(getByText('ListName2')).toBeTruthy());
+      expect(findByText('title: All lists')).toBeTruthy();
     });
 
     it('should render the list component only if it has items', () => {

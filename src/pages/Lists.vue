@@ -49,6 +49,7 @@ export default defineComponent({
     } = useLists();
 
     onMounted(async () => {
+      setTitle('All Lists');
       lists.value = await getListsByType();
     });
 
@@ -60,16 +61,17 @@ export default defineComponent({
       }
     );
 
-    const updatePageTitleFromFilter = (filter: string) => {
-      let title = 'All List';
+    const updatePageTitleFromFilter = (type: string) => {
+      const getListTypeLabel = () => {
+        return (
+          Constants.lists.types.find(({ value }) => value === type)?.label ?? ''
+        );
+      };
 
-      if (filter) {
-        title =
-          Constants.lists.types.find(({ value }) => value === filter)?.label ??
-          '';
+      if (type) {
+        const title = getListTypeLabel();
+        setTitle(`${title}s`);
       }
-
-      setTitle(`${title}s`);
     };
 
     const getListById = (id: string) => {

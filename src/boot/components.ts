@@ -3,7 +3,7 @@ import TheList from 'components/TheList.vue';
 import TheConfirmation from 'components/TheConfirmation.vue';
 import TheFooter from 'components/TheFooter.vue';
 import TheHeader from 'components/TheHeader.vue';
-import TheListLoader from 'components/TheListProps.vue';
+import TheListLoader from 'components/TheListLoader.vue';
 import TheMenuLink from 'components/TheMenuLink.vue';
 import TheQuickItemCreate from 'components/TheQuickItemCreate.vue';
 import ThePWAInstall from 'components/ThePWAInstall.vue';

@@ -16,7 +16,8 @@
       "util/*": ["src/util/*"],
       "models/*": ["src/models/*"],
       "composables/*": ["src/composables/*"],
-      "services/*": ["src/services/*"]
+      "services/*": ["src/services/*"],
+      "router/*": ["src/router/*"]
     }
   },
   "include": [

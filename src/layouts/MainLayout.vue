@@ -1,5 +1,5 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
+  <q-layout view="hHh Lpr lFf">
     <q-header elevated class="bg-primary">
       <the-header @toggle-drawer="leftDrawerOpen = !leftDrawerOpen" />
     </q-header>
@@ -14,7 +14,11 @@
             {{ user.name }}
           </q-chip>
         </q-item-label>
-        <MenuLink v-for="link in menuLinks" :key="link.title" v-bind="link" />
+        <the-menu-link
+          v-for="link in menuLinks"
+          :key="link.title"
+          v-bind="link"
+        />
       </q-list>
       <the-pwa-install />
     </q-drawer>
@@ -52,7 +56,7 @@ export default defineComponent({
         return {
           title: type.label,
           icon: type.icon,
-          link: `/?type${type.value}`,
+          link: `/?type=${type.value}`,
         };
       })
     );
