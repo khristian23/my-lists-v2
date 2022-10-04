@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) mailto:christian.montoya@gmail.com
+ */
+
 import { useUser } from '@/composables/useUser';
 import List from '@/models/list';
 import { ListType } from '@/models/models';
@@ -9,9 +13,9 @@ const isLoadingLists = ref(false);
 export interface ListsComposableReturnValue {
   isLoadingLists: Ref<boolean>;
   getListsByType: (type?: ListType | undefined) => Promise<Array<List>>;
-  getListById: (id: string) => Promise<List> | null;
+  getListById: (id: string) => Promise<List | null>;
   deleteListById: (listId: string) => Promise<void>;
-  updateListsPriorities: (lists: Array<List>) => Promise<void>;
+  updateListsPriorities: (lists: Array<List>) => Promise<void[]>;
 }
 
 export function useLists(): ListsComposableReturnValue {
@@ -30,7 +34,7 @@ export function useLists(): ListsComposableReturnValue {
     return lists;
   };
 
-  const getListById = (listId: string): Promise<List> | null => {
+  const getListById = (listId: string): Promise<List | null> => {
     const userId = getCurrentUserId();
     return ListService.getListById(userId, listId);
   };
@@ -42,7 +46,7 @@ export function useLists(): ListsComposableReturnValue {
     });
   };
 
-  const updateListsPriorities = (lists: Array<List>): Promise<void> => {
+  const updateListsPriorities = (lists: Array<List>): Promise<void[]> => {
     const userId = getCurrentUserId();
     return ListService.updateListsPriorities(userId, lists).catch(() => {
       throw new Error('Error updating lists priorities');

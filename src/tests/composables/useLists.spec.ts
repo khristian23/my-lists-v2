@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) mailto:christian.montoya@gmail.com
+ */
+
 import { describe, it, vi, expect, beforeEach, afterEach } from 'vitest';
 import { ref } from 'vue';
 import { generateLists } from '../helpers/TestHelpers';
@@ -112,7 +116,7 @@ describe('Lists Composable', () => {
   it('should update the order of the lists', async () => {
     const spy = vi
       .spyOn(ListService, 'updateListsPriorities')
-      .mockResolvedValue();
+      .mockResolvedValue([]);
 
     const { updateListsPriorities } = useLists();
 

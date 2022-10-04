@@ -1,6 +1,8 @@
 import List from '@/models/list';
 import Consts from '@/util/constants';
 
+const BINARY = 2;
+
 export function generateLists(numberOfLists: number): Array<List> {
   const listTypes = Object.values(Consts.listType);
   const lists: Array<List> = [];
@@ -11,6 +13,8 @@ export function generateLists(numberOfLists: number): Array<List> {
         id: `ListId${i}`,
         name: `ListName${i}`,
         type: listTypes[Math.floor(Math.random() * listTypes.length)],
+        isShared: Math.floor(Math.random() * BINARY) ? true : false,
+        owner: `Owner${i}`,
       })
     );
   }
