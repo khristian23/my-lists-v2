@@ -9,7 +9,7 @@ export function useGlobals(
   shouldDisplayBackButton = true
 ): GlobalComposableReturnValue {
   const setTitle = (value: string) => {
-    value = value.replaceAll('-', ' ');
+    value = value.replace(/-/g, ' ');
     title.value = format.capitalize(value.toLowerCase());
   };
 
