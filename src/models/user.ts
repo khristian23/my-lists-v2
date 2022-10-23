@@ -4,11 +4,11 @@ import { format } from 'quasar';
 
 export default class User {
   id: string;
-  private _name: string;
+  readonly _name?: string;
   photoURL: string;
   email: string;
 
-  constructor(userData: UserData) {
+  constructor(userData: Partial<UserData>) {
     this.id = userData.id ?? '';
     this._name = userData.name ?? '';
     this.photoURL = userData.photoURL ?? '';
@@ -23,7 +23,7 @@ export default class User {
   }
 
   get isAnonymous() {
-    return !this._name.trim().length && !this.email.trim().length;
+    return !this._name?.trim().length && !this.email.trim().length;
   }
 
   get isLoggedIn() {

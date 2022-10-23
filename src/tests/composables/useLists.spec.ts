@@ -25,8 +25,9 @@ const lists = generateLists(MAX_NUMBER_OF_LISTS);
 describe('Lists Composable', () => {
   beforeEach(() => {
     vi.mocked(useUser).mockImplementation(() => ({
-      user: ref<User>(new User({ id: FAKE_USER_ID })),
+      user: ref(new User({ id: FAKE_USER_ID })),
       getCurrentUserId: () => FAKE_USER_ID,
+      setCurrentUser: vi.fn(),
     }));
   });
 
