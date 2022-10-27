@@ -2208,6 +2208,11 @@
   "resolved" "https://registry.npmjs.org/flatted/-/flatted-3.2.5.tgz"
   "version" "3.2.5"
 
+"flush-promises@^1.0.2":
+  "integrity" "sha512-G0sYfLQERwKz4+4iOZYQEZVpOt9zQrlItIxQAAYAWpfby3gbHrx0osCHz5RLl/XoXevXk0xoN4hDFky/VV9TrA=="
+  "resolved" "https://registry.npmjs.org/flush-promises/-/flush-promises-1.0.2.tgz"
+  "version" "1.0.2"
+
 "foreground-child@^2.0.0":
   "integrity" "sha512-dCIq9FpEcyQyXKCkyzmlPTFNgrCzPudOe+mhvJU5zAtlBnGVy2yKxtfsxK2tQBThwq225jcvBjpw1Gr40uzZCA=="
   "resolved" "https://registry.npmjs.org/foreground-child/-/foreground-child-2.0.0.tgz"

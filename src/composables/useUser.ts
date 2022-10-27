@@ -4,17 +4,24 @@ import User from '@/models/user';
 import Constants from '@/util/constants';
 
 export interface UserComposableReturnValue {
-  user: Ref<User>;
+  getCurrentUserRef: () => Ref<User>;
   setCurrentUser: (currentUser: User) => void;
   getCurrentUserId: () => string;
+  setCurrentUserAsAnonymous: () => void;
+  setCurrentUserPhotoURL: (photoUrl: string) => void;
 }
 
-const user = ref<User>(new User({ id: Constants.user.anonymous }));
+const anonymousUser = new User({ id: Constants.user.anonymous });
+
+const user = ref<User>(anonymousUser);
 
 export function useUser(): UserComposableReturnValue {
   return {
-    user,
+    getCurrentUserRef: () => user,
     setCurrentUser: (currentUser: User) => (user.value = currentUser),
     getCurrentUserId: () => user.value.id,
+    setCurrentUserAsAnonymous: () => (user.value = anonymousUser),
+    setCurrentUserPhotoURL: (photoURL: string) =>
+      (user.value.photoURL = photoURL),
   };
 }

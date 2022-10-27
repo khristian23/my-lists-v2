@@ -3,61 +3,66 @@ import { firebaseAuth } from '@/boot/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { useUser } from './useUser';
 import UserService from '@/services/UserService';
+import { User as FirebaseUser } from 'firebase/auth';
+import { useRouter } from 'vue-router';
+import constants from '@/util/constants';
 
 export function useAuthentication() {
-  const { setCurrentUser, getCurrentUserId, user } = useUser();
+  const {
+    setCurrentUser,
+    getCurrentUserId,
+    setCurrentUserPhotoURL,
+    setCurrentUserAsAnonymous,
+  } = useUser();
+
+  const { replace } = useRouter();
 
   const startListeningForFirebaseChanges = () => {
     try {
-      onAuthStateChanged(firebaseAuth, (firebaseUser) => {
-        console.log(firebaseUser);
+      onAuthStateChanged(firebaseAuth, async (firebaseUser) => {
         if (firebaseUser) {
           // User was authenticated or is anonymous (isAnonimous = true)
           // Firebase can pull this info from local IndexedDB is no network found
-          setCurrentUser(
-            new User({
-              name: firebaseUser.displayName ?? '',
-              email: firebaseUser.email ?? '',
-              id: firebaseUser.uid,
-              photoURL: firebaseUser.photoURL ?? '',
-            })
-          );
-
-          onUserLoggedIn();
+          await handleFirebaseUserAuthenticated(firebaseUser);
         } else {
           // No network found and no local firebase storage
-          setCurrentUser(createAnonymousUser());
-          onUserLoggedOut();
+          handleFirebaseUserNotAuthenticated();
         }
       });
     } catch (error) {
-      setCurrentUser(createAnonymousUser());
-      onUserLoggedOut();
+      handleFirebaseUserNotAuthenticated();
     }
   };
 
-  const onUserLoggedIn = async () => {
+  const handleFirebaseUserAuthenticated = async (
+    firebaseUser: FirebaseUser
+  ) => {
+    const user = new User({
+      name: firebaseUser.displayName ?? '',
+      email: firebaseUser.email ?? '',
+      id: firebaseUser.uid,
+      photoURL: firebaseUser.photoURL ?? '',
+    });
+
+    setCurrentUser(user);
+
+    return Promise.all([
+      UserService.addAuthenticatedUserToListApplication(user),
+      setUserPhotoFromApplication(),
+    ]);
+  };
+
+  const handleFirebaseUserNotAuthenticated = () => {
+    setCurrentUserAsAnonymous();
+    replace({ name: constants.routes.login });
+  };
+
+  const setUserPhotoFromApplication = async () => {
     const photoURL = await UserService.getUserPhotoURLFromStorage(
       getCurrentUserId()
     );
 
-    if (!photoURL) {
-      await UserService.validateRegisteredUser(user.value);
-    } else {
-      updatePhotoURL(photoURL);
-    }
-  };
-
-  const createAnonymousUser = (): User => {
-    return new User({});
-  };
-
-  const onUserLoggedOut = async () => {
-    //todo
-  };
-
-  const updatePhotoURL = (photoUrl: string): void => {
-    // todo
+    setCurrentUserPhotoURL(photoURL);
   };
 
   return {

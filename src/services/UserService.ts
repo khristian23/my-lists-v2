@@ -5,7 +5,7 @@ export default {
     return Promise.resolve('photoUrl');
   },
 
-  async validateRegisteredUser(user: User): Promise<void> {
+  async addAuthenticatedUserToListApplication(user: User): Promise<void> {
     // todo
   },
 };

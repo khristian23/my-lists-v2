@@ -9,21 +9,30 @@ import User from '@/models/user';
 
 describe('User Composable', () => {
   it('should provide an anonymous reactive user by default', () => {
-    const { user } = useUser();
+    const { getCurrentUserRef } = useUser();
 
+    const user = getCurrentUserRef();
     expect(user.value.isAnonymous).toBe(true);
     expect(user.value.name).toBe(Constants.user.anonymous);
     expect(user.value.id).toBe(Constants.user.anonymous);
   });
 
-  it('should privide an anonymous current user by default', () => {
+  it('should provide an anonymous current user by default', () => {
     const { getCurrentUserId } = useUser();
 
     expect(getCurrentUserId()).toBe(Constants.user.anonymous);
   });
 
+  it('should set current user as anonymous', () => {
+    const { setCurrentUserAsAnonymous, getCurrentUserId } = useUser();
+
+    setCurrentUserAsAnonymous();
+
+    expect(getCurrentUserId()).toBe(Constants.user.anonymous);
+  });
+
   it('should set the current user with reactivity', () => {
-    const { user, setCurrentUser, getCurrentUserId } = useUser();
+    const { getCurrentUserRef, setCurrentUser, getCurrentUserId } = useUser();
 
     const currentUser = new User({
       name: 'Test User',
@@ -33,7 +42,16 @@ describe('User Composable', () => {
 
     setCurrentUser(currentUser);
 
-    expect(user.value.name).toBe('Test User');
+    expect(getCurrentUserRef().value.name).toBe('Test User');
     expect(getCurrentUserId()).toBe('TestUserID');
+  });
+
+  it('should set current user photo', () => {
+    const { setCurrentUserPhotoURL, getCurrentUserRef } = useUser();
+    const photoUrl = 'https://photo.url';
+
+    setCurrentUserPhotoURL(photoUrl);
+
+    expect(getCurrentUserRef().value.photoURL).toBe(photoUrl);
   });
 });
