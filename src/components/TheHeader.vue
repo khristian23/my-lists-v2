@@ -58,11 +58,11 @@ export default defineComponent({
   name: 'the-header',
   props: ['customTitle'],
   setup() {
-    const { user } = useUser();
+    const { getCurrentUserRef } = useUser();
     const { title, displayHeaderBackButton } = useGlobals();
 
     return {
-      user,
+      user: getCurrentUserRef(),
       title,
       displayHeaderBackButton,
     };

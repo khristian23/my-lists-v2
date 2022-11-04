@@ -40,11 +40,12 @@ const routes: RouteRecordRaw[] = [
       //     name: Consts.routes.note,
       //     component: () => import(/* webpackChunkName: "Note" */ 'pages/Note'),
       //   },
-      //   {
-      //     path: '/login',
-      //     name: Consts.routes.login,
-      //     component: () => import(/* webpackChunkName: "Login" */ 'pages/Login'),
-      //   },
+      {
+        path: '/login',
+        name: Consts.routes.login,
+        component: () =>
+          import(/* webpackChunkName: "Login" */ '@/pages/Login.vue'),
+      },
       //   {
       //     path: '/register',
       //     name: Consts.routes.register,

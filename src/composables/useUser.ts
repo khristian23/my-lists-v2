@@ -17,10 +17,16 @@ const user = ref<User>(anonymousUser);
 
 export function useUser(): UserComposableReturnValue {
   return {
-    getCurrentUserRef: () => user,
+    getCurrentUserRef: () => {
+      console.error('user is: ' + JSON.stringify(user.value));
+      return user;
+    },
     setCurrentUser: (currentUser: User) => (user.value = currentUser),
     getCurrentUserId: () => user.value.id,
-    setCurrentUserAsAnonymous: () => (user.value = anonymousUser),
+    setCurrentUserAsAnonymous: () => {
+      user.value = anonymousUser;
+      console.error('user anomy is: ' + JSON.stringify(user.value));
+    },
     setCurrentUserPhotoURL: (photoURL: string) =>
       (user.value.photoURL = photoURL),
   };

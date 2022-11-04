@@ -128,10 +128,8 @@ export default defineComponent({
       });
     };
 
-    const onOrderUpdated = async (
-      listsToUpdate: Array<List>
-    ): Promise<void> => {
-      return updateListsPriorities(listsToUpdate).catch((error) =>
+    const onOrderUpdated = (listsToUpdate: Array<List>): void => {
+      updateListsPriorities(listsToUpdate).catch((error) =>
         emit(Constants.events.showError, error.message)
       );
     };

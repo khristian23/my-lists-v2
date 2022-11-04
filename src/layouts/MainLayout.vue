@@ -41,7 +41,7 @@ export default defineComponent({
   setup() {
     const leftDrawerOpen = ref(false);
     const router = useRouter();
-    const { user } = useUser();
+    const { getCurrentUserRef } = useUser();
     const quasar = useQuasar();
 
     const menuLinks = reactive([
@@ -80,7 +80,7 @@ export default defineComponent({
     };
 
     return {
-      user,
+      user: getCurrentUserRef(),
       leftDrawerOpen,
       menuLinks,
       showError,

@@ -9,11 +9,16 @@ import { useAuthentication } from '@/composables/useAuthentication';
 export default defineComponent({
   name: 'App',
   setup() {
-    const { startListeningForFirebaseChanges } = useAuthentication();
+    const {
+      startListeningForFirebaseChanges,
+      checkForRedirectAfterAuthentication,
+    } = useAuthentication();
 
     onMounted(() => {
       startListeningForFirebaseChanges();
     });
+
+    checkForRedirectAfterAuthentication();
   },
 });
 </script>

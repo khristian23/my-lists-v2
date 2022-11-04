@@ -3,7 +3,6 @@
  */
 
 import { describe, it, vi, expect, beforeEach, afterEach } from 'vitest';
-import { ref } from 'vue';
 import { generateLists } from '../helpers/TestHelpers';
 import User from '@/models/user';
 import Consts from '@/util/constants';
@@ -12,7 +11,7 @@ import List from '@/models/list';
 const FAKE_USER_ID = 'UserId';
 
 import { useUser } from '@/composables/useUser';
-vi.mock('@/composables/useUser');
+const { setCurrentUser } = useUser();
 
 import ListService from '@/services/ListService';
 vi.mock('@/services/ListService');
@@ -24,11 +23,7 @@ const lists = generateLists(MAX_NUMBER_OF_LISTS);
 
 describe('Lists Composable', () => {
   beforeEach(() => {
-    vi.mocked(useUser).mockImplementation(() => ({
-      user: ref(new User({ id: FAKE_USER_ID })),
-      getCurrentUserId: () => FAKE_USER_ID,
-      setCurrentUser: vi.fn(),
-    }));
+    setCurrentUser(new User({ id: FAKE_USER_ID }));
   });
 
   afterEach(() => {

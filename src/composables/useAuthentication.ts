@@ -1,6 +1,12 @@
 import User from '@/models/user';
 import { firebaseAuth } from '@/boot/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithRedirect,
+  getRedirectResult,
+} from 'firebase/auth';
 import { useUser } from './useUser';
 import UserService from '@/services/UserService';
 import { User as FirebaseUser } from 'firebase/auth';
@@ -18,18 +24,21 @@ export function useAuthentication() {
   const { replace } = useRouter();
 
   const startListeningForFirebaseChanges = () => {
+    console.error('start listening for changes');
     try {
       onAuthStateChanged(firebaseAuth, async (firebaseUser) => {
+        console.error('callback user = ', JSON.stringify(firebaseUser));
         if (firebaseUser) {
           // User was authenticated or is anonymous (isAnonimous = true)
           // Firebase can pull this info from local IndexedDB is no network found
           await handleFirebaseUserAuthenticated(firebaseUser);
         } else {
-          // No network found and no local firebase storage
+          // User Signed Out
           handleFirebaseUserNotAuthenticated();
         }
       });
     } catch (error) {
+      // No network found and no local firebase storage
       handleFirebaseUserNotAuthenticated();
     }
   };
@@ -65,7 +74,34 @@ export function useAuthentication() {
     setCurrentUserPhotoURL(photoURL);
   };
 
+  const loginWithEmailAndPassword = (email: string, password: string) => {
+    return signInWithEmailAndPassword(firebaseAuth, email, password);
+  };
+
+  let googleAuthProvider = new GoogleAuthProvider();
+
+  const setGoogleAuthProvider = (
+    injectedGoogleAuthProvider: GoogleAuthProvider
+  ) => {
+    googleAuthProvider = injectedGoogleAuthProvider;
+  };
+
+  const loginWithGoogleRedirect = async () => {
+    return signInWithRedirect(firebaseAuth, googleAuthProvider);
+  };
+
+  const checkForRedirectAfterAuthentication = async () => {
+    const userCredential = await getRedirectResult(firebaseAuth);
+    if (userCredential?.user) {
+      replace({ name: constants.routes.lists });
+    }
+  };
+
   return {
     startListeningForFirebaseChanges,
+    loginWithEmailAndPassword,
+    loginWithGoogleRedirect,
+    setGoogleAuthProvider,
+    checkForRedirectAfterAuthentication,
   };
 }

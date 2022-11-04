@@ -18,15 +18,15 @@ import {
 import { ref } from 'vue';
 import { Quasar } from 'quasar';
 import List from '@/models/list';
-import Lists from '@/pages/Lists.vue';
 import TheList from '@/components/TheList.vue';
 import TheConfirmation from '@/components/TheConfirmation.vue';
 import Consts from '@/util/constants';
 import MainLayoutTest from './helpers/MainLayoutTest.vue';
-import { createRouter, createWebHistory, Router } from 'vue-router';
+import { Router } from 'vue-router';
 import { generateLists } from '../helpers/TestHelpers';
 
 import { useLists } from '@/composables/useLists';
+import { createRouterForRoute } from './helpers/router';
 vi.mock('@/composables/useLists');
 
 const noop = () => undefined;
@@ -71,16 +71,7 @@ function renderComponent(setupData?: Partial<SetupData>): RenderResult {
 
 describe('The Lists', () => {
   beforeEach(() => {
-    router = createRouter({
-      history: createWebHistory(),
-      routes: [
-        {
-          path: '/',
-          name: Consts.routes.lists,
-          component: Lists,
-        },
-      ],
-    });
+    router = createRouterForRoute({ name: Consts.routes.lists });
   });
 
   afterEach(() => {
@@ -93,8 +84,6 @@ describe('The Lists', () => {
       router.push({ name: Consts.routes.lists });
       await router.isReady();
     });
-
-    afterEach(() => cleanup());
 
     it('should render the page with All Lists title', async () => {
       const { getByText, findByText } = renderComponent();
