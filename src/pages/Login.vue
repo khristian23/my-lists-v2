@@ -1,76 +1,51 @@
 <template>
   <q-page class="flex">
-    <q-card class="full-width q-pa-md">
-      <q-tabs
-        dense
-        class="text-grey"
-        active-color="primary"
-        indicator-color="primary"
-        align="justify"
-        narrow-indicator
+    <q-form @submit="onLogin">
+      <q-input
+        outlined
+        v-model="userCredentials.email"
+        type="email"
+        label="Email"
+        lazy-rules
+        :rules="[ (val: string) => val && val.length > 0 || 'Please enter an email']"
+      />
+      <q-input
+        outlined
+        v-model="userCredentials.password"
+        :type="userCredentials.protectPassword ? 'password' : 'text'"
+        label="Password"
+        lazy-rules
+        :rules="[ (val: string) => val && val.length > 0 || 'Please enter password']"
       >
-        <q-tab name="email" label="Email" />
-        <q-tab name="google" label="Google" />
-      </q-tabs>
-
-      <q-separator />
-
-      <q-tab-panels animated>
-        <q-tab-panel name="email">
-          <q-form @submit="onLogin">
-            <q-input
-              outlined
-              v-model="userCredentials.email"
-              type="email"
-              label="Email"
-              lazy-rules
-              :rules="[ (val: string) => val && val.length > 0 || 'Please enter an email']"
-            />
-            <q-input
-              outlined
-              v-model="userCredentials.password"
-              :type="userCredentials.protectPassword ? 'password' : 'text'"
-              label="Password"
-              lazy-rules
-              :rules="[ (val: string) => val && val.length > 0 || 'Please enter password']"
-            >
-              <template v-slot:append>
-                <q-icon
-                  :name="
-                    userCredentials.protectPassword
-                      ? 'visibility_off'
-                      : 'visibility'
-                  "
-                  class="cursor-pointer"
-                  @click="
-                    userCredentials.protectPassword =
-                      !userCredentials.protectPassword
-                  "
-                />
-              </template>
-            </q-input>
-            <div class="row">
-              <q-space />
-              <q-btn elevated color="primary" type="submit">Login</q-btn>
-            </div>
-          </q-form>
-        </q-tab-panel>
-
-        <q-tab-panel name="google">
-          <div class="fixed-center">
-            <a @click="onGoogle" style="cursor: pointer">
-              <q-img
-                src="@/assets/google.png"
-                style="height: 180px; width: 180px"
-              />
-            </a>
-          </div>
-        </q-tab-panel>
-      </q-tab-panels>
-    </q-card>
-    <TheFooter>
+        <template v-slot:append>
+          <q-icon
+            :name="
+              userCredentials.protectPassword ? 'visibility_off' : 'visibility'
+            "
+            class="cursor-pointer"
+            @click="
+              userCredentials.protectPassword = !userCredentials.protectPassword
+            "
+          />
+        </template>
+      </q-input>
+      <div class="row">
+        <q-space />
+        <q-btn elevated color="primary" type="submit">Login</q-btn>
+      </div>
+    </q-form>
+    <div class="fixed-center">
+      <a @click="onGoogle" style="cursor: pointer">
+        <q-img
+          src="@/assets/google.png"
+          alt="Login with Google"
+          style="height: 180px; width: 180px"
+        />
+      </a>
+    </div>
+    <the-footer>
       <q-btn unelevated to="/register">Register</q-btn>
-    </TheFooter>
+    </the-footer>
   </q-page>
 </template>
 
@@ -91,8 +66,11 @@ export default defineComponent({
       password: '',
     });
 
-    const { loginWithEmailAndPassword, loginWithGoogleRedirect } =
-      useAuthentication();
+    const {
+      loginWithEmailAndPassword,
+      loginWithGoogleRedirect,
+      checkForRedirectAfterAuthentication,
+    } = useAuthentication();
 
     const onLogin = async () => {
       try {
@@ -101,7 +79,7 @@ export default defineComponent({
           userCredentials.password
         );
         emit(constants.events.showToast, 'User logged in');
-        replace({ name: constants.routes.lists });
+        replace({ name: constants.routes.lists.name });
       } catch (e: unknown) {
         emit(constants.events.showError, (e as Error).message);
       }
@@ -110,7 +88,7 @@ export default defineComponent({
     const onGoogle = async () => {
       try {
         await loginWithGoogleRedirect();
-        // this.checkForRedirectAfterAuth();
+        checkForRedirectAfterAuthentication();
       } catch (e: unknown) {
         emit(constants.events.showError, (e as Error).message);
       }

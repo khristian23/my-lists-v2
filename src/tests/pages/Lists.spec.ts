@@ -26,7 +26,7 @@ import { Router } from 'vue-router';
 import { generateLists } from '../helpers/TestHelpers';
 
 import { useLists } from '@/composables/useLists';
-import { createRouterForRoute } from './helpers/router';
+import { createRouterForRoutes } from './helpers/router';
 vi.mock('@/composables/useLists');
 
 const noop = () => undefined;
@@ -71,7 +71,7 @@ function renderComponent(setupData?: Partial<SetupData>): RenderResult {
 
 describe('The Lists', () => {
   beforeEach(() => {
-    router = createRouterForRoute({ name: Consts.routes.lists });
+    router = createRouterForRoutes([{ name: Consts.routes.lists.name }]);
   });
 
   afterEach(() => {
@@ -81,7 +81,7 @@ describe('The Lists', () => {
 
   describe('General Lists rendering', () => {
     beforeEach(async () => {
-      router.push({ name: Consts.routes.lists });
+      router.push({ name: Consts.routes.lists.name });
       await router.isReady();
     });
 

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { useAuthentication } from '@/composables/useAuthentication';
 import { useUser } from '@/composables/useUser';
 import flushPromises from 'flush-promises';
@@ -45,17 +45,6 @@ const mockUser: Partial<FirebaseUser> = Object.freeze({
 });
 
 describe('Authentication Composable', () => {
-  beforeEach(() => {
-    // replace = vi.fn();
-    // vi.mock('vue-router', () => ({
-    //   useRouter: vi.fn(() => {
-    //     return {
-    //       replace,
-    //     };
-    //   }),
-    // }));
-  });
-
   afterEach(() => {
     vi.clearAllMocks();
   });
@@ -125,7 +114,7 @@ describe('Authentication Composable', () => {
 
       mockAuthenticatedFirebaseUser(mockUser);
 
-      await startListeningForFirebaseChanges();
+      startListeningForFirebaseChanges();
 
       await flushPromises();
 
@@ -150,7 +139,7 @@ describe('Authentication Composable', () => {
       startListeningForFirebaseChanges();
 
       expect(replace).toHaveBeenCalledWith({
-        name: constants.routes.login,
+        name: constants.routes.login.name,
       });
     });
 
@@ -223,7 +212,7 @@ describe('Authentication Composable', () => {
       await checkForRedirectAfterAuthentication();
 
       expect(replace).toHaveBeenCalledWith({
-        name: constants.routes.lists,
+        name: constants.routes.lists.name,
       });
     });
   });

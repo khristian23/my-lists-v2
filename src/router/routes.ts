@@ -1,5 +1,5 @@
 import { RouteRecordRaw } from 'vue-router';
-import Consts from '@/util/constants';
+import constants from '@/util/constants';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -7,8 +7,8 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/layouts/MainLayout.vue'),
     children: [
       {
-        path: '',
-        name: Consts.routes.lists,
+        path: constants.routes.lists.path,
+        name: constants.routes.lists.name,
         component: () => import('@/pages/Lists.vue'),
       },
       //   {
@@ -41,17 +41,17 @@ const routes: RouteRecordRaw[] = [
       //     component: () => import(/* webpackChunkName: "Note" */ 'pages/Note'),
       //   },
       {
-        path: '/login',
-        name: Consts.routes.login,
+        path: constants.routes.login.path,
+        name: constants.routes.login.name,
         component: () =>
           import(/* webpackChunkName: "Login" */ '@/pages/Login.vue'),
       },
-      //   {
-      //     path: '/register',
-      //     name: Consts.routes.register,
-      //     component: () =>
-      //       import(/* webpackChunkName: "Register" */ 'pages/Register'),
-      //   },
+      {
+        path: constants.routes.register.path,
+        name: constants.routes.register.name,
+        component: () =>
+          import(/* webpackChunkName: "Register" */ '@/pages/Register.vue'),
+      },
       //   {
       //     path: '/profile',
       //     name: Consts.routes.profile,

@@ -1,212 +1,262 @@
 <template>
-    <q-page class="flex">
-        <q-form class="full-width q-pa-md" ref="myForm">
-            <div class="text-h6 q-mb-sm">{{mainListType}} Details</div>
-            <q-input :disable="disable" outlined v-model="list.name" label="Name" class="q-mb-sm" :rules="[ val => val && val.length > 0 || 'Please enter a name']" />
-            <q-input :disable="disable" outlined v-model="list.description" label="Description" class="q-mb-md" />
-            <q-select :disable="disable" outlined v-model="selectedType" :options="typeOptions" class="q-mb-md" @input="onTypeSelection" label="Type">
-                <template v-slot:prepend>
-                    <q-icon :name="selectedType.icon" />
-                </template>
-                <template v-slot:option="scope">
-                    <q-item
-                        v-bind="scope.itemProps"
-                        v-on="scope.itemEvents">
-                        <q-item-section avatar>
-                            <q-icon :name="scope.opt.icon" />
-                        </q-item-section>
-                        <q-item-section>
-                            <q-item-label v-html="scope.opt.label" />
-                        </q-item-section>
-                    </q-item>
-                </template>
-            </q-select>
-            <q-select :disable="disable" outlined v-model="selectedSubType" :options="selectedType.subTypes" v-if="selectedType.subTypes.length" class="q-mb-md" label="Sub Type">
-                <template v-slot:prepend>
-                    <q-icon :name="selectedType.icon" />
-                </template>
-            </q-select>
+  <q-page class="flex">
+    <q-form class="full-width q-pa-md" ref="myForm">
+      <div class="text-h6 q-mb-sm">{{ mainListType }} Details</div>
+      <q-input
+        :disable="disable"
+        outlined
+        v-model="list.name"
+        label="Name"
+        class="q-mb-sm"
+        :rules="[(val) => (val && val.length > 0) || 'Please enter a name']"
+      />
+      <q-input
+        :disable="disable"
+        outlined
+        v-model="list.description"
+        label="Description"
+        class="q-mb-md"
+      />
+      <q-select
+        :disable="disable"
+        outlined
+        v-model="selectedType"
+        :options="typeOptions"
+        class="q-mb-md"
+        @input="onTypeSelection"
+        label="Type"
+      >
+        <template v-slot:prepend>
+          <q-icon :name="selectedType.icon" />
+        </template>
+        <template v-slot:option="scope">
+          <q-item v-bind="scope.itemProps" v-on="scope.itemEvents">
+            <q-item-section avatar>
+              <q-icon :name="scope.opt.icon" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label v-html="scope.opt.label" />
+            </q-item-section>
+          </q-item>
+        </template>
+      </q-select>
+      <q-select
+        :disable="disable"
+        outlined
+        v-model="selectedSubType"
+        :options="selectedType.subTypes"
+        v-if="selectedType.subTypes.length"
+        class="q-mb-md"
+        label="Sub Type"
+      >
+        <template v-slot:prepend>
+          <q-icon :name="selectedType.icon" />
+        </template>
+      </q-select>
 
-            <div class="text-h6 q-mt-md">Shared With</div>
-            <div class="q-pa-md q-mx-auto" style="max-width: 400px">
-                <q-list bordered>
-                    <q-item v-for="user in shareableUsers" :key="user.id" class="q-mb-sm">
-                        <q-item-section avatar>
-                            <q-avatar color="primary" text-color="white">
-                                <img :src="user.photoURL">
-                            </q-avatar>
-                        </q-item-section>
+      <div class="text-h6 q-mt-md">Shared With</div>
+      <div class="q-pa-md q-mx-auto" style="max-width: 400px">
+        <q-list bordered>
+          <q-item v-for="user in shareableUsers" :key="user.id" class="q-mb-sm">
+            <q-item-section avatar>
+              <q-avatar color="primary" text-color="white">
+                <img :src="user.photoURL" alt="Profile picture" />
+              </q-avatar>
+            </q-item-section>
 
-                        <q-item-section>
-                            <q-item-label>{{ user.name }}</q-item-label>
-                            <q-item-label caption lines="1">{{ user.email }}</q-item-label>
-                        </q-item-section>
+            <q-item-section>
+              <q-item-label>{{ user.name }}</q-item-label>
+              <q-item-label caption lines="1">{{ user.email }}</q-item-label>
+            </q-item-section>
 
-                        <q-item-section side>
-                            <q-chip color="green" text-color="white" v-if="user.id === list.owner">Owner</q-chip>
-                            <q-toggle :disable="disable" color="green" v-model="list.sharedWith" v-else :val="user.id" />
-                        </q-item-section>
-                    </q-item>
-                </q-list>
-            </div>
-        </q-form>
-        <TheFooter>
-            <q-btn unelevated icon="save" @click="onSave" label="Save" v-if="!disable" />
-        </TheFooter>
-    </q-page>
+            <q-item-section side>
+              <q-chip
+                color="green"
+                text-color="white"
+                v-if="user.id === list.owner"
+                >Owner</q-chip
+              >
+              <q-toggle
+                :disable="disable"
+                color="green"
+                v-model="list.sharedWith"
+                v-else
+                :val="user.id"
+              />
+            </q-item-section>
+          </q-item>
+        </q-list>
+      </div>
+    </q-form>
+    <TheFooter>
+      <q-btn
+        unelevated
+        icon="save"
+        @click="onSave"
+        label="Save"
+        v-if="!disable"
+      />
+    </TheFooter>
+  </q-page>
 </template>
 
 <script>
-import List from 'src/storage/List'
-import { mapState, mapMutations, mapActions } from 'vuex'
+import List from 'src/storage/List';
+import { mapState, mapMutations, mapActions } from 'vuex';
 
 export default {
-    name: 'List',
-    data () {
-        return {
-            list: new List({}),
-            selectedType: null,
-            selectedSubType: null
-        }
+  name: 'list-page',
+  data() {
+    return {
+      list: new List({}),
+      selectedType: null,
+      selectedSubType: null,
+    };
+  },
+  components: {
+    TheFooter: require('components/TheFooter').default,
+  },
+  watch: {
+    editList: {
+      immediate: true,
+      handler() {
+        this._initializeList();
+      },
     },
-    components: {
-        TheFooter: require('components/TheFooter').default
+    'list.name': {
+      immediate: true,
+      handler() {
+        this.setHeaderTitle();
+      },
     },
-    watch: {
-        editList: {
-            immediate: true,
-            handler () {
-                this._initializeList()
-            }
-        },
-        'list.name': {
-            immediate: true,
-            handler () {
-                this.setHeaderTitle()
-            }
-        }
+  },
+  mounted() {
+    this.loadUsersList();
+  },
+  computed: {
+    ...mapState('auth', ['user', 'users']),
+
+    typeOptions() {
+      let options = this.$Const.lists.types;
+
+      if (this.editMode) {
+        options = options.filter((option) => option.type === this.mainListType);
+      }
+
+      return options;
     },
-    mounted () {
-        this.loadUsersList()
+
+    disable() {
+      return this.list.isShared;
     },
-    computed: {
-        ...mapState('auth', ['user', 'users']),
 
-        typeOptions () {
-            let options = this.$Const.lists.types
-
-            if (this.editMode) {
-                options = options.filter(option => option.type === this.mainListType)
-            }
-
-            return options
-        },
-
-        disable () {
-            return this.list.isShared
-        },
-
-        editMode () {
-            return this.$route.params.id !== 'new'
-        },
-
-        editList () {
-            const listId = this.$route.params.id
-            return this.$store.getters['lists/getListById'](listId)
-        },
-
-        mainListType () {
-            return this.selectedType.type
-        },
-
-        shareableUsers () {
-            return [].concat(this.users)
-                .filter(user => user.id !== this.user.uid)
-                .map(user => {
-                    user.isSharedWith = this.list.sharedWith.includes(user.id)
-                    return user
-                })
-        }
+    editMode() {
+      return this.$route.params.id !== 'new';
     },
-    methods: {
-        ...mapMutations('app', ['setTitle']),
-        ...mapActions('lists', ['saveList']),
-        ...mapActions('auth', ['loadUsersList']),
 
-        async _initializeList () {
-            this.$q.loading.show()
+    editList() {
+      const listId = this.$route.params.id;
+      return this.$store.getters['lists/getListById'](listId);
+    },
 
-            if (this.editMode && this.editList) {
-                this.list = this.editList.clone()
+    mainListType() {
+      return this.selectedType.type;
+    },
 
-                this.selectedType = this.$Const.lists.types.find(type => this.list.type === type.value)
-                this.selectedSubType = this.selectedType.subTypes.find(subtype => this.list.subtype === subtype.value) || []
-                this.$q.loading.hide()
-            } else {
-                this.selectedType = this.$Const.lists.types[0]
-                this.selectedSubType = this.selectedType.subTypes[0]
-            }
+    shareableUsers() {
+      return []
+        .concat(this.users)
+        .filter((user) => user.id !== this.user.uid)
+        .map((user) => {
+          user.isSharedWith = this.list.sharedWith.includes(user.id);
+          return user;
+        });
+    },
+  },
+  methods: {
+    ...mapMutations('app', ['setTitle']),
+    ...mapActions('lists', ['saveList']),
+    ...mapActions('auth', ['loadUsersList']),
 
-            if (!this.editMode) {
-                this.$q.loading.hide()
-            }
-        },
+    async _initializeList() {
+      this.$q.loading.show();
 
-        setHeaderTitle () {
-            if (this.list.name) {
-                this.setTitle(this.list.name)
-            } else if (this.$route.params.id === 'new') {
-                this.setTitle(`Create ${this.mainListType}`)
-            } else {
-                this.setTitle(`Edit ${this.mainListType}`)
-            }
-        },
+      if (this.editMode && this.editList) {
+        this.list = this.editList.clone();
 
-        onTypeSelection () {
-            this.selectedSubType = null
-            const subTypes = this.selectedType.subTypes
+        this.selectedType = this.$Const.lists.types.find(
+          (type) => this.list.type === type.value
+        );
+        this.selectedSubType =
+          this.selectedType.subTypes.find(
+            (subtype) => this.list.subtype === subtype.value
+          ) || [];
+        this.$q.loading.hide();
+      } else {
+        this.selectedType = this.$Const.lists.types[0];
+        this.selectedSubType = this.selectedType.subTypes[0];
+      }
 
-            if (subTypes.length) {
-                this.selectedSubType = subTypes[0]
-            } else {
-                this.selectedSubType = null
-            }
+      if (!this.editMode) {
+        this.$q.loading.hide();
+      }
+    },
 
-            this.setHeaderTitle()
-        },
+    setHeaderTitle() {
+      if (this.list.name) {
+        this.setTitle(this.list.name);
+      } else if (this.$route.params.id === 'new') {
+        this.setTitle(`Create ${this.mainListType}`);
+      } else {
+        this.setTitle(`Edit ${this.mainListType}`);
+      }
+    },
 
-        async onSave () {
-            const isValid = await this.$refs.myForm.validate()
-            if (!isValid) {
-                return
-            }
+    onTypeSelection() {
+      this.selectedSubType = null;
+      const subTypes = this.selectedType.subTypes;
 
-            this.list.type = this.selectedType.value
-            if (this.selectedSubType) {
-                this.list.subtype = this.selectedSubType.value
-            }
+      if (subTypes.length) {
+        this.selectedSubType = subTypes[0];
+      } else {
+        this.selectedSubType = null;
+      }
 
-            this.list.modifiedAt = new Date().getTime()
-            if (this.list.id) {
-                this.list.syncStatus = this.$Const.changeStatus.changed
-            } else {
-                this.list.syncStatus = this.$Const.changeStatus.new
-            }
+      this.setHeaderTitle();
+    },
 
-            if (this.list.sharedWith.length) {
-                this.list.isShared = true
-            } else {
-                this.list.isShared = false
-            }
+    async onSave() {
+      const isValid = await this.$refs.myForm.validate();
+      if (!isValid) {
+        return;
+      }
 
-            try {
-                await this.saveList(this.list)
-                this.$emit('showToast', 'List saved')
-                this.$router.push({ name: this.$Const.routes.lists })
-            } catch (e) {
-                this.$emit('showError', e.message)
-            }
-        }
-    }
-}
+      this.list.type = this.selectedType.value;
+      if (this.selectedSubType) {
+        this.list.subtype = this.selectedSubType.value;
+      }
+
+      this.list.modifiedAt = new Date().getTime();
+      if (this.list.id) {
+        this.list.syncStatus = this.$Const.changeStatus.changed;
+      } else {
+        this.list.syncStatus = this.$Const.changeStatus.new;
+      }
+
+      if (this.list.sharedWith.length) {
+        this.list.isShared = true;
+      } else {
+        this.list.isShared = false;
+      }
+
+      try {
+        await this.saveList(this.list);
+        this.$emit('showToast', 'List saved');
+        this.$router.push({ name: this.$Const.routes.lists.name });
+      } catch (e) {
+        this.$emit('showError', e.message);
+      }
+    },
+  },
+};
 </script>

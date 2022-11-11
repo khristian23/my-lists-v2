@@ -6,10 +6,10 @@ import {
   GoogleAuthProvider,
   signInWithRedirect,
   getRedirectResult,
+  User as FirebaseUser,
 } from 'firebase/auth';
 import { useUser } from './useUser';
 import UserService from '@/services/UserService';
-import { User as FirebaseUser } from 'firebase/auth';
 import { useRouter } from 'vue-router';
 import constants from '@/util/constants';
 
@@ -63,7 +63,7 @@ export function useAuthentication() {
 
   const handleFirebaseUserNotAuthenticated = () => {
     setCurrentUserAsAnonymous();
-    replace({ name: constants.routes.login });
+    replace({ name: constants.routes.login.name });
   };
 
   const setUserPhotoFromApplication = async () => {
@@ -93,7 +93,7 @@ export function useAuthentication() {
   const checkForRedirectAfterAuthentication = async () => {
     const userCredential = await getRedirectResult(firebaseAuth);
     if (userCredential?.user) {
-      replace({ name: constants.routes.lists });
+      replace({ name: constants.routes.lists.name });
     }
   };
 

@@ -96,14 +96,23 @@ export default {
   },
 
   routes: {
-    lists: 'lists',
+    lists: {
+      name: 'lists',
+      path: '',
+    },
     list: 'list',
     listItems: 'list-items',
     listItem: 'list-item',
     checklist: 'checklist',
     note: 'note',
-    login: 'login',
-    register: 'register',
+    login: {
+      name: 'login',
+      path: '/login',
+    },
+    register: {
+      name: 'register',
+      path: '/register',
+    },
     profile: 'profile',
     camera: 'profile-picture',
   },
