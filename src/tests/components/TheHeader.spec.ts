@@ -10,7 +10,7 @@ import { Quasar } from 'quasar';
 import TheHeader from '@/components/TheHeader.vue';
 import User from '@/models/user';
 import { GlobalComposableReturnValue } from '@/models/models';
-import { ref } from 'vue';
+import { ref, Ref } from 'vue';
 
 import { useUser } from '@/composables/useUser';
 const { setCurrentUser, setCurrentUserAsAnonymous } = useUser();
@@ -27,19 +27,24 @@ describe('The header', () => {
     });
   }
 
-  function mockGlobalValue(
-    globalValues: Partial<GlobalComposableReturnValue>
-  ): void {
-    (useGlobals as any).mockReturnValue(globalValues);
+  function mockGlobalValue(options: {
+    title?: Ref<string>;
+    displayHeaderBackButton?: Ref<boolean>;
+  }): void {
+    const globalValues: GlobalComposableReturnValue = {
+      title: options.title ?? ref(''),
+      displayHeaderBackButton: options.displayHeaderBackButton ?? ref(true),
+      setTitle: vi.fn(),
+    };
+    vi.mocked(useGlobals).mockReturnValue(globalValues);
   }
 
   afterEach(() => cleanup());
 
   it('should render the header', () => {
-    mockGlobalValue({ title: ref(''), displayHeaderBackButton: ref(false) });
+    mockGlobalValue({ displayHeaderBackButton: ref(false) });
 
     const container = renderTheHeader();
-
     expect(container).toBeTruthy();
   });
 
@@ -64,7 +69,7 @@ describe('The header', () => {
   });
 
   it('should show back button', () => {
-    mockGlobalValue({ title: ref(''), displayHeaderBackButton: ref(true) });
+    mockGlobalValue({ displayHeaderBackButton: ref(true) });
 
     renderTheHeader();
 
@@ -74,7 +79,7 @@ describe('The header', () => {
   });
 
   it('should not show back button', () => {
-    mockGlobalValue({ title: ref(''), displayHeaderBackButton: ref(false) });
+    mockGlobalValue({ displayHeaderBackButton: ref(false) });
 
     renderTheHeader();
 

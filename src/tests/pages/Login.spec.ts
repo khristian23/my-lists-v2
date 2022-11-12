@@ -62,6 +62,12 @@ describe('Login', () => {
     renderLogin();
   });
 
+  it('should have Login as title', async () => {
+    const { findByText } = renderLogin();
+
+    expect(await findByText('title: Login')).toBeTruthy();
+  });
+
   describe('Email and Password Form', () => {
     it('should trigger login with user and pass', async () => {
       const { getByText, getByLabelText, queryByText } = renderLogin();

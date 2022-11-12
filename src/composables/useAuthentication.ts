@@ -24,10 +24,8 @@ export function useAuthentication() {
   const { replace } = useRouter();
 
   const startListeningForFirebaseChanges = () => {
-    console.error('start listening for changes');
     try {
       onAuthStateChanged(firebaseAuth, async (firebaseUser) => {
-        console.error('callback user = ', JSON.stringify(firebaseUser));
         if (firebaseUser) {
           // User was authenticated or is anonymous (isAnonimous = true)
           // Firebase can pull this info from local IndexedDB is no network found

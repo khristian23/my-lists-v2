@@ -1,5 +1,5 @@
 <template>
-  <q-page class="flex">
+  <q-page class="flex full-width row justify-center content-center">
     <q-form @submit="onLogin">
       <q-input
         outlined
@@ -33,16 +33,15 @@
         <q-space />
         <q-btn elevated color="primary" type="submit">Login</q-btn>
       </div>
-    </q-form>
-    <div class="fixed-center">
-      <a @click="onGoogle" style="cursor: pointer">
+      <div class="q-my-md flex justify-center content-center">Or</div>
+      <q-btn @click="onGoogle">
         <q-img
           src="@/assets/google.png"
           alt="Login with Google"
-          style="height: 180px; width: 180px"
-        />
-      </a>
-    </div>
+          style="height: 28px; width: 28px; margin-right: 10px"
+        />Login with Google
+      </q-btn>
+    </q-form>
     <the-footer>
       <q-btn unelevated to="/register">Register</q-btn>
     </the-footer>
