@@ -113,8 +113,14 @@ export default {
       name: 'register',
       path: '/register',
     },
-    profile: 'profile',
-    camera: 'profile-picture',
+    profile: {
+      name: 'profile',
+      path: '/profile',
+    },
+    camera: {
+      name: 'profile-picture',
+      path: '/profile-picture',
+    },
   },
 
   itemActionIcon: {

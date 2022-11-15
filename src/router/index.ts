@@ -1,3 +1,5 @@
+import { useUser } from '@/composables/useUser';
+import constants from '@/util/constants';
 import { route } from 'quasar/wrappers';
 import {
   createMemoryHistory,
@@ -33,8 +35,10 @@ function selectRouterHistoryType(): IReturnRouterHistory {
  */
 export default route(function () {
   const createHistory = selectRouterHistoryType();
+  const { getCurrentUserRef } = useUser();
+  const currentUser = getCurrentUserRef();
 
-  return createRouter({
+  const router = createRouter({
     routes,
     scrollBehavior: () => ({ left: 0, top: 0 }),
 
@@ -43,4 +47,17 @@ export default route(function () {
     // quasar.conf.js -> build -> publicPath
     history: createHistory(process.env.VUE_ROUTER_BASE),
   });
+
+  router.beforeEach((to, from, next) => {
+    if (
+      to.name != constants.routes.login.name &&
+      !currentUser.value.isLoggedIn
+    ) {
+      next({ name: constants.routes.login.name });
+    } else {
+      next();
+    }
+  });
+
+  return router;
 });

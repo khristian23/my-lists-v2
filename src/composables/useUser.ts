@@ -9,6 +9,8 @@ export interface UserComposableReturnValue {
   getCurrentUserId: () => string;
   setCurrentUserAsAnonymous: () => void;
   setCurrentUserPhotoURL: (photoUrl: string) => void;
+  logoutUser: () => void;
+  setUserLocation: (location: string) => void;
 }
 
 const anonymousUser = new User({ id: Constants.user.anonymous });
@@ -27,5 +29,11 @@ export function useUser(): UserComposableReturnValue {
     },
     setCurrentUserPhotoURL: (photoURL: string) =>
       (user.value.photoURL = photoURL),
+    logoutUser: () => {
+      /* todo */
+    },
+    setUserLocation: (location: string) => {
+      /* todo */
+    },
   };
 }

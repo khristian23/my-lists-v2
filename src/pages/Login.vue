@@ -1,6 +1,6 @@
 <template>
   <q-page class="flex full-width row justify-center content-center">
-    <q-form @submit="onLogin">
+    <q-form @submit="onLogin" style="min-width: 450px">
       <q-input
         outlined
         v-model="userCredentials.email"
@@ -33,14 +33,16 @@
         <q-space />
         <q-btn elevated color="primary" type="submit">Login</q-btn>
       </div>
-      <div class="q-my-md flex justify-center content-center">Or</div>
-      <q-btn @click="onGoogle">
-        <q-img
-          src="@/assets/google.png"
-          alt="Login with Google"
-          style="height: 28px; width: 28px; margin-right: 10px"
-        />Login with Google
-      </q-btn>
+      <div class="q-my-md flex column content-center">
+        <span class="q-my-md flex justify-center">Or</span>
+        <q-btn @click="onGoogle">
+          <q-img
+            src="@/assets/google.png"
+            alt="Login with Google"
+            style="height: 28px; width: 28px; margin-right: 10px"
+          />Login with Google
+        </q-btn>
+      </div>
     </q-form>
     <the-footer>
       <q-btn unelevated to="/register">Register</q-btn>

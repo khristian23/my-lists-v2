@@ -22,11 +22,11 @@ export function useGlobals(
   };
 
   watch(
-    () => route.name,
+    () => route?.name,
     (routeName) => formatTitle(routeName?.toString() ?? '')
   );
 
-  formatTitle(route.name?.toString() ?? '');
+  formatTitle(route?.name?.toString() ?? '');
 
   displayHeaderBackButton.value = shouldDisplayBackButton;
 

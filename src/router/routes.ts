@@ -52,12 +52,12 @@ const routes: RouteRecordRaw[] = [
         component: () =>
           import(/* webpackChunkName: "Register" */ '@/pages/Register.vue'),
       },
-      //   {
-      //     path: '/profile',
-      //     name: Consts.routes.profile,
-      //     component: () =>
-      //       import(/* webpackChunkName: "Profile" */ 'pages/Profile'),
-      //   },
+      {
+        path: constants.routes.profile.path,
+        name: constants.routes.profile.name,
+        component: () =>
+          import(/* webpackChunkName: "Profile" */ '@/pages/Profile.vue'),
+      },
       //   {
       //     path: '/profile-picture',
       //     name: Consts.routes.camera,
