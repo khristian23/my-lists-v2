@@ -7,12 +7,14 @@ export default class User {
   readonly _name?: string;
   photoURL: string;
   email: string;
+  location: string;
 
   constructor(userData: Partial<UserData>) {
     this.id = userData.id ?? '';
     this._name = userData.name ?? '';
     this.photoURL = userData.photoURL ?? '';
     this.email = userData.email ?? '';
+    this.location = userData.location ?? '';
   }
 
   get name() {

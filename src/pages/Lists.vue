@@ -4,10 +4,10 @@
     <the-list
       :items="lists"
       iconAction="{{ $Const.itemActionIcon.edit }}"
-      @itemPress="onListPress"
-      @itemAction="onListEdit"
-      @itemDelete="onListDelete"
-      @orderUpdated="onOrderUpdated"
+      @item-press="onListPress"
+      @item-action="onListEdit"
+      @item-delete="onListDelete"
+      @order-updated="onOrderUpdated"
       v-else-if="!isLoadingLists && lists.length > 0"
     />
 
@@ -107,9 +107,12 @@ export default defineComponent({
         const confirmationAnswer = await confirmation.value.showDialog();
 
         if (confirmationAnswer) {
-          await deleteListById(listId)
-            .then(() => emit(Constants.events.showToast, 'List deleted'))
-            .catch((error) => emit(Constants.events.showError, error.message));
+          try {
+            await deleteListById(listId);
+            emit(Constants.events.showToast, 'List deleted');
+          } catch (e: unknown) {
+            emit(Constants.events.showError, (e as Error).message);
+          }
         }
       }
     };

@@ -57,8 +57,7 @@
   </q-page>
 </template>
 
-<script>
-import { mapState, mapActions } from 'vuex';
+<script lang="ts">
 import { uid } from 'quasar';
 
 export default {
@@ -78,12 +77,7 @@ export default {
       hasCameraSupport: true,
     };
   },
-  computed: {
-    ...mapState('auth', ['user']),
-  },
   methods: {
-    ...mapActions('auth', ['updatePhotoProfile']),
-
     async initCamera() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
@@ -188,7 +182,7 @@ export default {
     this.initCamera();
   },
 
-  beforeDestroy() {
+  beforeUnmount() {
     if (this.hasCameraSupport) {
       this.disableCamera();
     }

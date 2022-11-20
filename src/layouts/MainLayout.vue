@@ -76,7 +76,7 @@ export default defineComponent({
     };
 
     const onUserNameClicked = () => {
-      router.push({ name: Consts.routes.profile });
+      router.push({ name: Consts.routes.profile.name });
     };
 
     return {

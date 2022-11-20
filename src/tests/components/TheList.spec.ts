@@ -5,7 +5,7 @@ import {
   within,
   RenderResult,
 } from '@testing-library/vue';
-import { ManageableItem, ActionIcon } from '@/components/models';
+import { ManageableItem, ActionIcon } from '@/models/models';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import TheList from '@/components/TheList.vue';
 import { Quasar } from 'quasar';
@@ -76,19 +76,19 @@ describe('The List', () => {
           description: 'First item description',
           actionIcon: Constants.itemActionIcon.edit,
           canBeDeleted: false,
-        },
+        } as ManageableItem,
         {
           id: '002',
           name: 'Second item',
           actionIcon: Constants.itemActionIcon.done,
           numberOfItems: 343,
           canBeDeleted: false,
-        },
+        } as ManageableItem,
         {
           id: '003',
           name: 'Third item',
           canBeDeleted: true,
-        },
+        } as ManageableItem,
       ];
 
       renderListWithProps({
@@ -143,7 +143,7 @@ describe('The List', () => {
           id: '001',
           name: 'item name',
           description: 'item description',
-        },
+        } as ManageableItem,
       ];
 
       renderListWithProps({

@@ -29,6 +29,7 @@ export interface UserData {
   name?: string;
   photoURL?: string;
   email?: string;
+  location?: string;
 }
 
 export interface ListData extends BaseItem {

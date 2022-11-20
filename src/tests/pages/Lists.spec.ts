@@ -24,9 +24,9 @@ import Consts from '@/util/constants';
 import MainLayoutTest from './helpers/MainLayoutTest.vue';
 import { Router } from 'vue-router';
 import { generateLists } from '../helpers/TestHelpers';
-
-import { useLists } from '@/composables/useLists';
 import { createRouterForRoutes } from './helpers/router';
+import { useLists } from '@/composables/useLists';
+import flushPromises from 'flush-promises';
 vi.mock('@/composables/useLists');
 
 const noop = () => undefined;
@@ -239,14 +239,16 @@ describe('The Lists', () => {
       return renderResult;
     }
 
-    it('should delete an list entry', async () => {
+    it('should delete a list entry', async () => {
       const mockedDeleteListReturn = vi.fn().mockResolvedValue(true);
 
       const { emitted } = await triggerDeleteForFirstItem(
         mockedDeleteListReturn
       );
 
-      waitFor(() => expect(emitted()).toHaveProperty(Consts.events.showError));
+      await flushPromises();
+
+      expect(emitted()).toHaveProperty(Consts.events.showToast);
     });
 
     it('should emit a show error event when error deleting item', async () => {
@@ -258,7 +260,9 @@ describe('The Lists', () => {
         mockedDeleteListReturn
       );
 
-      waitFor(() => expect(emitted()).toHaveProperty(Consts.events.showToast));
+      await flushPromises();
+
+      expect(emitted()).toHaveProperty(Consts.events.showError);
     });
   });
 });

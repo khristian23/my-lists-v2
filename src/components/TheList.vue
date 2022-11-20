@@ -90,6 +90,7 @@ import { ManageableItem, ActionIcon } from '@/models/models';
 
 export default defineComponent({
   name: 'the-list',
+  emits: ['order-updated', 'item-press', 'item-action', 'item-delete'],
   components: {
     draggable,
   },
@@ -135,12 +136,12 @@ export default defineComponent({
           item.priority = index + 1;
         });
 
-        emit('orderUpdated', localItems);
+        emit('order-updated', localItems);
       },
 
-      onItemAction: (id: string) => emit('itemAction', id),
-      onItemClick: (id: string) => emit('itemPress', id),
-      onItemDelete: (id: string) => emit('itemDelete', id),
+      onItemAction: (id: string) => emit('item-action', id),
+      onItemClick: (id: string) => emit('item-press', id),
+      onItemDelete: (id: string) => emit('item-delete', id),
     };
   },
 });
