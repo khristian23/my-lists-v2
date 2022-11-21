@@ -29,7 +29,7 @@ export class ListConverter implements FirestoreDataConverter<List> {
       type: data.type,
       description: data.description,
       priority: data.userPriorities ? data.userPriorities[this.userId] : 0,
-      isShared: data.sharedWith.contains(this.userId),
+      isShared: data.sharedWith.includes(this.userId),
       owner: data.owner,
     });
   }

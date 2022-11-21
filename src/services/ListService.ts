@@ -16,7 +16,7 @@ import {
 import { firestore } from '@/boot/firebase';
 import List from '@/models/list';
 import { ListType } from '@/models/models';
-import { ListConverter } from './Converters';
+import { ListConverter } from './FirebaseConverters';
 
 export default {
   async getListsByType(
