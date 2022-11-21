@@ -2,6 +2,7 @@ import { ref } from 'vue';
 import type { Ref } from 'vue';
 import User from '@/models/user';
 import Constants from '@/util/constants';
+import UserService from '@/services/UserService';
 
 export interface UserComposableReturnValue {
   getCurrentUserRef: () => Ref<User>;
@@ -30,10 +31,11 @@ export function useUser(): UserComposableReturnValue {
     setCurrentUserPhotoURL: (photoURL: string) =>
       (user.value.photoURL = photoURL),
     logoutUser: () => {
-      /* todo */
+      throw new Error('not implemented');
     },
     setUserLocation: (location: string) => {
-      /* todo */
+      user.value.location = location;
+      UserService.updateUserLocation(user.value, location);
     },
   };
 }

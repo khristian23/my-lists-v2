@@ -7,19 +7,27 @@ import { createRouterForRoutes } from './helpers/router';
 import constants from '@/util/constants';
 import User from '@/models/user';
 import * as LocationService from '@/services/LocationService';
+import { ref } from 'vue';
+import flushPromises from 'flush-promises';
 
 const logoutUser = vi.fn();
+
+const mockUser = ref(
+  new User({
+    name: 'Christian Montoya',
+    email: 'christian.montoya@test.com',
+    location: 'Lima, Peru',
+  })
+);
 
 vi.mock('@/composables/useUser', () => ({
   useUser: () => ({
     logoutUser,
-    setUserLocation: vi.fn(),
-    getCurrentUserRef: () =>
-      new User({
-        name: 'Christian Montoya',
-        email: 'christian.montoya@test.com',
-        location: 'Lima, Peru',
-      }),
+    setUserLocation: (location: string) => {
+      mockUser.value.location = location;
+      console.log('user location ' + location);
+    },
+    getCurrentUserRef: () => mockUser,
   }),
 }));
 
@@ -117,6 +125,25 @@ describe('Profile page', () => {
       await fireEvent.click(getLocationButton);
 
       expect(emitted()).toHaveProperty(constants.events.showError);
+    });
+
+    it('should set user geolocation', async () => {
+      vi.mocked(LocationService).getCurrentCityWithCountry.mockResolvedValue(
+        'Montreal, Canada'
+      );
+      vi.mocked(LocationService).isGeolocationAvailable.mockReturnValueOnce(
+        true
+      );
+
+      const { getByLabelText } = renderProfile();
+
+      const getLocationButton = getByLabelText('Get Location');
+      await fireEvent.click(getLocationButton);
+
+      await flushPromises();
+
+      const location: HTMLInputElement = getByLabelText('Location');
+      expect(location.value).toBe('Montreal, Canada');
     });
   });
 

@@ -143,6 +143,17 @@ describe('Authentication Composable', () => {
       });
     });
 
+    it('should navigate to lists after user cached is authenticated', async () => {
+      const { startListeningForFirebaseChanges } = useAuthentication();
+
+      mockAuthenticatedFirebaseUser(mockUser);
+      startListeningForFirebaseChanges();
+
+      expect(replace).toHaveBeenCalledWith({
+        name: constants.routes.lists.name,
+      });
+    });
+
     it('should set user as anonymous when user is not authenticated', () => {
       const { startListeningForFirebaseChanges } = useAuthentication();
       const { getCurrentUserId } = useUser();

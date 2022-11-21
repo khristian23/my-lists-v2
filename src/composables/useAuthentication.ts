@@ -53,6 +53,8 @@ export function useAuthentication() {
 
     setCurrentUser(user);
 
+    replace({ name: constants.routes.lists.name });
+
     return Promise.all([
       UserService.addAuthenticatedUserToListApplication(user),
       setUserPhotoFromApplication(),

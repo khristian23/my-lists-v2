@@ -2,10 +2,14 @@ import User from '@/models/user';
 
 export default {
   async getUserPhotoURLFromStorage(userId: string): Promise<string> {
-    return Promise.resolve('');
+    throw new Error('not implemented');
   },
 
   async addAuthenticatedUserToListApplication(user: User): Promise<void> {
-    // todo
+    throw new Error('not implemented');
+  },
+
+  async updateUserLocation(user: User, location: string): Promise<void> {
+    throw new Error('not implemented');
   },
 };

@@ -3,7 +3,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted } from 'vue';
+import { defineComponent } from 'vue';
 import { useAuthentication } from '@/composables/useAuthentication';
 
 export default defineComponent({
@@ -14,10 +14,7 @@ export default defineComponent({
       checkForRedirectAfterAuthentication,
     } = useAuthentication();
 
-    onMounted(() => {
-      startListeningForFirebaseChanges();
-    });
-
+    startListeningForFirebaseChanges();
     checkForRedirectAfterAuthentication();
   },
 });

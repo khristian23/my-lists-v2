@@ -2,10 +2,17 @@
  * Copyright (C) mailto:christian.montoya@gmail.com
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { useUser } from '@/composables/useUser';
 import Constants from '@/util/constants';
 import User from '@/models/user';
+import UserService from '@/services/UserService';
+
+const mockUser = new User({
+  name: 'Test User',
+  id: 'TestUserID',
+  email: 'testuser@test.com',
+});
 
 describe('User Composable', () => {
   it('should provide an anonymous reactive user by default', () => {
@@ -34,13 +41,7 @@ describe('User Composable', () => {
   it('should set the current user with reactivity', () => {
     const { getCurrentUserRef, setCurrentUser, getCurrentUserId } = useUser();
 
-    const currentUser = new User({
-      name: 'Test User',
-      id: 'TestUserID',
-      email: 'testuser@test.com',
-    });
-
-    setCurrentUser(currentUser);
+    setCurrentUser(mockUser);
 
     expect(getCurrentUserRef().value.name).toBe('Test User');
     expect(getCurrentUserId()).toBe('TestUserID');
@@ -53,5 +54,33 @@ describe('User Composable', () => {
     setCurrentUserPhotoURL(photoUrl);
 
     expect(getCurrentUserRef().value.photoURL).toBe(photoUrl);
+  });
+
+  it('ahould set user location', () => {
+    const { setUserLocation, setCurrentUser, getCurrentUserRef } = useUser();
+
+    setCurrentUser(mockUser);
+
+    expect(getCurrentUserRef().value.location).toBeFalsy();
+
+    setUserLocation('Montreal, Canada');
+
+    expect(getCurrentUserRef().value.location).toBe('Montreal, Canada');
+  });
+
+  it('should trigger user location storage', () => {
+    vi.mock('@/services/UserService');
+
+    const { setCurrentUser, setUserLocation } = useUser();
+
+    setCurrentUser(mockUser);
+
+    const location = 'Lima, Peru';
+    setUserLocation(location);
+
+    expect(UserService.updateUserLocation).toHaveBeenCalledWith(
+      mockUser,
+      location
+    );
   });
 });
