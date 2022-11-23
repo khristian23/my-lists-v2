@@ -17,6 +17,10 @@ export default {
   },
 
   lists: {
+    priority: {
+      lowest: 999,
+      hightest: 0,
+    },
     types: [
       {
         type: 'List',

@@ -15,70 +15,74 @@
     </q-banner>
 
     <draggable
-      tag="q-list"
       v-model="localItems"
+      tag="div"
+      class="q-list"
       @end="onDrop"
-      v-if="!showCollapseButton"
       handle=".handle"
+      item-key="id"
+      v-if="!showCollapseButton"
     >
-      <q-item
-        v-for="item in localItems"
-        :key="item.id"
-        clickable
-        @click="onItemClick(item.id)"
-        class="q-px-sm"
-        :data-testid="item.id"
-      >
-        <q-item-section>
-          <div class="row no-wrap">
-            <q-btn
-              flat
-              round
-              icon="drag_indicator"
-              class="handle"
-              size="12px"
-            />
-            <q-btn
-              flat
-              round
-              aria-label="action"
-              color="primary"
-              :icon="item.actionIcon || actionIcon"
-              size="12px"
-              @click.stop="onItemAction(item.id)"
-            />
-            <div class="column self-center">
-              <q-item-label :class="classes">{{ item.name }}</q-item-label>
-              <q-item-label
-                :class="classes"
-                caption
-                lines="2"
-                v-if="item.description"
-                >{{ item.description }}</q-item-label
+      <template #item="{ element }">
+        <q-item
+          clickable
+          @click="onItemClick(element.id)"
+          class="q-px-sm"
+          :data-testid="element.id"
+        >
+          <q-item-section>
+            <div class="row no-wrap">
+              <q-btn
+                flat
+                round
+                icon="drag_indicator"
+                class="handle"
+                size="12px"
+              />
+              <q-btn
+                flat
+                round
+                aria-label="action"
+                color="primary"
+                :icon="element.actionIcon || actionIcon"
+                size="12px"
+                @click.stop="onItemAction(element.id)"
+              />
+              <div class="column self-center">
+                <q-item-label :class="classes">{{ element.name }}</q-item-label>
+                <q-item-label
+                  :class="classes"
+                  caption
+                  lines="2"
+                  v-if="element.description"
+                  >{{ element.description }}</q-item-label
+                >
+              </div>
+            </div>
+          </q-item-section>
+
+          <q-item-section side>
+            <div class="column">
+              <q-btn
+                flat
+                round
+                aria-label="delete"
+                color="primary"
+                align="right"
+                icon="delete"
+                size="10px"
+                @click.stop="onItemDelete(element.id)"
+                v-if="
+                  element.canBeDeleted === undefined || element.canBeDeleted
+                "
+              />
+              <q-item-label v-if="element.numberOfItems !== undefined"
+                >{{ element.numberOfItems }} items</q-item-label
               >
             </div>
-          </div>
-        </q-item-section>
-
-        <q-item-section side>
-          <div class="column">
-            <q-btn
-              flat
-              round
-              aria-label="delete"
-              color="primary"
-              align="right"
-              icon="delete"
-              size="10px"
-              @click.stop="onItemDelete(item.id)"
-              v-if="item.canBeDeleted === undefined || item.canBeDeleted"
-            />
-            <q-item-label v-if="item.numberOfItems !== undefined"
-              >{{ item.numberOfItems }} items</q-item-label
-            >
-          </div>
-        </q-item-section>
-      </q-item>
+          </q-item-section>
+        </q-item>
+      </template>
     </draggable>
   </div>
 </template>

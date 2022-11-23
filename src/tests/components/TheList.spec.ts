@@ -10,6 +10,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import TheList from '@/components/TheList.vue';
 import { Quasar } from 'quasar';
 import Constants from '@/util/constants';
+import vuedraggable from 'vuedraggable';
 
 interface TheListProps {
   headerLabel?: string;
@@ -25,11 +26,7 @@ describe('The List', () => {
       props,
       global: {
         plugins: [Quasar],
-        stubs: {
-          draggable: {
-            template: '<div><slot /></div>',
-          },
-        },
+        components: { vuedraggable },
       },
     });
   }

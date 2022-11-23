@@ -5,9 +5,10 @@ import {
   QueryDocumentSnapshot,
 } from 'firebase/firestore';
 import List from '@/models/list';
+import constants from '@/util/constants';
 
 export class ListConverter implements FirestoreDataConverter<List> {
-  userId: string;
+  private userId: string;
 
   constructor(userId: string) {
     this.userId = userId;
@@ -28,8 +29,9 @@ export class ListConverter implements FirestoreDataConverter<List> {
       name: data.name,
       type: data.type,
       description: data.description,
-      priority: data.userPriorities ? data.userPriorities[this.userId] : 0,
-      isShared: data.sharedWith.includes(this.userId),
+      priority:
+        data.userPriorities?.[this.userId] ?? constants.lists.priority.lowest,
+      isShared: data.sharedWith?.includes(this.userId) ?? false,
       owner: data.owner,
     });
   }

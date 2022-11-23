@@ -9,7 +9,12 @@ export default defineConfig({
   },
   plugins: [
     vue({
-      template: { transformAssetUrls },
+      template: {
+        transformAssetUrls,
+        compilerOptions: {
+          isCustomElement: (tag) => ['q-list'].includes(tag),
+        },
+      },
     }),
     quasar({
       sassVariables: 'src/quasar-variables.sass',

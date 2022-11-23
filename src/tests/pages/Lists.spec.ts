@@ -26,6 +26,7 @@ import { Router } from 'vue-router';
 import { generateLists } from '../helpers/TestHelpers';
 import { createRouterForRoutes } from './helpers/router';
 import { useLists } from '@/composables/useLists';
+import vuedraggable from 'vuedraggable';
 import flushPromises from 'flush-promises';
 vi.mock('@/composables/useLists');
 
@@ -55,11 +56,8 @@ function renderComponent(setupData?: Partial<SetupData>): RenderResult {
   return render(MainLayoutTest, {
     global: {
       plugins: [Quasar, router],
-      components: { TheList, TheConfirmation },
+      components: { TheList, TheConfirmation, vuedraggable },
       stubs: {
-        draggable: {
-          template: '<div id="listHolder"><slot></slot></div>',
-        },
         TheListLoader: true,
         TheFooter: {
           template: '<div><slot></slot></div>',
