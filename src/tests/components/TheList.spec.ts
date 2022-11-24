@@ -1,9 +1,9 @@
 import {
   cleanup,
   render,
-  screen,
   within,
   RenderResult,
+  screen,
 } from '@testing-library/vue';
 import { ManageableItem, ActionIcon } from '@/models/models';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -34,6 +34,7 @@ describe('The List', () => {
   describe('The List header', () => {
     it.each([
       ['', true],
+      ['', false],
       ['some text', true],
       ['another text', false],
     ])(
@@ -41,20 +42,22 @@ describe('The List', () => {
       (headerLabel: string, showHeader: boolean) => {
         const items: Array<ManageableItem> = [];
 
-        renderListWithProps({
-          headerLabel,
-          showHeader,
-          items,
-        });
+        const { queryByRole, queryByText, queryAllByText } =
+          renderListWithProps({
+            headerLabel,
+            showHeader,
+            items,
+          });
 
-        const collapseButton = screen.queryByRole('button', {
+        const collapseButton = queryByRole('button', {
           name: 'expand/collapse',
         });
 
-        if (showHeader) {
-          expect(collapseButton).toBeTruthy();
-        } else {
-          expect(collapseButton).toBeFalsy();
+        expect(!!collapseButton).toBe(showHeader);
+        expect(!!queryAllByText('expand_more').length).toBe(showHeader);
+
+        if (headerLabel && showHeader) {
+          queryByText(headerLabel);
         }
 
         cleanup();

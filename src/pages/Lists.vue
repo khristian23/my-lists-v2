@@ -2,6 +2,7 @@
   <q-page class="flex">
     <the-list-loader v-if="isLoadingLists" />
     <the-list
+      :showHeader="false"
       :items="lists"
       iconAction="{{ $Const.itemActionIcon.edit }}"
       @item-press="onListPress"

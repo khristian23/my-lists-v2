@@ -25,7 +25,6 @@ vi.mock('@/composables/useUser', () => ({
     logoutUser,
     setUserLocation: (location: string) => {
       mockUser.value.location = location;
-      console.log('user location ' + location);
     },
     getCurrentUserRef: () => mockUser,
   }),
