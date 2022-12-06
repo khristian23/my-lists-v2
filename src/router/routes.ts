@@ -11,12 +11,13 @@ const routes: RouteRecordRaw[] = [
         name: constants.routes.lists.name,
         component: () => import('@/pages/Lists.vue'),
       },
-      //   {
-      //     path: '/list/:id/items',
-      //     name: Consts.routes.listItems,
-      //     component: () =>
-      //       import(/* webpackChunkName: "ListDetails" */ 'pages/ListItems'),
-      //   },
+      {
+        path: constants.routes.listItems.path,
+        name: constants.routes.listItems.name,
+        props: true,
+        component: () =>
+          import(/* webpackChunkName: "ListDetails" */ '@/pages/ListItems.vue'),
+      },
       //   {
       //     path: '/list/:list/item/:id',
       //     name: Consts.routes.listItem,

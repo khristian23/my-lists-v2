@@ -16,7 +16,8 @@ import {
 import { firestore } from '@/boot/firebase';
 import List from '@/models/list';
 import { ListType } from '@/models/models';
-import { ListConverter } from './FirebaseConverters';
+import { ListConverter, ListItemConverter } from './FirebaseConverters';
+import ListItem from '@/models/listItem';
 
 export default {
   async getListsByType(
@@ -57,7 +58,7 @@ export default {
       .map((snapshot) => snapshot.data());
   },
 
-  async getListById(userId: string, listId: string): Promise<List | null> {
+  async getListById(userId: string, listId: string): Promise<List> {
     const listReference = doc(firestore, 'lists', listId).withConverter(
       new ListConverter(userId)
     );
@@ -66,27 +67,60 @@ export default {
       const list = listSnapshot.data();
       if (list.owner === userId || list.isShared) {
         return list;
+      } else {
+        throw new Error('No permissions to read list');
       }
+    } else {
+      throw new Error('List not found');
     }
-    return null;
   },
 
-  async deleteListById(userId: string, listId: string): Promise<void> {
-    try {
-      const listsCollection = collection(firestore, `lists/${listId}/items`);
+  async getListItemById(
+    userId: string,
+    listId: string,
+    listItemId: string
+  ): Promise<ListItem> {
+    const listItemReference = doc(
+      firestore,
+      `lists/${listId}/items/${listItemId}`
+    ).withConverter(new ListItemConverter(userId));
 
-      const itemsSnapshots = await getDocs(listsCollection);
-
-      return Promise.all(
-        itemsSnapshots.docs.map((itemSnapshot) => {
-          return deleteDoc(itemSnapshot.ref);
-        })
-      ).then(() => {
-        return deleteDoc(doc(firestore, 'lists', listId));
-      });
-    } catch (e: unknown) {
-      throw new Error((e as Error).message);
+    const listItemSnapshot = await getDoc(listItemReference);
+    if (listItemSnapshot.exists()) {
+      return listItemSnapshot.data();
+    } else {
+      throw new Error('List Item not found');
     }
+  },
+
+  async getListItemsByListId(
+    userId: string,
+    listId: string
+  ): Promise<Array<ListItem>> {
+    const listItemsCollection = collection(
+      firestore,
+      `lists/${listId}/items`
+    ).withConverter(new ListItemConverter(userId));
+
+    const listItemsQuery = query(listItemsCollection);
+
+    const listItemsSnapshots = await getDocs(listItemsQuery);
+
+    return listItemsSnapshots.docs.map((snapshot) => snapshot.data());
+  },
+
+  async deleteListById(listId: string): Promise<void> {
+    const listsCollection = collection(firestore, `lists/${listId}/items`);
+
+    const itemsSnapshots = await getDocs(listsCollection);
+
+    return Promise.all(
+      itemsSnapshots.docs.map((itemSnapshot) => {
+        return deleteDoc(itemSnapshot.ref);
+      })
+    ).then(() => {
+      return deleteDoc(doc(firestore, `lists/${listId}`));
+    });
   },
 
   async updateListsPriorities(
@@ -108,5 +142,28 @@ export default {
     ).catch((error) => {
       throw new Error(error.message);
     });
+  },
+
+  async setListItemStatus(listItem: ListItem, status: string): Promise<void> {
+    const objectUpdate: { [k: string]: string | number } = {
+      changedBy: listItem.changedBy,
+      modifiedAt: listItem.modifiedAt,
+      status: status,
+    };
+
+    const listItemReference = doc(
+      firestore,
+      `lists/${listItem.listId}/items/${listItem.id}`
+    );
+
+    return updateDoc(listItemReference, objectUpdate);
+  },
+
+  async deleteListItem(listId: string, listItemId: string): Promise<void> {
+    return deleteDoc(doc(firestore, `lists/${listId}/items/${listItemId}`));
+  },
+
+  async saveListItem(listItem: ListItem): Promise<void> {
+    // todo
   },
 };

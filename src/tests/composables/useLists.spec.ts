@@ -95,7 +95,7 @@ describe('Lists Composable', () => {
 
     await deleteListById('ListId');
 
-    expect(spy).toHaveBeenCalledWith(FAKE_USER_ID, 'ListId');
+    expect(spy).toHaveBeenCalledWith('ListId');
   });
 
   it('should throw an exception in case of error when deleting list', async () => {

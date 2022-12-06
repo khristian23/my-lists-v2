@@ -1,5 +1,5 @@
 <template>
-  <div class="full-width">
+  <div class="full-width" :data-testid="id">
     <q-banner inline-actions v-if="showHeader">
       <div class="text-h6">{{ headerLabel }}</div>
       <template v-slot:action>
@@ -99,6 +99,7 @@ export default defineComponent({
     draggable,
   },
   props: {
+    id: String,
     showHeader: {
       type: Boolean,
       default: true,

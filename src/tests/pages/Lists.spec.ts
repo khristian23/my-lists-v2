@@ -25,7 +25,7 @@ import MainLayoutTest from './helpers/MainLayoutTest.vue';
 import { Router } from 'vue-router';
 import { generateLists } from '../helpers/TestHelpers';
 import { createRouterForRoutes } from './helpers/router';
-import { useLists } from '@/composables/useLists';
+import { ListsComposableReturnValue, useLists } from '@/composables/useLists';
 import vuedraggable from 'vuedraggable';
 import flushPromises from 'flush-promises';
 vi.mock('@/composables/useLists');
@@ -48,10 +48,8 @@ function renderComponent(setupData?: Partial<SetupData>): RenderResult {
   vi.mocked(useLists).mockReturnValue({
     isLoadingLists: ref(false),
     getListsByType: () => Promise.resolve(setupData?.customLists ?? lists),
-    getListById: vi.fn(),
     deleteListById: setupData?.mockedDeleteListReturn ?? vi.fn(),
-    updateListsPriorities: vi.fn(),
-  });
+  } as unknown as ListsComposableReturnValue);
 
   return render(MainLayoutTest, {
     global: {
@@ -160,9 +158,8 @@ describe('The Lists', () => {
 
     it('should navigate to items details route', async () => {
       const firstList = lists[0];
-      const routeName =
-        Consts.routes[firstList.type as keyof typeof Consts.routes] ??
-        Consts.routes.listItems;
+      const route = Consts.routes[firstList.type as keyof typeof Consts.routes];
+      const routeName = route?.name ?? Consts.routes.listItems.name;
 
       const { getByText } = renderComponent();
 
@@ -188,7 +185,7 @@ describe('The Lists', () => {
       await fireEvent.click(editButton);
 
       expect(routerSpy).toHaveBeenCalledWith({
-        name: Consts.routes.list,
+        name: Consts.routes.list.name,
         params: { id: firstList.id },
       });
     });
@@ -202,7 +199,7 @@ describe('The Lists', () => {
       await fireEvent.click(createButton);
 
       expect(routerSpy).toHaveBeenCalledWith({
-        name: Consts.routes.list,
+        name: Consts.routes.list.name,
         params: { id: 'new' },
       });
     });

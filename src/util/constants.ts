@@ -19,7 +19,7 @@ export default {
   lists: {
     priority: {
       lowest: 999,
-      hightest: 0,
+      highest: 0,
     },
     types: [
       {
@@ -100,31 +100,16 @@ export default {
   },
 
   routes: {
-    lists: {
-      name: 'lists',
-      path: '',
-    },
-    list: 'list',
-    listItems: 'list-items',
-    listItem: 'list-item',
-    checklist: 'checklist',
-    note: 'note',
-    login: {
-      name: 'login',
-      path: '/login',
-    },
-    register: {
-      name: 'register',
-      path: '/register',
-    },
-    profile: {
-      name: 'profile',
-      path: '/profile',
-    },
-    camera: {
-      name: 'profile-picture',
-      path: '/profile-picture',
-    },
+    lists: { name: 'lists', path: '' },
+    list: { name: 'list', path: '/list/:id' },
+    listItems: { name: 'list-items', path: '/list/:id/items' },
+    listItem: { name: 'list-item', path: '/list/:list/item/:id' },
+    checklist: { name: 'checklist', path: '/checklist/:id/items' },
+    note: { name: 'note', path: '/note/:id' },
+    login: { name: 'login', path: '/login' },
+    register: { name: 'register', path: '/register' },
+    profile: { name: 'profile', path: '/profile' },
+    camera: { name: 'profile-picture', path: '/profile-picture' },
   },
 
   itemActionIcon: {

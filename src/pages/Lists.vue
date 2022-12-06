@@ -87,11 +87,11 @@ export default defineComponent({
         return;
       }
 
-      let routeName = Constants.routes.listItems;
+      let routeName = Constants.routes.listItems.name;
       if (list.type === Constants.listType.checklist) {
-        routeName = Constants.routes.checklist;
+        routeName = Constants.routes.checklist.name;
       } else if (list.type === Constants.listType.note) {
-        routeName = Constants.routes.note;
+        routeName = Constants.routes.note.name;
       }
 
       router.push({ name: routeName, params: { id: listId } });
@@ -120,14 +120,14 @@ export default defineComponent({
 
     const onListEdit = (listId: string) => {
       router.push({
-        name: Constants.routes.list,
+        name: Constants.routes.list.name,
         params: { id: listId },
       });
     };
 
     const onCreate = () => {
       router.push({
-        name: Constants.routes.list,
+        name: Constants.routes.list.name,
         params: { id: 'new' },
       });
     };

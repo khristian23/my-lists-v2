@@ -1,14 +1,19 @@
-import Consts from '@/util/constants';
+import constants from '@/util/constants';
 import { Ref } from 'vue';
+import ListItem from './listItem';
 
-export type ActionIcon = keyof typeof Consts.itemActionIcon;
+export type ActionIcon = keyof typeof constants.itemActionIcon;
 
 export type ListType =
-  | typeof Consts.listType.checklist
-  | typeof Consts.listType.toDoList
-  | typeof Consts.listType.whishlist
-  | typeof Consts.listType.note
-  | typeof Consts.listType.shoppingCart;
+  | typeof constants.listType.checklist
+  | typeof constants.listType.toDoList
+  | typeof constants.listType.whishlist
+  | typeof constants.listType.note
+  | typeof constants.listType.shoppingCart;
+
+export type ListItemStatus =
+  | typeof constants.itemStatus.done
+  | typeof constants.itemStatus.pending;
 
 export interface BaseItem {
   id: string;
@@ -20,8 +25,12 @@ export interface BaseItem {
 export interface ManageableItem extends BaseItem {
   actionIcon: string;
   canBeDeleted: boolean;
-  numberOfItems: number;
   priority: number;
+}
+
+export interface ParentObject {
+  numberOfItems: number;
+  items: Array<ListItem>;
 }
 
 export interface UserData {
@@ -32,15 +41,21 @@ export interface UserData {
   location?: string;
 }
 
-export interface ListData extends BaseItem {
-  type: ListType;
-  isShared: boolean;
+export interface Auditable {
   owner: string;
+  changedBy: string;
+  modifiedAt: number;
 }
 
-export interface Auditable {
-  changedBy: string;
-  modifiedAt: string;
+export interface ListData extends BaseItem, Auditable {
+  type: ListType;
+  isShared: boolean;
+}
+
+export interface ListItemData extends BaseItem, Auditable {
+  status: string;
+  notes: string;
+  listId: string;
 }
 
 export interface GlobalComposableReturnValue {

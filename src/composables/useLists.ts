@@ -13,7 +13,7 @@ const isLoadingLists = ref(false);
 export interface ListsComposableReturnValue {
   isLoadingLists: Ref<boolean>;
   getListsByType: (type?: ListType | undefined) => Promise<Array<List>>;
-  getListById: (id: string) => Promise<List | null>;
+  getListById: (id: string) => Promise<List>;
   deleteListById: (listId: string) => Promise<void>;
   updateListsPriorities: (lists: Array<List>) => Promise<void[]>;
 }
@@ -34,14 +34,13 @@ export function useLists(): ListsComposableReturnValue {
     return lists;
   };
 
-  const getListById = (listId: string): Promise<List | null> => {
+  const getListById = (listId: string): Promise<List> => {
     const userId = getCurrentUserId();
     return ListService.getListById(userId, listId);
   };
 
   const deleteListById = (listId: string): Promise<void> => {
-    const userId = getCurrentUserId();
-    return ListService.deleteListById(userId, listId).catch(() => {
+    return ListService.deleteListById(listId).catch(() => {
       throw new Error('Error deleting list by id ' + listId);
     });
   };

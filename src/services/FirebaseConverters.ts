@@ -6,6 +6,7 @@ import {
 } from 'firebase/firestore';
 import List from '@/models/list';
 import constants from '@/util/constants';
+import ListItem from '@/models/listItem';
 
 export class ListConverter implements FirestoreDataConverter<List> {
   private userId: string;
@@ -33,6 +34,38 @@ export class ListConverter implements FirestoreDataConverter<List> {
         data.userPriorities?.[this.userId] ?? constants.lists.priority.lowest,
       isShared: data.sharedWith?.includes(this.userId) ?? false,
       owner: data.owner,
+      changedBy: data.changedBy,
+      modifiedAt: data.modifiedAt,
+    });
+  }
+}
+
+export class ListItemConverter implements FirestoreDataConverter<ListItem> {
+  private userId: string;
+
+  constructor(userId: string) {
+    this.userId = userId;
+  }
+
+  toFirestore(list: PartialWithFieldValue<ListItem>): DocumentData {
+    return {
+      id: list.id,
+      name: list.name,
+    };
+  }
+
+  fromFirestore(snapshot: QueryDocumentSnapshot): ListItem {
+    const data = snapshot.data();
+
+    return new ListItem({
+      id: data.id,
+      name: data.name,
+      description: data.description,
+      priority:
+        data.userPriorities?.[this.userId] ?? constants.lists.priority.lowest,
+      owner: data.owner,
+      changedBy: data.changedBy,
+      modifiedAt: data.modifiedAt,
     });
   }
 }

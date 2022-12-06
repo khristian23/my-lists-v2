@@ -1,147 +1,141 @@
 <template>
   <q-page class="flex">
-    <TheList
-      header="Pending"
-      :items="pendingItems"
+    <the-list
+      id="pendingList"
+      headerLabel="Pending"
+      :items="list.pendingItems"
       iconAction="{{ $Const.itemActionIcon.done }}"
       @itemPress="onItemPress"
-      @itemAction="setItemToDone"
+      @itemAction="onSetItemToDone"
       @itemDelete="onItemDelete"
-      v-if="hasPendingItems"
+      v-if="list.hasPendingItems"
       @orderUpdated="onOrderUpdated"
     />
-    <TheList
-      header="Done"
-      :items="doneItems"
+    <the-list
+      id="doneList"
+      headerLabel="Done"
+      :items="list.doneItems"
       iconAction="{{ $Const.itemActionIcon.redo }}"
       class="self-end"
       @itemPress="onItemPress"
-      @itemAction="setItemToPending"
+      @itemAction="onSetItemToPending"
       @itemDelete="onItemDelete"
-      v-if="hasDoneItems"
-      scratched="true"
+      v-if="list.hasDoneItems"
+      :scratched="true"
     />
-    <TheFooter>
-      <TheQuickCreate @quickCreate="onQuickCreate" @create="onCreate" />
-    </TheFooter>
+    <the-footer>
+      <the-quick-item-create @quickCreate="onQuickCreate" @create="onCreate" />
+    </the-footer>
   </q-page>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
-
-import { TheFooter } from 'components/TheFooter';
-import { TheList } from 'components/TheList';
-import { TheQuickItemCreate } from 'components/TheQuickItemCreate';
-
-import { mapGetters, mapActions, mapMutations } from 'vuex';
-import ListItem from 'src/storage/ListItem';
+import { useListItems } from '@/composables/useListItems';
+import { defineComponent, ref, onMounted } from 'vue';
+import { useGlobals } from '@/composables/useGlobals';
+import { useRouter } from 'vue-router';
+import constants from '@/util/constants';
 
 export default defineComponent({
-  name: 'list-items',
-  components: {
-      TheFooter, TheList, TheQuickItemCreate
-  },
-  setup() {
-      const { getListItems } from usageLists
-  }
-  data() {
+  name: 'list-items-page',
+  props: ['id'],
+  emits: [constants.events.showError],
+  setup(props, { emit }) {
+    const {
+      getCurrentListWithItems,
+      loadListWithItems,
+      setItemToDone,
+      setItemToPending,
+      deleteListItem,
+      quickCreateListItem,
+    } = useListItems();
+    const { setTitle } = useGlobals();
+
+    const router = useRouter();
+    const newItem = ref('');
+    const showCreateButton = ref(true);
+    const list = getCurrentListWithItems();
+
+    onMounted(async () => {
+      try {
+        await loadListWithItems(props.id);
+        setTitle(list.value.name);
+      } catch (e: unknown) {
+        router.replace({ name: constants.routes.lists.name });
+        emit(constants.events.showError, (e as Error).message);
+      }
+    });
+
+    const onSetItemToDone = async (listItemId: string) => {
+      try {
+        await setItemToDone(list.value.id, listItemId);
+      } catch (e: unknown) {
+        emit(constants.events.showError, (e as Error).message);
+      }
+    };
+
+    const onSetItemToPending = async (listItemId: string) => {
+      try {
+        await setItemToPending(list.value.id, listItemId);
+      } catch (e: unknown) {
+        emit(constants.events.showError, (e as Error).message);
+      }
+    };
+
+    const onItemPress = (listItemId: string) => {
+      router.push({
+        name: constants.routes.listItem.name,
+        params: { list: list.value.id, id: listItemId },
+      });
+    };
+
+    const onItemDelete = async (listItemId: string) => {
+      try {
+        await deleteListItem(list.value.id, listItemId);
+      } catch (e: unknown) {
+        emit(constants.events.showError, (e as Error).message);
+      }
+    };
+
+    const onQuickCreate = async (itemName: string) => {
+      try {
+        await quickCreateListItem(list.value.id, itemName);
+      } catch (e: unknown) {
+        emit(constants.events.showError, (e as Error).message);
+      }
+    };
+
     return {
-      newItem: '',
-      showCreateButton: true,
+      list,
+      newItem,
+      showCreateButton,
+      onSetItemToDone,
+      onSetItemToPending,
+      onQuickCreate,
+      onCreate: () => {
+        /* todo */
+      },
+      onItemPress,
+      onItemDelete,
+      onOrderUpdated: () => {
+        /* todo */
+      },
     };
   },
-  watch: {
-    list: {
-      immediate: true,
-      handler() {
-        this._intializeListItems();
-      },
-    },
-  },
-  computed: {
-    ...mapGetters('lists', ['pendingItems', 'doneItems']),
 
-    list() {
-      const listId = this.$route.params.id;
-      return this.$store.getters['lists/getListById'](listId);
-    },
+  //   onCreate() {
+  //     this.$router.push({
+  //       name: this.$Const.routes.listItem,
+  //       params: { list: this.list.id, id: 'new' },
+  //     });
+  //   },
 
-    noItems() {
-      return !(this.hasPendingItems || this.hasDoneItems);
-    },
-    hasPendingItems() {
-      return !!this.pendingItems.length;
-    },
-    hasDoneItems() {
-      return !!this.doneItems.length;
-    },
-  },
-  methods: {
-    ...mapMutations('app', ['setTitle']),
-
-    ...mapActions('lists', [
-      'getListItems',
-      'setItemToDone',
-      'setItemToPending',
-      'updateItemsOrder',
-      'deleteItem',
-      'saveItem',
-    ]),
-
-    async _intializeListItems() {
-      this.$q.loading.show();
-
-      if (this.list) {
-        await this.getListItems(this.list.id);
-        this.setTitle(this.list.name);
-        this.$q.loading.hide();
-      }
-    },
-
-    async onQuickCreate(name) {
-      const listItem = new ListItem({
-        name: name,
-        status: this.$Const.itemStatus.pending,
-        listId: this.list.id,
-        priority: this.pendingItems.length + 1,
-      });
-      try {
-        await this.saveItem(listItem);
-      } catch (e) {
-        this.$emit('showError', e.message);
-      }
-    },
-
-    onCreate() {
-      this.$router.push({
-        name: this.$Const.routes.listItem,
-        params: { list: this.list.id, id: 'new' },
-      });
-    },
-
-    onItemPress(itemId) {
-      this.$router.push({
-        name: this.$Const.routes.listItem,
-        params: { list: this.list.id, id: itemId },
-      });
-    },
-
-    async onItemDelete(itemId) {
-      try {
-        await this.deleteItem({ listId: this.list.id, itemId });
-      } catch (e) {
-        this.$emit('showError', e.message);
-      }
-    },
-
-    async onOrderUpdated(listItems) {
-      try {
-        await this.updateItemsOrder({ listId: this.list.id, listItems });
-      } catch (e) {
-        this.$emit('showError', e.message);
-      }
-    },
-  },
+  //   async onOrderUpdated(listItems) {
+  //     try {
+  //       await this.updateItemsOrder({ listId: this.list.id, listItems });
+  //     } catch (e) {
+  //       this.$emit('showError', e.message);
+  //     }
+  //   },
 });
 </script>

@@ -83,7 +83,7 @@ describe('The List', () => {
           actionIcon: Constants.itemActionIcon.done,
           numberOfItems: 343,
           canBeDeleted: false,
-        } as ManageableItem,
+        } as unknown as ManageableItem,
         {
           id: '003',
           name: 'Third item',
