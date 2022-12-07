@@ -79,6 +79,7 @@ describe('List Items page', () => {
         id: 'PendingId',
         name: 'Pending Item',
         status: constants.itemStatus.pending,
+        priority: constants.lists.priority.lowest,
       }),
       new ListItem({
         id: 'DoneId',
@@ -118,23 +119,36 @@ describe('List Items page', () => {
     expect(emitted()).toHaveProperty(constants.events.showError);
   });
 
-  // it('should navigate to item details', async () => {
-  //   const spy = vi.spyOn(router, 'push');
+  it('should navigate to item details', async () => {
+    const spy = vi.spyOn(router, 'push');
 
-  //   const { getByTestId } = renderListItems();
+    const { getByTestId } = renderListItems();
 
-  //   await flushPromises();
+    await flushPromises();
 
-  //   const itemPressButton = within(getByTestId(PENDING_ITEM_ID)).getByText(
-  //     'Pending Item'
-  //   );
-  //   await fireEvent.click(itemPressButton);
+    const itemPressButton = within(getByTestId(PENDING_ITEM_ID)).getByText(
+      'Pending Item'
+    );
+    await fireEvent.click(itemPressButton);
 
-  //   expect(spy).toHaveBeenCalledWith({
-  //     name: constants.routes.listItem.name,
-  //     params: { id: PENDING_ITEM_ID, list: FAKE_LIST_ID },
-  //   });
-  // });
+    expect(spy).toHaveBeenCalledWith({
+      name: constants.routes.listItem.name,
+      params: { id: PENDING_ITEM_ID, list: FAKE_LIST_ID },
+    });
+  });
+
+  it('should navigate to list item page', async () => {
+    const spy = vi.spyOn(router, 'push');
+
+    const { getByText } = renderListItems();
+
+    await fireEvent.click(getByText('Create'));
+
+    expect(spy).toHaveBeenCalledWith({
+      name: constants.routes.listItem.name,
+      params: { list: FAKE_LIST_ID, id: 'new' },
+    });
+  });
 
   it('should set item to done', async () => {
     const { getByTestId } = renderListItems();
@@ -273,5 +287,27 @@ describe('List Items page', () => {
 
     expect(queryByText(itemNameNotSaved)).toBeFalsy();
     expect(emitted()).toHaveProperty(constants.events.showError);
+  });
+
+  it('should add created items to the bottom of the pending list', async () => {
+    const newItemId = 'newItemId';
+    vi.mocked(ListService).saveListItem.mockImplementation(
+      (listItem: ListItem) => {
+        listItem.id = newItemId;
+        return Promise.resolve();
+      }
+    );
+    const { container, getByPlaceholderText } = renderListItems();
+
+    await flushPromises();
+
+    const quickCreateInput = getByPlaceholderText('Quick create');
+
+    const itemName = 'Test Item Name';
+    await userEvent.type(quickCreateInput, `${itemName}{enter}`);
+
+    const items = container.getElementsByClassName('item-text');
+    expect(items[0].textContent).toBe('Pending Item');
+    expect(items[1].textContent).toBe(itemName);
   });
 });

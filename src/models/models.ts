@@ -19,13 +19,15 @@ export interface BaseItem {
   id: string;
   name: string;
   description?: string;
+}
+
+export interface Sortable {
   priority?: number;
 }
 
-export interface ManageableItem extends BaseItem {
+export interface ManageableItem extends BaseItem, Sortable {
   actionIcon: string;
   canBeDeleted: boolean;
-  priority: number;
 }
 
 export interface ParentObject {
@@ -47,12 +49,12 @@ export interface Auditable {
   modifiedAt: number;
 }
 
-export interface ListData extends BaseItem, Auditable {
+export interface ListData extends BaseItem, Sortable, Auditable {
   type: ListType;
   isShared: boolean;
 }
 
-export interface ListItemData extends BaseItem, Auditable {
+export interface ListItemData extends BaseItem, Sortable, Auditable {
   status: string;
   notes: string;
   listId: string;

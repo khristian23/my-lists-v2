@@ -124,18 +124,23 @@ describe('List Items', () => {
   });
 
   it('should save an item', async () => {
-    const spy = vi.spyOn(ListService, 'saveListItem');
+    const newItemId = 'newItemId';
+    const spy = vi
+      .spyOn(ListService, 'saveListItem')
+      .mockImplementation((listItem: ListItem) => {
+        listItem.id = newItemId;
+        return Promise.resolve();
+      });
 
-    const { getCurrentListWithItems, loadListWithItems, quickCreateListItem } =
-      useListItems();
+    const { loadListWithItems, quickCreateListItem } = useListItems();
 
-    getCurrentListWithItems();
     await loadListWithItems(FAKE_LIST_ID);
 
     const itemName = 'Test Item Name';
     await quickCreateListItem(FAKE_LIST_ID, itemName);
 
     const expectedListItem = new ListItem({
+      id: newItemId,
       name: itemName,
       listId: FAKE_LIST_ID,
       status: constants.itemStatus.pending,

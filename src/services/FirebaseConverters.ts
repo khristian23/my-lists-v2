@@ -47,10 +47,18 @@ export class ListItemConverter implements FirestoreDataConverter<ListItem> {
     this.userId = userId;
   }
 
-  toFirestore(list: PartialWithFieldValue<ListItem>): DocumentData {
+  toFirestore(listItem: PartialWithFieldValue<ListItem>): DocumentData {
+    const userPriorities: { [k: string]: number } = {};
+    userPriorities[this.userId] = listItem.priority as number;
+
     return {
-      id: list.id,
-      name: list.name,
+      id: listItem.id,
+      name: listItem.name,
+      description: listItem.notes,
+      userPriorities,
+      owner: this.userId,
+      changedBy: listItem.changedBy,
+      modifiedAt: listItem.modifiedAt,
     };
   }
 

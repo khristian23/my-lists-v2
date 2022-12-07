@@ -6,6 +6,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  setDoc,
   query,
   collection,
   where,
@@ -15,9 +16,12 @@ import {
 } from 'firebase/firestore';
 import { firestore } from '@/boot/firebase';
 import List from '@/models/list';
-import { ListType } from '@/models/models';
+import { Auditable, BaseItem, ListType, Sortable } from '@/models/models';
 import { ListConverter, ListItemConverter } from './FirebaseConverters';
 import ListItem from '@/models/listItem';
+import constants from '@/util/constants';
+
+type Prioritizable = BaseItem & Sortable & Auditable;
 
 export default {
   async getListsByType(
@@ -123,25 +127,50 @@ export default {
     });
   },
 
-  async updateListsPriorities(
+  async updateListObjectPriorities(
     userId: string,
-    lists: Array<List>
-  ): Promise<void[]> {
+    listObjects: Array<Prioritizable>,
+    referenceBuilder: (object: Prioritizable) => string
+  ) {
     return Promise.all(
-      lists.map((list) => {
-        const listReference = doc(firestore, 'lists', list.id);
+      listObjects.map((object) => {
+        const listReference = doc(firestore, referenceBuilder(object));
 
         const objectUpdate: { [k: string]: string | number } = {
-          changedBy: list.changedBy,
-          modifiedAt: list.modifiedAt,
+          changedBy: object.changedBy,
+          modifiedAt: object.modifiedAt,
         };
-        objectUpdate[`userPriorities.${userId}`] = list.priority;
+        objectUpdate[`userPriorities.${userId}`] =
+          object.priority ?? constants.lists.priority.lowest;
 
         return updateDoc(listReference, objectUpdate);
       })
     ).catch((error) => {
       throw new Error(error.message);
     });
+  },
+
+  async updateListsPriorities(
+    userId: string,
+    lists: Array<List>
+  ): Promise<void[]> {
+    return this.updateListObjectPriorities(
+      userId,
+      lists,
+      ({ id }) => `lists/${id}`
+    );
+  },
+
+  async updateListItemsPriorities(
+    userId: string,
+    listId: string,
+    listItems: Array<ListItem>
+  ): Promise<void[]> {
+    return this.updateListObjectPriorities(
+      userId,
+      listItems,
+      ({ id }) => `lists/${listId}/items/${id}`
+    );
   },
 
   async setListItemStatus(listItem: ListItem, status: string): Promise<void> {
@@ -163,7 +192,30 @@ export default {
     return deleteDoc(doc(firestore, `lists/${listId}/items/${listItemId}`));
   },
 
-  async saveListItem(listItem: ListItem): Promise<void> {
-    // todo
+  async saveListItem(userId: string, listItem: ListItem): Promise<void> {
+    if (!listItem.listId) {
+      throw new Error('List item must have be part of a list');
+    }
+
+    if (listItem.id) {
+      const itemReference = doc(
+        firestore,
+        `lists/${listItem.listId}/items/${listItem.id}`
+      );
+
+      return updateDoc(itemReference, {
+        name: listItem.name,
+        description: listItem.notes,
+        status: listItem.status,
+      });
+    } else {
+      const createdItemRef = doc(
+        collection(firestore, `lists/${listItem.listId}/items`)
+      ).withConverter(new ListItemConverter(userId));
+
+      await setDoc(createdItemRef, listItem);
+
+      listItem.id = createdItemRef.id;
+    }
   },
 };

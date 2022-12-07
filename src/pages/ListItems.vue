@@ -35,6 +35,7 @@ import { defineComponent, ref, onMounted } from 'vue';
 import { useGlobals } from '@/composables/useGlobals';
 import { useRouter } from 'vue-router';
 import constants from '@/util/constants';
+import ListItem from '@/models/listItem';
 
 export default defineComponent({
   name: 'list-items-page',
@@ -48,6 +49,7 @@ export default defineComponent({
       setItemToPending,
       deleteListItem,
       quickCreateListItem,
+      updateItemsOrder,
     } = useListItems();
     const { setTitle } = useGlobals();
 
@@ -105,6 +107,21 @@ export default defineComponent({
       }
     };
 
+    const onCreate = () => {
+      router.push({
+        name: constants.routes.listItem.name,
+        params: { list: list.value.id, id: 'new' },
+      });
+    };
+
+    const onOrderUpdated = async (listItems: Array<ListItem>) => {
+      try {
+        await updateItemsOrder(list.value.id, listItems);
+      } catch (e: unknown) {
+        emit(constants.events.showError, (e as Error).message);
+      }
+    };
+
     return {
       list,
       newItem,
@@ -112,30 +129,11 @@ export default defineComponent({
       onSetItemToDone,
       onSetItemToPending,
       onQuickCreate,
-      onCreate: () => {
-        /* todo */
-      },
+      onCreate,
       onItemPress,
       onItemDelete,
-      onOrderUpdated: () => {
-        /* todo */
-      },
+      onOrderUpdated,
     };
   },
-
-  //   onCreate() {
-  //     this.$router.push({
-  //       name: this.$Const.routes.listItem,
-  //       params: { list: this.list.id, id: 'new' },
-  //     });
-  //   },
-
-  //   async onOrderUpdated(listItems) {
-  //     try {
-  //       await this.updateItemsOrder({ listId: this.list.id, listItems });
-  //     } catch (e) {
-  //       this.$emit('showError', e.message);
-  //     }
-  //   },
 });
 </script>

@@ -84,12 +84,24 @@ export function useListItems() {
     }
   };
 
+  const getNewItemPriority = () => {
+    const numberOfPendingItems = currentList.value.pendingItems.length;
+    if (numberOfPendingItems > 0) {
+      const lowestPriorityItem =
+        currentList.value.pendingItems[numberOfPendingItems - 1];
+      return (lowestPriorityItem.priority ?? 0) + 1;
+    } else {
+      return constants.lists.priority.highest;
+    }
+  };
+
   const quickCreateListItem = async (listId: string, name: string) => {
     if (currentList.value.id === listId) {
       const listItem = new ListItem({
         name: name,
         status: constants.itemStatus.pending,
         listId: listId,
+        priority: getNewItemPriority(),
       });
 
       setAuditableValues(listItem);
@@ -99,6 +111,21 @@ export function useListItems() {
     }
   };
 
+  const updateItemsOrder = async (
+    listId: string,
+    listItems: Array<ListItem>
+  ) => {
+    listItems.forEach((item) => setAuditableValues(item));
+
+    return ListService.updateListItemsPriorities(
+      userId,
+      listId,
+      listItems
+    ).catch(() => {
+      throw new Error('Error updating list items priorities');
+    });
+  };
+
   return {
     getCurrentListWithItems,
     loadListWithItems,
@@ -106,5 +133,6 @@ export function useListItems() {
     setItemToDone,
     deleteListItem,
     quickCreateListItem,
+    updateItemsOrder,
   };
 }

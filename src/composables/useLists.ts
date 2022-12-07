@@ -7,6 +7,7 @@ import List from '@/models/list';
 import { ListType } from '@/models/models';
 import ListService from '@/services/ListService';
 import { ref, Ref } from 'vue';
+import { setAuditableValues } from './useCommons';
 
 const isLoadingLists = ref(false);
 
@@ -47,6 +48,9 @@ export function useLists(): ListsComposableReturnValue {
 
   const updateListsPriorities = (lists: Array<List>): Promise<void[]> => {
     const userId = getCurrentUserId();
+
+    lists.forEach((list) => setAuditableValues(list));
+
     return ListService.updateListsPriorities(userId, lists).catch(() => {
       throw new Error('Error updating lists priorities');
     });
