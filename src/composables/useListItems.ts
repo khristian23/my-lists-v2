@@ -106,7 +106,7 @@ export function useListItems() {
 
       setAuditableValues(listItem);
 
-      await ListService.saveListItem(listItem);
+      await ListService.saveListItem(userId, listItem);
       currentList.value.items.push(listItem);
     }
   };
@@ -126,13 +126,21 @@ export function useListItems() {
     });
   };
 
+  const saveListItem = async (listItem: ListItem) => {
+    setAuditableValues(listItem);
+
+    return ListService.saveListItem(userId, listItem);
+  };
+
   return {
     getCurrentListWithItems,
+    getListItemById,
     loadListWithItems,
     setItemToPending,
     setItemToDone,
     deleteListItem,
     quickCreateListItem,
     updateItemsOrder,
+    saveListItem,
   };
 }

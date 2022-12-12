@@ -127,7 +127,7 @@ describe('List Items', () => {
     const newItemId = 'newItemId';
     const spy = vi
       .spyOn(ListService, 'saveListItem')
-      .mockImplementation((listItem: ListItem) => {
+      .mockImplementation((userId: string, listItem: ListItem) => {
         listItem.id = newItemId;
         return Promise.resolve();
       });
@@ -148,6 +148,6 @@ describe('List Items', () => {
       changedBy: FAKE_USER_ID,
     });
 
-    expect(spy).toBeCalledWith(expectedListItem);
+    expect(spy).toBeCalledWith(FAKE_USER_ID, expectedListItem);
   });
 });

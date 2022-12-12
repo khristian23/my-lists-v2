@@ -26,7 +26,7 @@ export class ListConverter implements FirestoreDataConverter<List> {
     const data = snapshot.data();
 
     return new List({
-      id: data.id,
+      id: snapshot.id,
       name: data.name,
       type: data.type,
       description: data.description,
@@ -66,7 +66,7 @@ export class ListItemConverter implements FirestoreDataConverter<ListItem> {
     const data = snapshot.data();
 
     return new ListItem({
-      id: data.id,
+      id: snapshot.id,
       name: data.name,
       description: data.description,
       priority:

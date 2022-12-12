@@ -1,12 +1,4 @@
 <template>
-  <label for="username">Username:</label>
-  <input
-    v-model="newItem"
-    id="username"
-    @keyup="onQuickCreateKeyup"
-    name="username"
-  />
-  <p>value is: {{ newItem }}</p>
   <q-input
     v-model="newItem"
     ref="quickCreateInput"

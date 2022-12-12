@@ -292,7 +292,7 @@ describe('List Items page', () => {
   it('should add created items to the bottom of the pending list', async () => {
     const newItemId = 'newItemId';
     vi.mocked(ListService).saveListItem.mockImplementation(
-      (listItem: ListItem) => {
+      (userId: string, listItem: ListItem) => {
         listItem.id = newItemId;
         return Promise.resolve();
       }

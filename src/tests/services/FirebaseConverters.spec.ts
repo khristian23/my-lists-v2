@@ -16,7 +16,6 @@ describe('Firebase Converters', () => {
       listConverter = new ListConverter(CURRENT_USER_ID);
 
       firebaseList = {
-        id: 'mmKOVL2r8BPacBl7QENM6uvKoKM2',
         description: '',
         modifiedAt: 1665932296442,
         name: 'Compras para la casa',
@@ -28,6 +27,7 @@ describe('Firebase Converters', () => {
 
     function convertFirebaseList(firebaseList: DocumentData): List {
       return listConverter.fromFirestore({
+        id: 'mmKOVL2r8BPacBl7QENM6uvKoKM2',
         data: vi.fn().mockReturnValue(firebaseList),
       } as unknown as QueryDocumentSnapshot);
     }

@@ -1,6 +1,6 @@
 <template>
   <q-page class="flex">
-    <q-form ref="myForm" class="full-width q-pa-md">
+    <q-form ref="listItemForm" class="full-width q-pa-md">
       <q-input
         outlined
         v-model="listItem.name"
@@ -11,9 +11,9 @@
       <q-select
         outlined
         v-model="listItem.status"
-        :options="statusList"
+        :options="listItemStatuses"
         label="Status"
-        :readonly="!editMode"
+        :readonly="!inEditMode"
         :emit-value="true"
         class="q-pb-md"
       />
@@ -25,125 +25,96 @@
         class="q-pb-md"
       />
     </q-form>
-    <TheFooter>
+    <the-footer>
       <q-btn unelevated icon="save" @click="onSave" label="Save" />
-    </TheFooter>
+    </the-footer>
   </q-page>
 </template>
 
-<script>
-import { mapMutations, mapActions } from 'vuex';
-import ListItem from 'src/storage/ListItem';
+<script lang="ts">
+import ListItem from '@/models/listItem';
+import constants from '@/util/constants';
+import { QForm } from 'quasar';
+import { defineComponent, ref, computed, onMounted, Ref, watch } from 'vue';
+import { useListItems } from '@/composables/useListItems';
+import { useRouter } from 'vue-router';
+import { useGlobals } from '@/composables/useGlobals';
 
-export default {
-  name: 'list-item',
-  data() {
-    return {
-      listItem: new ListItem({
-        status: this.$Const.itemStatus.pending,
-      }),
-    };
-  },
-  components: {
-    TheFooter: require('components/TheFooter').default,
-  },
-  watch: {
-    editList: {
-      immediate: true,
-      handler() {
-        this.initializeView();
-      },
-    },
-    'listItem.name': {
-      immediate: true,
-      handler() {
-        if (this.listItem.name) {
-          this.setTitle(this.listItem.name);
-        } else if (this.$route.params.id === 'new') {
-          this.setTitle('Create List Item');
-        } else {
-          this.setTitle('Edit List Item');
+export default defineComponent({
+  name: 'list-item-page',
+  props: ['id', 'list'],
+  emits: [constants.events.showError, constants.events.showToast],
+  setup(props, { emit }) {
+    const router = useRouter();
+    const { setTitle } = useGlobals();
+    const listItemForm = ref<QForm | null>(null);
+    const { saveListItem, getListItemById } = useListItems();
+    let listItem: Ref<ListItem> = ref(
+      new ListItem({
+        status: constants.itemStatus.pending,
+        listId: props.list,
+      })
+    );
+
+    const inEditMode = computed(() => {
+      return props.id !== 'new';
+    });
+
+    onMounted(async () => {
+      if (inEditMode.value) {
+        try {
+          listItem.value = await getListItemById(props.list, props.id);
+        } catch (e: unknown) {
+          emit(constants.events.showError, (e as Error).message);
+          router.replace({
+            name: constants.routes.listItems.name,
+            params: { id: props.list },
+          });
         }
-      },
-    },
-  },
-  computed: {
-    statusList() {
-      return Object.keys(this.$Const.itemStatus).map((key) => {
+      }
+    });
+
+    setTitle('New List Item');
+    watch(
+      () => listItem.value.name,
+      (listItemName) => setTitle(listItemName)
+    );
+
+    const listItemStatuses = computed(() => {
+      return Object.values(constants.itemStatus).map((value) => {
         return {
-          value: this.$Const.itemStatus[key],
-          label: this.$Const.itemStatus[key],
+          value,
+          label: value,
         };
       });
-    },
+    });
 
-    listId() {
-      return this.$route.params.list;
-    },
+    const onSave = async () => {
+      const isFormValid = await listItemForm?.value?.validate();
 
-    editMode() {
-      return this.$route.params.id !== 'new';
-    },
-
-    editList() {
-      const listId = this.$route.params.list;
-      return this.$store.getters['lists/getListById'](listId);
-    },
-  },
-  async mounted() {
-    await this.getListItems(this.listId);
-  },
-  methods: {
-    ...mapMutations('app', ['setTitle']),
-    ...mapActions('lists', ['getListItems', 'saveItem']),
-
-    async initializeView() {
-      this.$q.loading.show();
-
-      if (this.editMode && this.editList) {
-        this.list = this.editList.clone();
-        this._loadExistentItem();
-        this.$q.loading.hide();
-      }
-
-      if (!this.editMode) {
-        this.$q.loading.hide();
-      }
-    },
-    async _loadExistentItem() {
-      const listItemId = this.$route.params.id;
-      const editListItem = this.editList.listItems.find(
-        (item) => item.id === listItemId
-      );
-
-      if (editListItem) {
-        this.listItem = editListItem.clone();
-      } else {
-        this.$emit('showError', `List Item Id ${listItemId} not found`);
-        this.$router.replace({
-          name: this.$Const.routes.listItem,
-          params: { list: this.listId, id: 'new' },
-        });
-      }
-    },
-    async onSave() {
-      if (!this.$refs.myForm.validate()) {
+      if (!isFormValid) {
         return;
       }
 
-      if (!this.editMode) {
-        this.listItem.listId = this.listId;
+      try {
+        await saveListItem(listItem.value);
+        emit(constants.events.showToast, 'List Item saved');
+        router.replace({
+          name: constants.routes.listItems.name,
+          params: { id: props.list },
+        });
+      } catch (e: unknown) {
+        emit(constants.events.showError, (e as Error).message);
       }
+    };
 
-      await this.saveItem(this.listItem);
-      this.$emit('showToast', 'List Item saved');
-      this.$router.replace({
-        name: this.$Const.routes.listItems,
-        params: { id: this.editList.id },
-      });
-    },
+    return {
+      inEditMode,
+      listItemForm,
+      listItem,
+      listItemStatuses,
+      onSave,
+    };
   },
-};
+});
 </script>
-
-<style></style>

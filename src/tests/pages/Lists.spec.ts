@@ -20,7 +20,7 @@ import { Quasar } from 'quasar';
 import List from '@/models/list';
 import TheList from '@/components/TheList.vue';
 import TheConfirmation from '@/components/TheConfirmation.vue';
-import Consts from '@/util/constants';
+import constants from '@/util/constants';
 import MainLayoutTest from './helpers/MainLayoutTest.vue';
 import { Router } from 'vue-router';
 import { generateLists } from '../helpers/TestHelpers';
@@ -67,7 +67,7 @@ function renderComponent(setupData?: Partial<SetupData>): RenderResult {
 
 describe('The Lists', () => {
   beforeEach(() => {
-    router = createRouterForRoutes([{ name: Consts.routes.lists.name }]);
+    router = createRouterForRoutes([{ name: constants.routes.lists.name }]);
   });
 
   afterEach(() => {
@@ -77,7 +77,7 @@ describe('The Lists', () => {
 
   describe('General Lists rendering', () => {
     beforeEach(async () => {
-      router.push({ name: Consts.routes.lists.name });
+      router.push({ name: constants.routes.lists.name });
       await router.isReady();
     });
 
@@ -104,7 +104,7 @@ describe('The Lists', () => {
   });
 
   describe('Filtering by route is used', () => {
-    const filterByType = Consts.listType.toDoList;
+    const filterByType = constants.listType.toDoList;
     const filteredItems = lists.filter(({ type }) => type === filterByType);
 
     beforeEach(async () => {
@@ -133,7 +133,7 @@ describe('The Lists', () => {
     it('should update page title when change the filter', async () => {
       router.replace({
         path: '/',
-        query: { type: Consts.listType.shoppingCart },
+        query: { type: constants.listType.shoppingCart },
       });
       await router.isReady();
 
@@ -158,14 +158,15 @@ describe('The Lists', () => {
 
     it('should navigate to items details route', async () => {
       const firstList = lists[0];
-      const route = Consts.routes[firstList.type as keyof typeof Consts.routes];
-      const routeName = route?.name ?? Consts.routes.listItems.name;
+      const route =
+        constants.routes[firstList.type as keyof typeof constants.routes];
+      const routeName = route?.name ?? constants.routes.listItems.name;
 
       const { getByText } = renderComponent();
 
       await waitFor(() => getByText(firstList.name));
 
-      fireEvent.click(getByText(firstList.name));
+      await fireEvent.click(getByText(firstList.name));
 
       expect(routerSpy).toHaveBeenCalledWith({
         name: routeName,
@@ -185,7 +186,7 @@ describe('The Lists', () => {
       await fireEvent.click(editButton);
 
       expect(routerSpy).toHaveBeenCalledWith({
-        name: Consts.routes.list.name,
+        name: constants.routes.list.name,
         params: { id: firstList.id },
       });
     });
@@ -199,7 +200,7 @@ describe('The Lists', () => {
       await fireEvent.click(createButton);
 
       expect(routerSpy).toHaveBeenCalledWith({
-        name: Consts.routes.list.name,
+        name: constants.routes.list.name,
         params: { id: 'new' },
       });
     });
@@ -243,7 +244,7 @@ describe('The Lists', () => {
 
       await flushPromises();
 
-      expect(emitted()).toHaveProperty(Consts.events.showToast);
+      expect(emitted()).toHaveProperty(constants.events.showToast);
     });
 
     it('should emit a show error event when error deleting item', async () => {
@@ -257,7 +258,7 @@ describe('The Lists', () => {
 
       await flushPromises();
 
-      expect(emitted()).toHaveProperty(Consts.events.showError);
+      expect(emitted()).toHaveProperty(constants.events.showError);
     });
   });
 });
