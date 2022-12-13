@@ -28,7 +28,8 @@ import { createRouterForRoutes } from './helpers/router';
 import { ListsComposableReturnValue, useLists } from '@/composables/useLists';
 import vuedraggable from 'vuedraggable';
 import flushPromises from 'flush-promises';
-vi.mock('@/composables/useLists');
+import ListService from '@/services/ListService';
+vi.mock('@/services/ListService');
 
 const noop = () => undefined;
 Object.defineProperty(window, 'scrollTo', { value: noop, writable: true });
@@ -38,19 +39,18 @@ let router: Router;
 const MAX_NUMBER_OF_LISTS = 20;
 const lists = generateLists(MAX_NUMBER_OF_LISTS);
 
-interface SetupData {
-  customLists: Array<List>;
-  mockedRouteQuery: string;
-  mockedDeleteListReturn: () => Promise<void>;
-}
+// interface SetupData {
+//   customLists: Array<List>;
+//   mockedDeleteListReturn: () => Promise<void>;
+// }
 
-function renderComponent(setupData?: Partial<SetupData>): RenderResult {
-  vi.mocked(useLists).mockReturnValue({
-    isLoadingLists: ref(false),
-    getListsByType: () => Promise.resolve(setupData?.customLists ?? lists),
-    deleteListById: setupData?.mockedDeleteListReturn ?? vi.fn(),
-  } as unknown as ListsComposableReturnValue);
-
+// function renderComponent(setupData?: Partial<SetupData>): RenderResult {
+// vi.mocked(useLists).mockReturnValue({
+//   isLoadingLists: ref(false),
+//   getListsByType: () => Promise.resolve(setupData?.customLists ?? lists),
+//   deleteListById: setupData?.mockedDeleteListReturn ?? vi.fn(),
+// } as unknown as ListsComposableReturnValue);
+function renderComponent(): RenderResult {
   return render(MainLayoutTest, {
     global: {
       plugins: [Quasar, router],
@@ -77,70 +77,117 @@ describe('The Lists', () => {
 
   describe('General Lists rendering', () => {
     beforeEach(async () => {
+      vi.mocked(ListService).getListsByType.mockResolvedValue(lists);
+
       router.push({ name: constants.routes.lists.name });
       await router.isReady();
     });
 
     it('should render the page with All Lists title', async () => {
-      const { getByText, findByText } = renderComponent();
-      await waitFor(() => expect(getByText('ListName2')).toBeTruthy());
-      expect(findByText('title: All lists')).toBeTruthy();
+      const { getByText } = renderComponent();
+
+      await flushPromises();
+
+      getByText('ListName2');
+
+      getByText('title: All lists');
     });
 
     it('should render the list component only if it has items', () => {
-      const { container } = renderComponent({
-        customLists: [],
-      });
+      const { container } = renderComponent();
+
       expect(container.querySelector('#listHolder')).toBeFalsy();
     });
 
     it('should show all lists by default with empty query type', async () => {
       const { findAllByText } = renderComponent();
+
       const list = await findAllByText((content) =>
         content.startsWith('ListName')
       );
+
       expect(list).toHaveLength(MAX_NUMBER_OF_LISTS);
     });
   });
 
   describe('Filtering by route is used', () => {
-    const filterByType = constants.listType.toDoList;
-    const filteredItems = lists.filter(({ type }) => type === filterByType);
-
-    beforeEach(async () => {
-      router.push({ path: '/' });
-      await router.isReady();
-    });
+    const filteredByToDoLists = lists.filter(
+      ({ type }) => type === constants.listType.toDoList
+    );
+    const filteredByWishLists = lists.filter(
+      ({ type }) => type === constants.listType.whishlist
+    );
 
     it('should filter when reaching the component', async () => {
-      const { findAllByText } = renderComponent({ customLists: filteredItems });
+      router.push({ path: '/' });
+      await router.isReady();
+
+      vi.mocked(ListService).getListsByType.mockResolvedValue(lists);
+
+      const { findAllByText } = renderComponent();
+
+      expect(ListService.getListsByType).toHaveBeenCalledWith(
+        constants.user.anonymous,
+        undefined
+      );
+
       const list = await findAllByText((content) =>
         content.startsWith('ListName')
       );
-      expect(list).toHaveLength(filteredItems.length);
+      expect(list).toHaveLength(lists.length);
     });
 
     it('should update page title when reaching the component', async () => {
-      router.replace({ path: '/', query: { type: filterByType } });
+      vi.mocked(ListService).getListsByType.mockResolvedValue(
+        filteredByToDoLists
+      );
+
+      router.replace({
+        path: '/',
+        query: { type: constants.listType.toDoList },
+      });
       await router.isReady();
 
-      const { findByText } = renderComponent({
-        customLists: filteredItems,
-      });
-      expect(await findByText('title: To do lists')).toBeTruthy();
+      const { queryAllByText, getByText } = renderComponent();
+
+      await flushPromises();
+
+      getByText('title: To do lists');
+      getByText(filteredByToDoLists[0].name);
+
+      const editListButtons = queryAllByText('edit');
+      expect(editListButtons.length).toBe(filteredByToDoLists.length);
     });
 
     it('should update page title when change the filter', async () => {
+      vi.mocked(ListService).getListsByType.mockResolvedValue(
+        filteredByToDoLists
+      );
+
+      router.push({ path: '/' });
+      await router.isReady();
+
+      const { getByText } = renderComponent();
+
+      vi.mocked(ListService).getListsByType.mockResolvedValue(
+        filteredByWishLists
+      );
+
       router.replace({
         path: '/',
-        query: { type: constants.listType.shoppingCart },
+        query: { type: constants.listType.whishlist },
       });
       await router.isReady();
 
-      const { findByText } = renderComponent({
-        customLists: filteredItems,
-      });
-      expect(await findByText('title: Shopping lists')).toBeTruthy();
+      await flushPromises();
+
+      getByText('title: Whishlists');
+      getByText(filteredByWishLists[0].name);
+
+      expect(ListService.getListsByType).toHaveBeenCalledWith(
+        constants.user.anonymous,
+        constants.listType.whishlist
+      );
     });
   });
 
@@ -148,6 +195,8 @@ describe('The Lists', () => {
     let routerSpy: SpyInstance;
 
     beforeEach(() => {
+      vi.mocked(ListService).getListsByType.mockResolvedValue(lists);
+
       routerSpy = vi.spyOn(router, 'push');
       routerSpy.mockImplementation(() => Promise.resolve());
     });
@@ -163,6 +212,8 @@ describe('The Lists', () => {
       const routeName = route?.name ?? constants.routes.listItems.name;
 
       const { getByText } = renderComponent();
+
+      await flushPromises();
 
       await waitFor(() => getByText(firstList.name));
 
@@ -192,9 +243,9 @@ describe('The Lists', () => {
     });
 
     it('should navigate to list creation page', async () => {
-      const { findByText } = renderComponent({
-        customLists: [],
-      });
+      vi.mocked(ListService).getListsByType.mockResolvedValue([]);
+
+      const { findByText } = renderComponent();
 
       const createButton = await findByText('Create');
       await fireEvent.click(createButton);
@@ -207,14 +258,12 @@ describe('The Lists', () => {
   });
 
   describe('List Management', () => {
-    async function triggerDeleteForFirstItem(
-      mockedDeleteListReturn: () => Promise<void>
-    ): Promise<RenderResult> {
+    async function triggerDeleteForFirstItem(): Promise<RenderResult> {
       const firstList = lists[0];
-      const renderResult = renderComponent({
-        customLists: [firstList],
-        mockedDeleteListReturn,
-      });
+
+      vi.mocked(ListService).getListsByType.mockResolvedValue([firstList]);
+
+      const renderResult = renderComponent();
 
       const { getByTestId, findByText, getByText } = renderResult;
 
@@ -236,11 +285,11 @@ describe('The Lists', () => {
     }
 
     it('should delete a list entry', async () => {
-      const mockedDeleteListReturn = vi.fn().mockResolvedValue(true);
-
-      const { emitted } = await triggerDeleteForFirstItem(
-        mockedDeleteListReturn
+      vi.mocked(ListService).deleteListById.mockResolvedValue(
+        Promise.resolve()
       );
+
+      const { emitted } = await triggerDeleteForFirstItem();
 
       await flushPromises();
 
@@ -248,13 +297,11 @@ describe('The Lists', () => {
     });
 
     it('should emit a show error event when error deleting item', async () => {
-      const mockedDeleteListReturn = vi
-        .fn()
-        .mockRejectedValue(new Error('Error updating lists'));
+      vi.mocked(ListService).deleteListById.mockImplementationOnce(() => {
+        throw new Error('Error updating lists');
+      });
 
-      const { emitted } = await triggerDeleteForFirstItem(
-        mockedDeleteListReturn
-      );
+      const { emitted } = await triggerDeleteForFirstItem();
 
       await flushPromises();
 

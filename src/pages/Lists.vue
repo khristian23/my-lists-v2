@@ -35,7 +35,6 @@ export default defineComponent({
   emits: [Constants.events.showError, Constants.events.showToast],
   setup(_, { emit }) {
     const confirmation = ref();
-    const filterBy = ref('');
     const listNameToDelete = ref('');
     const lists = ref<Array<List>>([]);
 
@@ -49,16 +48,23 @@ export default defineComponent({
       deleteListById,
     } = useLists();
 
+    const loadListsByType = async (type?: string) => {
+      lists.value = await getListsByType(type);
+      if (!type) {
+        setTitle('All Lists');
+      } else {
+        updatePageTitleFromFilter(type);
+      }
+    };
+
     onMounted(async () => {
-      setTitle('All Lists');
-      lists.value = await getListsByType();
+      await loadListsByType(route.query?.type as string);
     });
 
     watch(
       () => route.query?.type,
-      (filterRequest) => {
-        filterBy.value = filterRequest as string;
-        updatePageTitleFromFilter(filterBy.value);
+      async (filterRequest) => {
+        await loadListsByType(filterRequest as string);
       }
     );
 

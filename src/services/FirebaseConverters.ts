@@ -68,7 +68,8 @@ export class ListItemConverter implements FirestoreDataConverter<ListItem> {
     return new ListItem({
       id: snapshot.id,
       name: data.name,
-      description: data.description,
+      notes: data.description,
+      status: data.status,
       priority:
         data.userPriorities?.[this.userId] ?? constants.lists.priority.lowest,
       owner: data.owner,

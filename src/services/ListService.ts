@@ -28,7 +28,7 @@ export default {
     userId: string,
     type: ListType | undefined
   ): Promise<Array<List>> {
-    console.error('before query kists with user: ', userId);
+    console.log('before query kists with user: ', userId);
     type firebaseWhereArgs = [string, WhereFilterOp, unknown];
 
     const ownerArgs: firebaseWhereArgs = ['owner', '==', userId];
