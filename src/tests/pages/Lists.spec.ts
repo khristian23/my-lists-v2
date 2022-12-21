@@ -39,17 +39,6 @@ let router: Router;
 const MAX_NUMBER_OF_LISTS = 20;
 const lists = generateLists(MAX_NUMBER_OF_LISTS);
 
-// interface SetupData {
-//   customLists: Array<List>;
-//   mockedDeleteListReturn: () => Promise<void>;
-// }
-
-// function renderComponent(setupData?: Partial<SetupData>): RenderResult {
-// vi.mocked(useLists).mockReturnValue({
-//   isLoadingLists: ref(false),
-//   getListsByType: () => Promise.resolve(setupData?.customLists ?? lists),
-//   deleteListById: setupData?.mockedDeleteListReturn ?? vi.fn(),
-// } as unknown as ListsComposableReturnValue);
 function renderComponent(): RenderResult {
   return render(MainLayoutTest, {
     global: {
@@ -285,9 +274,9 @@ describe('The Lists', () => {
     }
 
     it('should delete a list entry', async () => {
-      vi.mocked(ListService).deleteListById.mockResolvedValue(
-        Promise.resolve()
-      );
+      vi.mocked(ListService).deleteListById.mockImplementationOnce(() => {
+        return Promise.resolve();
+      });
 
       const { emitted } = await triggerDeleteForFirstItem();
 

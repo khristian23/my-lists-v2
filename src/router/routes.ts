@@ -25,12 +25,13 @@ const routes: RouteRecordRaw[] = [
         component: () =>
           import(/* webpackChunkName: "ListItem" */ '@/pages/ListItem.vue'),
       },
-      //   {
-      //     path: '/list/:id',
-      //     name: Consts.routes.list,
-      //     component: () =>
-      //       import(/* webpackChunkName: "EditList" */ 'pages/List'),
-      //   },
+      {
+        path: constants.routes.list.path,
+        name: constants.routes.list.name,
+        props: true,
+        component: () =>
+          import(/* webpackChunkName: "EditList" */ '@/pages/List.vue'),
+      },
       //   {
       //     path: '/checklist/:id/items',
       //     name: Consts.routes.checklist,

@@ -1,4 +1,5 @@
 import constants from '@/util/constants';
+import { DefineStoreOptionsInPlugin } from 'pinia';
 import { Ref } from 'vue';
 import ListItem from './listItem';
 
@@ -64,6 +65,19 @@ export interface GlobalComposableReturnValue {
   title: Ref<string>;
   setTitle: (value: string) => void;
   displayHeaderBackButton: Ref<boolean>;
+}
+
+export interface ListSubTypeOption {
+  value: string;
+  label: string;
+}
+
+export interface ListTypeOption {
+  type: string;
+  value: string;
+  label: string;
+  icon: string;
+  subTypes: Array<ListSubTypeOption>;
 }
 
 export interface BeforeInstallPromptEvent extends Event {

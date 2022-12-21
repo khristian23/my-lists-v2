@@ -4,7 +4,7 @@
       id="pendingList"
       headerLabel="Pending"
       :items="list.pendingItems"
-      iconAction="{{ $Const.itemActionIcon.done }}"
+      actionIcon="done"
       @itemPress="onItemPress"
       @itemAction="onSetItemToDone"
       @itemDelete="onItemDelete"
@@ -15,7 +15,7 @@
       id="doneList"
       headerLabel="Done"
       :items="list.doneItems"
-      iconAction="{{ $Const.itemActionIcon.redo }}"
+      actionIcon="redo"
       class="self-end"
       @itemPress="onItemPress"
       @itemAction="onSetItemToPending"
@@ -31,7 +31,7 @@
 
 <script lang="ts">
 import { useListItems } from '@/composables/useListItems';
-import { defineComponent, ref, onMounted } from 'vue';
+import { defineComponent, ref, onMounted, ComputedRef } from 'vue';
 import { useGlobals } from '@/composables/useGlobals';
 import { useRouter } from 'vue-router';
 import constants from '@/util/constants';
@@ -114,9 +114,9 @@ export default defineComponent({
       });
     };
 
-    const onOrderUpdated = async (listItems: Array<ListItem>) => {
+    const onOrderUpdated = async (listItems: ComputedRef<ListItem[]>) => {
       try {
-        await updateItemsOrder(list.value.id, listItems);
+        await updateItemsOrder(list.value.id, listItems.value);
       } catch (e: unknown) {
         emit(constants.events.showError, (e as Error).message);
       }

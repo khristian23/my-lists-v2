@@ -87,7 +87,7 @@ export default {
     const listItemReference = doc(
       firestore,
       `lists/${listId}/items/${listItemId}`
-    ).withConverter(new ListItemConverter(userId));
+    ).withConverter(new ListItemConverter(userId, listId));
 
     const listItemSnapshot = await getDoc(listItemReference);
     if (listItemSnapshot.exists()) {
@@ -104,7 +104,7 @@ export default {
     const listItemsCollection = collection(
       firestore,
       `lists/${listId}/items`
-    ).withConverter(new ListItemConverter(userId));
+    ).withConverter(new ListItemConverter(userId, listId));
 
     const listItemsQuery = query(listItemsCollection);
 
@@ -205,13 +205,13 @@ export default {
 
       return updateDoc(itemReference, {
         name: listItem.name,
-        description: listItem.notes,
+        notes: listItem.notes ?? '',
         status: listItem.status,
       });
     } else {
       const createdItemRef = doc(
         collection(firestore, `lists/${listItem.listId}/items`)
-      ).withConverter(new ListItemConverter(userId));
+      ).withConverter(new ListItemConverter(userId, listItem.listId));
 
       await setDoc(createdItemRef, listItem);
 

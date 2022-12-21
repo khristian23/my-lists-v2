@@ -1,7 +1,7 @@
 <template>
   <q-page class="flex">
     <q-form class="full-width q-pa-md" ref="myForm">
-      <div class="text-h6 q-mb-sm">{{ mainListType }} Details</div>
+      <div class="text-h6 q-mb-sm">{{ selectedType?.type }} Details</div>
       <q-input
         :disable="disable"
         outlined
@@ -21,16 +21,16 @@
         :disable="disable"
         outlined
         v-model="selectedType"
-        :options="typeOptions"
+        :options="listTypeOptions"
         class="q-mb-md"
         @input="onTypeSelection"
         label="Type"
       >
         <template v-slot:prepend>
-          <q-icon :name="selectedType.icon" />
+          <q-icon :name="selectedType?.icon" />
         </template>
         <template v-slot:option="scope">
-          <q-item v-bind="scope.itemProps" v-on="scope.itemEvents">
+          <q-item v-bind="scope.itemProps" :data-testid="scope.opt.label">
             <q-item-section avatar>
               <q-icon :name="scope.opt.icon" />
             </q-item-section>
@@ -40,17 +40,18 @@
           </q-item>
         </template>
       </q-select>
+
       <q-select
         :disable="disable"
         outlined
         v-model="selectedSubType"
-        :options="selectedType.subTypes"
-        v-if="selectedType.subTypes.length"
+        :options="selectedType?.subTypes"
+        v-if="selectedType?.subTypes.length"
         class="q-mb-md"
         label="Sub Type"
       >
         <template v-slot:prepend>
-          <q-icon :name="selectedType.icon" />
+          <q-icon :name="selectedType?.icon" />
         </template>
       </q-select>
 
@@ -88,7 +89,7 @@
         </q-list>
       </div>
     </q-form>
-    <TheFooter>
+    <the-footer>
       <q-btn
         unelevated
         icon="save"
@@ -96,167 +97,179 @@
         label="Save"
         v-if="!disable"
       />
-    </TheFooter>
+    </the-footer>
   </q-page>
 </template>
 
-<script>
-import List from 'src/storage/List';
-import { mapState, mapMutations, mapActions } from 'vuex';
+<script lang="ts">
+import { defineComponent, ref, computed, watch } from 'vue';
+import List from '@/models/list';
+import constants from '@/util/constants';
+import { ListTypeOption, ListSubTypeOption } from '@/models/models';
+import { useGlobals } from '@/composables/useGlobals';
 
-export default {
+export default defineComponent({
   name: 'list-page',
-  data() {
-    return {
-      list: new List({}),
-      selectedType: null,
-      selectedSubType: null,
+  props: ['id'],
+  setup(props, { emit }) {
+    const list = ref<List>(new List({}));
+    const selectedType = ref<ListTypeOption>();
+    const selectedSubType = ref<ListSubTypeOption | null>();
+    const { setTitle } = useGlobals();
+
+    const editMode = props.id != 'new';
+    const disable = computed(() => list.value?.isShared);
+    const listTypeOptions = ref(constants.lists.types);
+    console.log(JSON.stringify(listTypeOptions.value));
+
+    watch(
+      () => list.value?.name,
+      () => setHeaderTitle()
+    );
+
+    const setHeaderTitle = () => {
+      if (list.value.name) {
+        setTitle(list.value.name);
+      } else if (props.id === 'new') {
+        setTitle(`Create ${selectedType.value?.type}`);
+      } else {
+        setTitle(`Edit ${selectedType.value?.type}`);
+      }
     };
-  },
-  components: {
-    TheFooter: require('components/TheFooter').default,
-  },
-  watch: {
-    editList: {
-      immediate: true,
-      handler() {
-        this._initializeList();
-      },
-    },
-    'list.name': {
-      immediate: true,
-      handler() {
-        this.setHeaderTitle();
-      },
-    },
-  },
-  mounted() {
-    this.loadUsersList();
-  },
-  computed: {
-    ...mapState('auth', ['user', 'users']),
 
-    typeOptions() {
-      let options = this.$Const.lists.types;
+    const onTypeSelection = () => {
+      const subTypes = selectedType.value?.subTypes ?? [];
 
-      if (this.editMode) {
-        options = options.filter((option) => option.type === this.mainListType);
-      }
-
-      return options;
-    },
-
-    disable() {
-      return this.list.isShared;
-    },
-
-    editMode() {
-      return this.$route.params.id !== 'new';
-    },
-
-    editList() {
-      const listId = this.$route.params.id;
-      return this.$store.getters['lists/getListById'](listId);
-    },
-
-    mainListType() {
-      return this.selectedType.type;
-    },
-
-    shareableUsers() {
-      return []
-        .concat(this.users)
-        .filter((user) => user.id !== this.user.uid)
-        .map((user) => {
-          user.isSharedWith = this.list.sharedWith.includes(user.id);
-          return user;
-        });
-    },
-  },
-  methods: {
-    ...mapMutations('app', ['setTitle']),
-    ...mapActions('lists', ['saveList']),
-    ...mapActions('auth', ['loadUsersList']),
-
-    async _initializeList() {
-      this.$q.loading.show();
-
-      if (this.editMode && this.editList) {
-        this.list = this.editList.clone();
-
-        this.selectedType = this.$Const.lists.types.find(
-          (type) => this.list.type === type.value
-        );
-        this.selectedSubType =
-          this.selectedType.subTypes.find(
-            (subtype) => this.list.subtype === subtype.value
-          ) || [];
-        this.$q.loading.hide();
-      } else {
-        this.selectedType = this.$Const.lists.types[0];
-        this.selectedSubType = this.selectedType.subTypes[0];
-      }
-
-      if (!this.editMode) {
-        this.$q.loading.hide();
-      }
-    },
-
-    setHeaderTitle() {
-      if (this.list.name) {
-        this.setTitle(this.list.name);
-      } else if (this.$route.params.id === 'new') {
-        this.setTitle(`Create ${this.mainListType}`);
-      } else {
-        this.setTitle(`Edit ${this.mainListType}`);
-      }
-    },
-
-    onTypeSelection() {
-      this.selectedSubType = null;
-      const subTypes = this.selectedType.subTypes;
+      selectedSubType.value = null;
 
       if (subTypes.length) {
-        this.selectedSubType = subTypes[0];
-      } else {
-        this.selectedSubType = null;
+        selectedSubType.value = subTypes[0];
       }
 
-      this.setHeaderTitle();
-    },
+      setHeaderTitle();
+    };
 
-    async onSave() {
-      const isValid = await this.$refs.myForm.validate();
-      if (!isValid) {
-        return;
-      }
-
-      this.list.type = this.selectedType.value;
-      if (this.selectedSubType) {
-        this.list.subtype = this.selectedSubType.value;
-      }
-
-      this.list.modifiedAt = new Date().getTime();
-      if (this.list.id) {
-        this.list.syncStatus = this.$Const.changeStatus.changed;
-      } else {
-        this.list.syncStatus = this.$Const.changeStatus.new;
-      }
-
-      if (this.list.sharedWith.length) {
-        this.list.isShared = true;
-      } else {
-        this.list.isShared = false;
-      }
-
-      try {
-        await this.saveList(this.list);
-        this.$emit('showToast', 'List saved');
-        this.$router.push({ name: this.$Const.routes.lists.name });
-      } catch (e) {
-        this.$emit('showError', e.message);
-      }
-    },
+    return {
+      list,
+      selectedType,
+      selectedSubType,
+      disable,
+      listTypeOptions,
+      onTypeSelection,
+      onSave: () => true,
+      shareableUsers: ref([]),
+    };
   },
-};
+  // watch: {
+  //   editList: {
+  //     immediate: true,
+  //     handler() {
+  //       this._initializeList();
+  //     },
+  //   },
+  //   'list.name': {
+  //     immediate: true,
+  //     handler() {
+  //       this.setHeaderTitle();
+  //     },
+  //   },
+  // },
+  // mounted() {
+  //   this.loadUsersList();
+  // },
+  // computed: {
+  //   ...mapState('auth', ['user', 'users']),
+
+  //   disable() {
+  //     return this.list.isShared;
+  //   },
+
+  //   editMode() {
+  //     return this.$route.params.id !== 'new';
+  //   },
+
+  //   editList() {
+  //     const listId = this.$route.params.id;
+  //     return this.$store.getters['lists/getListById'](listId);
+  //   },
+
+  //   mainListType() {
+  //     return this.selectedType.type;
+  //   },
+
+  //   shareableUsers() {
+  //     return []
+  //       .concat(this.users)
+  //       .filter((user) => user.id !== this.user.uid)
+  //       .map((user) => {
+  //         user.isSharedWith = this.list.sharedWith.includes(user.id);
+  //         return user;
+  //       });
+  //   },
+  // },
+  // methods: {
+  //   ...mapMutations('app', ['setTitle']),
+  //   ...mapActions('lists', ['saveList']),
+  //   ...mapActions('auth', ['loadUsersList']),
+
+  //   async _initializeList() {
+  //     this.$q.loading.show();
+
+  //     if (this.editMode && this.editList) {
+  //       this.list = this.editList.clone();
+
+  //       this.selectedType = this.$Const.lists.types.find(
+  //         (type) => this.list.type === type.value
+  //       );
+  //       this.selectedSubType =
+  //         this.selectedType.subTypes.find(
+  //           (subtype) => this.list.subtype === subtype.value
+  //         ) || [];
+  //       this.$q.loading.hide();
+  //     } else {
+  //       this.selectedType = this.$Const.lists.types[0];
+  //       this.selectedSubType = this.selectedType.subTypes[0];
+  //     }
+
+  //     if (!this.editMode) {
+  //       this.$q.loading.hide();
+  //     }
+  //   },
+
+  //
+
+  //   async onSave() {
+  //     const isValid = await this.$refs.myForm.validate();
+  //     if (!isValid) {
+  //       return;
+  //     }
+
+  //     this.list.type = this.selectedType.value;
+  //     if (this.selectedSubType) {
+  //       this.list.subtype = this.selectedSubType.value;
+  //     }
+
+  //     this.list.modifiedAt = new Date().getTime();
+  //     if (this.list.id) {
+  //       this.list.syncStatus = this.$Const.changeStatus.changed;
+  //     } else {
+  //       this.list.syncStatus = this.$Const.changeStatus.new;
+  //     }
+
+  //     if (this.list.sharedWith.length) {
+  //       this.list.isShared = true;
+  //     } else {
+  //       this.list.isShared = false;
+  //     }
+
+  //     try {
+  //       await this.saveList(this.list);
+  //       this.$emit('showToast', 'List saved');
+  //       this.$router.push({ name: this.$Const.routes.lists.name });
+  //     } catch (e) {
+  //       this.$emit('showError', e.message);
+  //     }
+  //   },
+  // },
+});
 </script>

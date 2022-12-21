@@ -116,5 +116,6 @@ export default {
     edit: 'edit',
     delete: 'delete',
     done: 'done',
+    redo: 'redo',
   },
 };
