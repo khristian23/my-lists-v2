@@ -7,6 +7,29 @@ import {
 import List from '@/models/list';
 import constants from '@/util/constants';
 import ListItem from '@/models/listItem';
+import User from '@/models/user';
+
+export class UserConverter implements FirestoreDataConverter<User> {
+  toFirestore(user: PartialWithFieldValue<User>): DocumentData {
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      photoURL: user.photoURL,
+    };
+  }
+
+  fromFirestore(snapshot: QueryDocumentSnapshot<DocumentData>): User {
+    const data = snapshot.data();
+
+    return new User({
+      id: snapshot.id,
+      name: data.name,
+      email: data.email,
+      photoURL: data.photoURL,
+    });
+  }
+}
 
 export class ListConverter implements FirestoreDataConverter<List> {
   private userId: string;
@@ -28,8 +51,9 @@ export class ListConverter implements FirestoreDataConverter<List> {
     return new List({
       id: snapshot.id,
       name: data.name,
-      type: data.type,
       description: data.description,
+      type: data.type,
+      subtype: data.subtype,
       priority:
         data.userPriorities?.[this.userId] ?? constants.lists.priority.lowest,
       isShared: data.sharedWith?.includes(this.userId) ?? false,

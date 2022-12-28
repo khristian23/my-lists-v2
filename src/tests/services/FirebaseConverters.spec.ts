@@ -2,17 +2,50 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   ListConverter,
   ListItemConverter,
+  UserConverter,
 } from '@/services/FirebaseConverters';
 import { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
 import List from '@/models/list';
 import constants from '@/util/constants';
 import ListItem from '@/models/listItem';
+import User from '@/models/user';
 
 const CURRENT_USER_ID = 'fake_user_id';
 const ANOTHER_USER_ID = 'another_fake_user_id';
 const TEST_LIST_ID = 'fake_list_id';
 
 describe('Firebase Converters', () => {
+  describe('User Converter', () => {
+    let userConverter: UserConverter;
+    let firebaseUser: DocumentData;
+
+    beforeEach(() => {
+      userConverter = new UserConverter();
+
+      firebaseUser = {
+        name: 'User Name',
+        email: 'user.name@email.com',
+        photoURL: 'https://domain.and.port.of/user/photo-url',
+      };
+    });
+
+    function convertFirebaseUser(firebaseUser: DocumentData): User {
+      return userConverter.fromFirestore({
+        id: 'mmKOVL2rAAPacBl7QENM6uvKoKM2',
+        data: vi.fn().mockReturnValue(firebaseUser),
+      } as unknown as QueryDocumentSnapshot);
+    }
+
+    it('should convert a user from firestore', () => {
+      const user = convertFirebaseUser(firebaseUser);
+
+      expect(user.id).toBe('mmKOVL2rAAPacBl7QENM6uvKoKM2');
+      expect(user.name).toBe('User Name');
+      expect(user.email).toBe('user.name@email.com');
+      expect(user.photoURL).toBe('https://domain.and.port.of/user/photo-url');
+    });
+  });
+
   describe('Lists Converters', () => {
     let listConverter: ListConverter;
     let firebaseList: DocumentData;
@@ -25,8 +58,8 @@ describe('Firebase Converters', () => {
         modifiedAt: 1665932296442,
         name: 'Compras para la casa',
         owner: 'mmKOVL2r8BPacBl7QENM6uvKoKM2',
-        subtype: '',
-        type: 'wish',
+        type: constants.listType.shoppingCart,
+        subtype: constants.listSubType.house,
       };
     });
 
@@ -46,6 +79,8 @@ describe('Firebase Converters', () => {
       expect(list.owner).toBe('mmKOVL2r8BPacBl7QENM6uvKoKM2');
       expect(list.isShared).toBe(false);
       expect(list.priority).toBe(constants.lists.priority.lowest);
+      expect(list.type).toBe(constants.listType.shoppingCart);
+      expect(list.subtype).toBe(constants.listSubType.house);
     });
 
     it('should flag list as shared when list owner is not current user', () => {

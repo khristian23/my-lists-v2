@@ -1,7 +1,7 @@
 import constants from '@/util/constants';
-import { DefineStoreOptionsInPlugin } from 'pinia';
 import { Ref } from 'vue';
 import ListItem from './listItem';
+import User from './user';
 
 export type ActionIcon = keyof typeof constants.itemActionIcon;
 
@@ -11,6 +11,12 @@ export type ListType =
   | typeof constants.listType.whishlist
   | typeof constants.listType.note
   | typeof constants.listType.shoppingCart;
+
+export type ListSubType =
+  | typeof constants.listSubType.personal
+  | typeof constants.listSubType.work
+  | typeof constants.listSubType.groceries
+  | typeof constants.listSubType.house;
 
 export type ListItemStatus =
   | typeof constants.itemStatus.done
@@ -50,8 +56,13 @@ export interface Auditable {
   modifiedAt: number;
 }
 
-export interface ListData extends BaseItem, Sortable, Auditable {
+export interface Shareable {
+  sharedWith: Array<User>;
+}
+
+export interface ListData extends BaseItem, Sortable, Auditable, Shareable {
   type: ListType;
+  subtype: ListSubType;
   isShared: boolean;
 }
 

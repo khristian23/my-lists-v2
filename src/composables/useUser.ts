@@ -1,24 +1,13 @@
 import { ref } from 'vue';
-import type { Ref } from 'vue';
 import User from '@/models/user';
 import Constants from '@/util/constants';
 import UserService from '@/services/UserService';
-
-export interface UserComposableReturnValue {
-  getCurrentUserRef: () => Ref<User>;
-  setCurrentUser: (currentUser: User) => void;
-  getCurrentUserId: () => string;
-  setCurrentUserAsAnonymous: () => void;
-  setCurrentUserPhotoURL: (photoUrl: string) => void;
-  logoutUser: () => void;
-  setUserLocation: (location: string) => void;
-}
 
 const anonymousUser = new User({ id: Constants.user.anonymous });
 
 const user = ref<User>(anonymousUser);
 
-export function useUser(): UserComposableReturnValue {
+export function useUser() {
   return {
     getCurrentUserRef: () => {
       return user;
@@ -36,6 +25,10 @@ export function useUser(): UserComposableReturnValue {
     setUserLocation: (location: string) => {
       user.value.location = location;
       UserService.updateUserLocation(user.value, location);
+    },
+    getUsersList: async () => {
+      const users = (await UserService.getUsersList()) ?? [];
+      return users.filter(({ id }) => id !== user.value.id);
     },
   };
 }

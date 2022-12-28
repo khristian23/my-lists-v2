@@ -9,8 +9,8 @@ import User from '@/models/user';
 import UserService from '@/services/UserService';
 
 const mockUser = new User({
-  name: 'Test User',
   id: 'TestUserID',
+  name: 'Test User',
   email: 'testuser@test.com',
 });
 
@@ -82,5 +82,29 @@ describe('User Composable', () => {
       mockUser,
       location
     );
+  });
+
+  it('should list available users without including current user', async () => {
+    vi.mock('@/service/UserService');
+
+    const { setCurrentUser, getUsersList } = useUser();
+
+    setCurrentUser(mockUser);
+
+    vi.mocked(UserService).getUsersList.mockResolvedValue([
+      new User({
+        id: 'TestUser1',
+        name: 'Test User',
+      }),
+      mockUser,
+      new User({
+        id: 'TestUser2',
+        name: 'Test User 2',
+      }),
+    ]);
+
+    const availableUsers = await getUsersList();
+    expect(availableUsers.length).toBe(2);
+    expect(availableUsers.find(({ id }) => id === mockUser.id)).toBeUndefined();
   });
 });

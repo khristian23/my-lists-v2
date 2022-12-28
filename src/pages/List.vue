@@ -1,7 +1,7 @@
 <template>
   <q-page class="flex">
     <q-form class="full-width q-pa-md" ref="myForm">
-      <div class="text-h6 q-mb-sm">{{ selectedType?.type }} Details</div>
+      <div class="text-h6 q-mb-sm">{{ selectedType?.label }} Details</div>
       <q-input
         :disable="disable"
         outlined
@@ -23,8 +23,9 @@
         v-model="selectedType"
         :options="listTypeOptions"
         class="q-mb-md"
-        @input="onTypeSelection"
+        @update:model-value="onTypeSelection"
         label="Type"
+        id="type"
       >
         <template v-slot:prepend>
           <q-icon :name="selectedType?.icon" />
@@ -58,7 +59,12 @@
       <div class="text-h6 q-mt-md">Shared With</div>
       <div class="q-pa-md q-mx-auto" style="max-width: 400px">
         <q-list bordered>
-          <q-item v-for="user in shareableUsers" :key="user.id" class="q-mb-sm">
+          <q-item
+            v-for="user in shareableUsers"
+            :key="user.id"
+            class="q-mb-sm"
+            data-testid="shareableUser"
+          >
             <q-item-section avatar>
               <q-avatar color="primary" text-color="white">
                 <img :src="user.photoURL" alt="Profile picture" />
@@ -102,25 +108,59 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, watch } from 'vue';
+import { defineComponent, ref, computed, watch, onMounted } from 'vue';
 import List from '@/models/list';
 import constants from '@/util/constants';
 import { ListTypeOption, ListSubTypeOption } from '@/models/models';
 import { useGlobals } from '@/composables/useGlobals';
+import { useLists } from '@/composables/useLists';
+import { useUser } from '@/composables/useUser';
+import User from '@/models/user';
 
 export default defineComponent({
   name: 'list-page',
   props: ['id'],
-  setup(props, { emit }) {
+  setup(props) {
     const list = ref<List>(new List({}));
     const selectedType = ref<ListTypeOption>();
     const selectedSubType = ref<ListSubTypeOption | null>();
+    const shareableUsers = ref<Array<User>>();
     const { setTitle } = useGlobals();
+    const { getListById, createNewList } = useLists();
+    const { getUsersList } = useUser();
 
     const editMode = props.id != 'new';
     const disable = computed(() => list.value?.isShared);
     const listTypeOptions = ref(constants.lists.types);
-    console.log(JSON.stringify(listTypeOptions.value));
+
+    onMounted(async () => {
+      if (!editMode) {
+        list.value = createNewList();
+      } else {
+        list.value = await getListById(props.id);
+      }
+
+      setTypeAndSubType();
+      loadShareableUsers();
+    });
+
+    const setTypeAndSubType = () => {
+      selectedType.value = listTypeOptions.value.find(
+        ({ value }) => list.value.type === value
+      );
+
+      onTypeSelection();
+
+      if (list.value.subtype) {
+        selectedSubType.value = selectedType.value?.subTypes.find(
+          ({ value }) => value === list.value.subtype
+        );
+      }
+    };
+
+    const loadShareableUsers = async () => {
+      shareableUsers.value = await getUsersList();
+    };
 
     watch(
       () => list.value?.name,
@@ -128,9 +168,9 @@ export default defineComponent({
     );
 
     const setHeaderTitle = () => {
-      if (list.value.name) {
+      if (list.value?.name) {
         setTitle(list.value.name);
-      } else if (props.id === 'new') {
+      } else if (editMode) {
         setTitle(`Create ${selectedType.value?.type}`);
       } else {
         setTitle(`Edit ${selectedType.value?.type}`);
@@ -141,7 +181,6 @@ export default defineComponent({
       const subTypes = selectedType.value?.subTypes ?? [];
 
       selectedSubType.value = null;
-
       if (subTypes.length) {
         selectedSubType.value = subTypes[0];
       }
@@ -156,85 +195,10 @@ export default defineComponent({
       disable,
       listTypeOptions,
       onTypeSelection,
+      shareableUsers,
       onSave: () => true,
-      shareableUsers: ref([]),
     };
   },
-  // watch: {
-  //   editList: {
-  //     immediate: true,
-  //     handler() {
-  //       this._initializeList();
-  //     },
-  //   },
-  //   'list.name': {
-  //     immediate: true,
-  //     handler() {
-  //       this.setHeaderTitle();
-  //     },
-  //   },
-  // },
-  // mounted() {
-  //   this.loadUsersList();
-  // },
-  // computed: {
-  //   ...mapState('auth', ['user', 'users']),
-
-  //   disable() {
-  //     return this.list.isShared;
-  //   },
-
-  //   editMode() {
-  //     return this.$route.params.id !== 'new';
-  //   },
-
-  //   editList() {
-  //     const listId = this.$route.params.id;
-  //     return this.$store.getters['lists/getListById'](listId);
-  //   },
-
-  //   mainListType() {
-  //     return this.selectedType.type;
-  //   },
-
-  //   shareableUsers() {
-  //     return []
-  //       .concat(this.users)
-  //       .filter((user) => user.id !== this.user.uid)
-  //       .map((user) => {
-  //         user.isSharedWith = this.list.sharedWith.includes(user.id);
-  //         return user;
-  //       });
-  //   },
-  // },
-  // methods: {
-  //   ...mapMutations('app', ['setTitle']),
-  //   ...mapActions('lists', ['saveList']),
-  //   ...mapActions('auth', ['loadUsersList']),
-
-  //   async _initializeList() {
-  //     this.$q.loading.show();
-
-  //     if (this.editMode && this.editList) {
-  //       this.list = this.editList.clone();
-
-  //       this.selectedType = this.$Const.lists.types.find(
-  //         (type) => this.list.type === type.value
-  //       );
-  //       this.selectedSubType =
-  //         this.selectedType.subTypes.find(
-  //           (subtype) => this.list.subtype === subtype.value
-  //         ) || [];
-  //       this.$q.loading.hide();
-  //     } else {
-  //       this.selectedType = this.$Const.lists.types[0];
-  //       this.selectedSubType = this.selectedType.subTypes[0];
-  //     }
-
-  //     if (!this.editMode) {
-  //       this.$q.loading.hide();
-  //     }
-  //   },
 
   //
 

@@ -90,7 +90,7 @@
 <script lang="ts">
 import { defineComponent, PropType, computed, ref } from 'vue';
 import draggable from 'vuedraggable';
-import { ManageableItem, ActionIcon } from '@/models/models';
+import { ManageableItem } from '@/models/models';
 
 export default defineComponent({
   name: 'the-list',
@@ -110,7 +110,7 @@ export default defineComponent({
       type: Array as PropType<Array<ManageableItem>>,
       default: () => [],
     },
-    actionIcon: Object as PropType<ActionIcon>,
+    actionIcon: String,
     scratched: Boolean,
   },
   setup(props, { emit }) {

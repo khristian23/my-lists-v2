@@ -16,6 +16,13 @@ export default {
     note: 'note',
   },
 
+  listSubType: {
+    personal: 'personal',
+    work: 'work',
+    groceries: 'groceries',
+    house: 'house',
+  },
+
   lists: {
     priority: {
       lowest: 999,

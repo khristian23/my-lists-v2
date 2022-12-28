@@ -6,21 +6,19 @@ import { useUser } from '@/composables/useUser';
 import List from '@/models/list';
 import { ListType } from '@/models/models';
 import ListService from '@/services/ListService';
-import { ref, Ref } from 'vue';
+import constants from '@/util/constants';
+import { ref } from 'vue';
 import { setAuditableValues } from './useCommons';
 
 const isLoadingLists = ref(false);
 
-export interface ListsComposableReturnValue {
-  isLoadingLists: Ref<boolean>;
-  getListsByType: (type?: ListType | undefined) => Promise<Array<List>>;
-  getListById: (id: string) => Promise<List>;
-  deleteListById: (listId: string) => Promise<void>;
-  updateListsPriorities: (lists: Array<List>) => Promise<void[]>;
-}
-
-export function useLists(): ListsComposableReturnValue {
+export function useLists() {
   const { getCurrentUserId } = useUser();
+
+  const createNewList = () =>
+    new List({
+      type: constants.listType.toDoList,
+    });
 
   const getListsByType = async (
     type: ListType | undefined
@@ -57,6 +55,7 @@ export function useLists(): ListsComposableReturnValue {
   };
 
   return {
+    createNewList,
     isLoadingLists,
     getListsByType,
     getListById,

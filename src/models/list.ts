@@ -3,10 +3,12 @@ import {
   ManageableItem,
   Auditable,
   ParentObject,
+  Shareable,
 } from '@/models/models';
 import constants from '@/util/constants';
 import Consts from '@/util/constants';
 import ListItem from './listItem';
+import User from './user';
 
 function sortByPriority(a: ListItem, b: ListItem) {
   if (a.priority === b.priority) {
@@ -15,13 +17,16 @@ function sortByPriority(a: ListItem, b: ListItem) {
   return a.priority - b.priority;
 }
 
-export default class List implements ManageableItem, Auditable, ParentObject {
+export default class List
+  implements ManageableItem, Auditable, ParentObject, Shareable
+{
   id!: string;
   type!: string;
+  subtype!: string;
   name!: string;
   description!: string;
 
-  isShared = false;
+  readonly isShared = false;
   owner!: string;
 
   actionIcon = Consts.itemActionIcon.edit;
@@ -33,6 +38,8 @@ export default class List implements ManageableItem, Auditable, ParentObject {
 
   numberOfItems = 0;
   items: Array<ListItem> = [];
+
+  sharedWith: Array<User> = [];
 
   constructor(listData: Partial<ListData>) {
     Object.assign(this, listData);
