@@ -39,9 +39,30 @@ export class ListConverter implements FirestoreDataConverter<List> {
   }
 
   toFirestore(list: PartialWithFieldValue<List>): DocumentData {
+    const userPriorities: { [k: string]: number } = {};
+    userPriorities[this.userId] = list.priority as number;
+
     return {
       id: list.id,
       name: list.name,
+      description: list.description,
+      type: list.type,
+      subtype: list.subtype ?? '',
+      priority: list.priority,
+      owner: this.userId,
+      sharedWith: list.sharedWith ?? [],
+      userPriorities,
+    };
+  }
+
+  toFirestoreUpdate(list: PartialWithFieldValue<List>): DocumentData {
+    return {
+      name: list.name,
+      description: list.description,
+      type: list.type,
+      subtype: list.subtype ?? '',
+      changedBy: list.changedBy,
+      modifiedAt: list.modifiedAt,
     };
   }
 
@@ -79,6 +100,16 @@ export class ListItemConverter implements FirestoreDataConverter<ListItem> {
       changedBy: listItem.changedBy,
       modifiedAt: listItem.modifiedAt,
       status: listItem.status,
+    };
+  }
+
+  toFirestoreUpdate(listItem: PartialWithFieldValue<ListItem>): DocumentData {
+    return {
+      name: listItem.name,
+      notes: listItem.notes ?? '',
+      status: listItem.status,
+      changedBy: listItem.changedBy,
+      modifiedAt: listItem.modifiedAt,
     };
   }
 

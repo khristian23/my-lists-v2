@@ -54,6 +54,17 @@ export function useLists() {
     });
   };
 
+  const saveList = async (list: List) => {
+    setAuditableValues(list);
+
+    const userId = getCurrentUserId();
+    if (!list.id) {
+      list.owner = userId;
+    }
+
+    return ListService.saveList(userId, list);
+  };
+
   return {
     createNewList,
     isLoadingLists,
@@ -61,5 +72,6 @@ export function useLists() {
     getListById,
     deleteListById,
     updateListsPriorities,
+    saveList,
   };
 }

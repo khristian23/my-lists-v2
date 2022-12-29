@@ -192,10 +192,30 @@ export default {
     return deleteDoc(doc(firestore, `lists/${listId}/items/${listItemId}`));
   },
 
+  async saveList(userId: string, list: List): Promise<void> {
+    const listConverter = new ListConverter(userId);
+
+    if (list.id) {
+      const listReference = doc(firestore, `lists/${list.id}`);
+
+      return updateDoc(listReference, listConverter.toFirestoreUpdate(list));
+    } else {
+      const createdListReference = doc(
+        collection(firestore, 'lists')
+      ).withConverter(listConverter);
+
+      await setDoc(createdListReference, list);
+
+      list.id = createdListReference.id;
+    }
+  },
+
   async saveListItem(userId: string, listItem: ListItem): Promise<void> {
     if (!listItem.listId) {
       throw new Error('List item must have be part of a list');
     }
+
+    const listItemConverter = new ListItemConverter(userId, listItem.listId);
 
     if (listItem.id) {
       const itemReference = doc(
@@ -203,15 +223,14 @@ export default {
         `lists/${listItem.listId}/items/${listItem.id}`
       );
 
-      return updateDoc(itemReference, {
-        name: listItem.name,
-        notes: listItem.notes ?? '',
-        status: listItem.status,
-      });
+      return updateDoc(
+        itemReference,
+        listItemConverter.toFirestoreUpdate(listItem)
+      );
     } else {
       const createdItemRef = doc(
         collection(firestore, `lists/${listItem.listId}/items`)
-      ).withConverter(new ListItemConverter(userId, listItem.listId));
+      ).withConverter(listItemConverter);
 
       await setDoc(createdItemRef, listItem);
 

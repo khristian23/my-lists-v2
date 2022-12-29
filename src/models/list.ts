@@ -39,7 +39,7 @@ export default class List
   numberOfItems = 0;
   items: Array<ListItem> = [];
 
-  sharedWith: Array<User> = [];
+  sharedWith: Array<string> = [];
 
   constructor(listData: Partial<ListData>) {
     Object.assign(this, listData);

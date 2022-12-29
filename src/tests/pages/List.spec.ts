@@ -11,12 +11,14 @@ import { Quasar } from 'quasar';
 import { Router } from 'vue-router';
 import constants from '@/util/constants';
 import { createRouterForRoutes } from './helpers/router';
-import { ListTypeOption } from '@/models/models';
+import { Auditable, ListTypeOption } from '@/models/models';
 import ListService from '@/services/ListService';
 import List from '@/models/list';
 import UserService from '@/services/UserService';
 import User from '@/models/user';
 import { useUser } from '@/composables/useUser';
+import { withKeys } from 'vue';
+import flushPromises from 'flush-promises';
 
 vi.mock('@/services/ListService');
 vi.mock('@/services/UserService');
@@ -24,6 +26,8 @@ vi.mock('@/services/UserService');
 let router: Router;
 
 const FAKE_USER_ID = 'UserId';
+const FAKE_USER_ID_2 = 'UserId2';
+const FAKE_USER_ID_3 = 'UserId3';
 const NEW_LIST_ID = 'new';
 const FAKE_LIST_ID = 'ListId';
 
@@ -31,6 +35,15 @@ const currentUser = new User({
   id: FAKE_USER_ID,
   name: 'Fake User',
 });
+
+const mockDate = new Date(2000, 12, 1, 16);
+
+vi.mock('@/composables/useCommons', () => ({
+  setAuditableValues: (auditable: Auditable) => {
+    auditable.changedBy = FAKE_USER_ID;
+    auditable.modifiedAt = mockDate.getTime();
+  },
+}));
 
 describe('List page', () => {
   beforeEach(async () => {
@@ -44,6 +57,8 @@ describe('List page', () => {
   });
 
   afterEach(() => {
+    vi.resetAllMocks();
+
     cleanup();
   });
 
@@ -60,7 +75,7 @@ describe('List page', () => {
     });
   }
 
-  function getListType(listTypeId: string): ListTypeOption {
+  function getListTypeOption(listTypeId: string): ListTypeOption {
     const listType = constants.lists.types.find(
       ({ value }) => value === listTypeId
     );
@@ -71,7 +86,7 @@ describe('List page', () => {
   }
 
   function getFirstListSubTypeLabel(listTypeId: string): string {
-    const listType = getListType(listTypeId);
+    const listType = getListTypeOption(listTypeId);
 
     if (listType?.subTypes.length) {
       return listType.subTypes[0].label;
@@ -107,7 +122,9 @@ describe('List page', () => {
     it('should populate list types', async () => {
       const { getByLabelText, getByText } = renderList();
 
-      const shoppingListType = getListType(constants.listType.shoppingCart);
+      const shoppingListType = getListTypeOption(
+        constants.listType.shoppingCart
+      );
 
       const groceriesListItem = getFirstListSubTypeLabel(
         constants.listType.shoppingCart
@@ -128,7 +145,9 @@ describe('List page', () => {
     it('should default sub type selection', async () => {
       const { getByLabelText, getByText } = renderList();
 
-      const shoppingListType = getListType(constants.listType.shoppingCart);
+      const shoppingListType = getListTypeOption(
+        constants.listType.shoppingCart
+      );
 
       const groceriesListItem = getFirstListSubTypeLabel(
         constants.listType.shoppingCart
@@ -166,9 +185,57 @@ describe('List page', () => {
       const { getByLabelText, getByText } = renderList();
 
       await waitFor(() => getByLabelText('Type'));
-      getByText(getListType(constants.listType.toDoList).label);
+      getByText(getListTypeOption(constants.listType.toDoList).label);
       getByLabelText('Sub Type');
       getByText(getFirstListSubTypeLabel(constants.listType.toDoList));
+    });
+
+    it('should save a new list', async () => {
+      vi.mocked(UserService).getUsersList.mockResolvedValue([
+        new User({
+          id: FAKE_USER_ID_2,
+          name: 'Test User 2',
+        }),
+      ]);
+
+      const { getByLabelText, getByText, emitted, getByRole, getByTestId } =
+        renderList();
+
+      await fireEvent.update(getByLabelText('Name'), 'Test List Name');
+
+      const shoppingListType = getListTypeOption(
+        constants.listType.shoppingCart
+      );
+
+      const typeSelect = getByLabelText('Type');
+      await fireEvent.click(typeSelect);
+
+      await waitFor(() => getByText(shoppingListType.label));
+      await fireEvent.click(getByText(shoppingListType.label));
+
+      const shareUserButton = within(getByTestId('shareableUser')).getAllByRole(
+        'checkbox'
+      );
+      await fireEvent.click(shareUserButton[0]);
+
+      const saveButton = getByRole('button', { name: 'Save' });
+      await fireEvent.click(saveButton);
+
+      expect(ListService.saveList).toHaveBeenCalledWith(
+        FAKE_USER_ID,
+        new List({
+          id: undefined,
+          name: 'Test List Name',
+          type: constants.listType.shoppingCart,
+          subtype: constants.listSubType.groceries,
+          sharedWith: [FAKE_USER_ID_2],
+          owner: FAKE_USER_ID,
+          changedBy: FAKE_USER_ID,
+          modifiedAt: mockDate.getTime(),
+        })
+      );
+
+      expect(emitted()).toHaveProperty(constants.events.showToast);
     });
   });
 
@@ -202,8 +269,83 @@ describe('List page', () => {
         'List Description'
       );
 
-      getByText(getListType(constants.listType.shoppingCart).label);
-      getByText(getListType(constants.listType.shoppingCart).subTypes[1].label);
+      getByText(getListTypeOption(constants.listType.shoppingCart).label);
+      getByText(
+        getListTypeOption(constants.listType.shoppingCart).subTypes[1].label
+      );
+    });
+
+    it('should save an existing list', async () => {
+      vi.mocked(UserService).getUsersList.mockResolvedValue([
+        new User({
+          id: FAKE_USER_ID_2,
+          name: 'Test User 2',
+        }),
+        new User({
+          id: FAKE_USER_ID_3,
+          name: 'Test User 3',
+        }),
+      ]);
+
+      vi.mocked(ListService).getListById.mockResolvedValue(
+        new List({
+          name: 'Old Name',
+          description: 'Old Description',
+          type: constants.listType.shoppingCart,
+          subtype: constants.listSubType.house,
+          sharedWith: [FAKE_USER_ID_2],
+          isShared: false,
+        })
+      );
+
+      const { getByLabelText, getByText, emitted, getByRole, getAllByTestId } =
+        renderList();
+
+      await flushPromises();
+
+      await fireEvent.update(getByLabelText('Name'), 'Changed Name');
+      await fireEvent.update(
+        getByLabelText('Description'),
+        'Changed Description'
+      );
+
+      const wishlistType = getListTypeOption(constants.listType.whishlist);
+
+      const typeSelect = getByLabelText('Type');
+      await fireEvent.click(typeSelect);
+
+      await waitFor(() => getByText(wishlistType.label));
+      await fireEvent.click(getByText(wishlistType.label));
+
+      const fakeUser2SharedButton = within(
+        getAllByTestId('shareableUser')[0]
+      ).getAllByRole('checkbox')[0];
+      await fireEvent.click(fakeUser2SharedButton);
+
+      const fakeUser3SharedButton = within(
+        getAllByTestId('shareableUser')[1]
+      ).getAllByRole('checkbox')[0];
+      await fireEvent.click(fakeUser3SharedButton);
+
+      const saveButton = getByRole('button', { name: 'Save' });
+      await fireEvent.click(saveButton);
+
+      expect(ListService.saveList).toHaveBeenCalledWith(
+        FAKE_USER_ID,
+        new List({
+          id: undefined,
+          name: 'Changed Name',
+          description: 'Changed Description',
+          type: constants.listType.whishlist,
+          subtype: '',
+          sharedWith: [FAKE_USER_ID_3],
+          owner: FAKE_USER_ID,
+          changedBy: FAKE_USER_ID,
+          modifiedAt: mockDate.getTime(),
+        })
+      );
+
+      expect(emitted()).toHaveProperty(constants.events.showToast);
     });
   });
 
@@ -222,6 +364,7 @@ describe('List page', () => {
           owner: 'ChristianID',
           type: constants.listType.shoppingCart,
           isShared: true,
+          sharedWith: [FAKE_USER_ID_2],
         })
       );
     });
@@ -269,7 +412,7 @@ describe('List page', () => {
           name: 'Test User 1',
         }),
         new User({
-          id: 'TestUser2',
+          id: FAKE_USER_ID_2,
           name: 'Test User 2',
         }),
         new User({
@@ -283,6 +426,12 @@ describe('List page', () => {
       await waitFor(() => {
         expect(getAllByTestId('shareableUser').length).toBe(3);
       });
+
+      expect(
+        within(getAllByTestId('shareableUser')[1])
+          .getByRole('checkbox')
+          .getAttribute('aria-checked')
+      ).toBe('true');
     });
   });
 });

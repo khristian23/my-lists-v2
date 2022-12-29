@@ -1,7 +1,6 @@
 import constants from '@/util/constants';
 import { Ref } from 'vue';
 import ListItem from './listItem';
-import User from './user';
 
 export type ActionIcon = keyof typeof constants.itemActionIcon;
 
@@ -57,7 +56,7 @@ export interface Auditable {
 }
 
 export interface Shareable {
-  sharedWith: Array<User>;
+  sharedWith: Array<string>;
 }
 
 export interface ListData extends BaseItem, Sortable, Auditable, Shareable {

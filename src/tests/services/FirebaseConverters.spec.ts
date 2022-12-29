@@ -54,7 +54,7 @@ describe('Firebase Converters', () => {
       listConverter = new ListConverter(CURRENT_USER_ID);
 
       firebaseList = {
-        description: '',
+        description: 'list description',
         modifiedAt: 1665932296442,
         name: 'Compras para la casa',
         owner: 'mmKOVL2r8BPacBl7QENM6uvKoKM2',
@@ -74,7 +74,7 @@ describe('Firebase Converters', () => {
       const list = convertFirebaseList(firebaseList);
 
       expect(list.id).toBe('mmKOVL2r8BPacBl7QENM6uvKoKM2');
-      expect(list.description).toBeFalsy();
+      expect(list.description).toBe('list description');
       expect(list.name).toBe('Compras para la casa');
       expect(list.owner).toBe('mmKOVL2r8BPacBl7QENM6uvKoKM2');
       expect(list.isShared).toBe(false);

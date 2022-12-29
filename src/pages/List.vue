@@ -1,6 +1,6 @@
 <template>
   <q-page class="flex">
-    <q-form class="full-width q-pa-md" ref="myForm">
+    <q-form class="full-width q-pa-md" ref="listForm">
       <div class="text-h6 q-mb-sm">{{ selectedType?.label }} Details</div>
       <q-input
         :disable="disable"
@@ -109,8 +109,10 @@
 
 <script lang="ts">
 import { defineComponent, ref, computed, watch, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import List from '@/models/list';
 import constants from '@/util/constants';
+import { QForm } from 'quasar';
 import { ListTypeOption, ListSubTypeOption } from '@/models/models';
 import { useGlobals } from '@/composables/useGlobals';
 import { useLists } from '@/composables/useLists';
@@ -120,14 +122,18 @@ import User from '@/models/user';
 export default defineComponent({
   name: 'list-page',
   props: ['id'],
-  setup(props) {
+  emits: [constants.events.showError, constants.events.showToast],
+  setup(props, { emit }) {
     const list = ref<List>(new List({}));
     const selectedType = ref<ListTypeOption>();
     const selectedSubType = ref<ListSubTypeOption | null>();
     const shareableUsers = ref<Array<User>>();
+    const listForm = ref<QForm | null>(null);
+
     const { setTitle } = useGlobals();
-    const { getListById, createNewList } = useLists();
+    const { getListById, createNewList, saveList } = useLists();
     const { getUsersList } = useUser();
+    const router = useRouter();
 
     const editMode = props.id != 'new';
     const disable = computed(() => list.value?.isShared);
@@ -188,7 +194,29 @@ export default defineComponent({
       setHeaderTitle();
     };
 
+    const onSave = async () => {
+      const isFormValid = await listForm?.value?.validate();
+
+      if (!isFormValid) {
+        return;
+      }
+
+      list.value.type = selectedType.value?.value ?? '';
+      list.value.subtype = selectedSubType.value?.value ?? '';
+
+      try {
+        await saveList(list.value);
+        emit(constants.events.showToast, 'List Item saved');
+        router.replace({
+          name: constants.routes.lists.name,
+        });
+      } catch (e: unknown) {
+        emit(constants.events.showError, (e as Error).message);
+      }
+    };
+
     return {
+      listForm,
       list,
       selectedType,
       selectedSubType,
@@ -196,44 +224,8 @@ export default defineComponent({
       listTypeOptions,
       onTypeSelection,
       shareableUsers,
-      onSave: () => true,
+      onSave,
     };
   },
-
-  //
-
-  //   async onSave() {
-  //     const isValid = await this.$refs.myForm.validate();
-  //     if (!isValid) {
-  //       return;
-  //     }
-
-  //     this.list.type = this.selectedType.value;
-  //     if (this.selectedSubType) {
-  //       this.list.subtype = this.selectedSubType.value;
-  //     }
-
-  //     this.list.modifiedAt = new Date().getTime();
-  //     if (this.list.id) {
-  //       this.list.syncStatus = this.$Const.changeStatus.changed;
-  //     } else {
-  //       this.list.syncStatus = this.$Const.changeStatus.new;
-  //     }
-
-  //     if (this.list.sharedWith.length) {
-  //       this.list.isShared = true;
-  //     } else {
-  //       this.list.isShared = false;
-  //     }
-
-  //     try {
-  //       await this.saveList(this.list);
-  //       this.$emit('showToast', 'List saved');
-  //       this.$router.push({ name: this.$Const.routes.lists.name });
-  //     } catch (e) {
-  //       this.$emit('showError', e.message);
-  //     }
-  //   },
-  // },
 });
 </script>
