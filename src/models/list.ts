@@ -8,7 +8,6 @@ import {
 import constants from '@/util/constants';
 import Consts from '@/util/constants';
 import ListItem from './listItem';
-import User from './user';
 
 function sortByPriority(a: ListItem, b: ListItem) {
   if (a.priority === b.priority) {

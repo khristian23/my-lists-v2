@@ -113,7 +113,7 @@ import { useRouter } from 'vue-router';
 import List from '@/models/list';
 import constants from '@/util/constants';
 import { QForm } from 'quasar';
-import { ListTypeOption, ListSubTypeOption } from '@/models/models';
+import { ListTypeOption, ListSubTypeOption, isListType } from '@/models/models';
 import { useGlobals } from '@/composables/useGlobals';
 import { useLists } from '@/composables/useLists';
 import { useUser } from '@/composables/useUser';
@@ -121,7 +121,7 @@ import User from '@/models/user';
 
 export default defineComponent({
   name: 'list-page',
-  props: ['id'],
+  props: ['id', 'type'],
   emits: [constants.events.showError, constants.events.showToast],
   setup(props, { emit }) {
     const list = ref<List>(new List({}));
@@ -142,6 +142,10 @@ export default defineComponent({
     onMounted(async () => {
       if (!editMode) {
         list.value = createNewList();
+
+        if (isListType(props.type)) {
+          list.value.type = props.type;
+        }
       } else {
         list.value = await getListById(props.id);
       }
@@ -152,7 +156,7 @@ export default defineComponent({
 
     const setTypeAndSubType = () => {
       selectedType.value = listTypeOptions.value.find(
-        ({ value }) => list.value.type === value
+        ({ value }) => value === list.value.type
       );
 
       onTypeSelection();

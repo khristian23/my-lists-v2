@@ -15,9 +15,7 @@ import {
   fireEvent,
   within,
 } from '@testing-library/vue';
-import { ref } from 'vue';
 import { Quasar } from 'quasar';
-import List from '@/models/list';
 import TheList from '@/components/TheList.vue';
 import TheConfirmation from '@/components/TheConfirmation.vue';
 import constants from '@/util/constants';
@@ -25,7 +23,6 @@ import MainLayoutTest from './helpers/MainLayoutTest.vue';
 import { Router } from 'vue-router';
 import { generateLists } from '../helpers/TestHelpers';
 import { createRouterForRoutes } from './helpers/router';
-import { ListsComposableReturnValue, useLists } from '@/composables/useLists';
 import vuedraggable from 'vuedraggable';
 import flushPromises from 'flush-promises';
 import ListService from '@/services/ListService';
@@ -234,14 +231,35 @@ describe('The Lists', () => {
     it('should navigate to list creation page', async () => {
       vi.mocked(ListService).getListsByType.mockResolvedValue([]);
 
+      router.replace({
+        path: constants.routes.lists.path,
+      });
+      await router.isReady();
+
       const { findByText } = renderComponent();
 
       const createButton = await findByText('Create');
       await fireEvent.click(createButton);
 
       expect(routerSpy).toHaveBeenCalledWith({
-        name: constants.routes.list.name,
-        params: { id: 'new' },
+        path: '/list/new',
+      });
+    });
+
+    it('should navigate to list creation page with filtered list type', async () => {
+      router.replace({
+        path: '/',
+        query: { type: constants.listType.note },
+      });
+      await router.isReady();
+
+      const { getByText } = renderComponent();
+
+      await fireEvent.click(getByText('Create'));
+
+      expect(routerSpy).toHaveBeenCalledWith({
+        path: '/list/new',
+        query: { type: constants.listType.note },
       });
     });
   });

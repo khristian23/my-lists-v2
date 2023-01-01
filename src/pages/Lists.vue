@@ -24,7 +24,7 @@
 
 <script lang="ts">
 import { defineComponent, ref, watch, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 import { useGlobals } from '@/composables/useGlobals';
 import Constants from '@/util/constants';
 import { useLists } from '@/composables/useLists';
@@ -32,13 +32,13 @@ import List from 'models/list';
 
 export default defineComponent({
   name: 'lists-page',
+  props: ['type'],
   emits: [Constants.events.showError, Constants.events.showToast],
-  setup(_, { emit }) {
+  setup(props, { emit }) {
     const confirmation = ref();
     const listNameToDelete = ref('');
     const lists = ref<Array<List>>([]);
 
-    const route = useRoute();
     const router = useRouter();
     const { setTitle } = useGlobals();
     const {
@@ -58,11 +58,11 @@ export default defineComponent({
     };
 
     onMounted(async () => {
-      await loadListsByType(route.query?.type as string);
+      await loadListsByType(props.type);
     });
 
     watch(
-      () => route.query?.type,
+      () => props.type,
       async (filterRequest) => {
         await loadListsByType(filterRequest as string);
       }
@@ -132,10 +132,14 @@ export default defineComponent({
     };
 
     const onCreate = () => {
-      router.push({
-        name: Constants.routes.list.name,
-        params: { id: 'new' },
-      });
+      const route: { [k: string]: string | object } = {
+        path: '/list/new',
+      };
+
+      if (props.type) {
+        route.query = { type: props.type };
+      }
+      router.push(route);
     };
 
     const onOrderUpdated = (listsToUpdate: Array<List>): void => {

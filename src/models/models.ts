@@ -21,6 +21,10 @@ export type ListItemStatus =
   | typeof constants.itemStatus.done
   | typeof constants.itemStatus.pending;
 
+export function isListType(candidate: string | null): candidate is ListType {
+  return Object.values(constants.listType).includes(candidate ?? '');
+}
+
 export interface BaseItem {
   id: string;
   name: string;

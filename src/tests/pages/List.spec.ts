@@ -239,6 +239,22 @@ describe('List page', () => {
     });
   });
 
+  describe('New List with query', () => {
+    it('should default passed list type on list creation', async () => {
+      router.push({
+        path: `/list/${NEW_LIST_ID}`,
+        query: { type: constants.listType.whishlist },
+      });
+      await router.isReady();
+
+      const { getByText } = renderList();
+
+      await waitFor(() =>
+        getByText(getListTypeOption(constants.listType.whishlist).label)
+      );
+    });
+  });
+
   describe('Existing list', () => {
     beforeEach(async () => {
       router.push({

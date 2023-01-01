@@ -1,5 +1,6 @@
 import { RouteRecordRaw } from 'vue-router';
 import constants from '@/util/constants';
+import { route } from 'quasar/wrappers';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -9,6 +10,9 @@ const routes: RouteRecordRaw[] = [
       {
         path: constants.routes.lists.path,
         name: constants.routes.lists.name,
+        props: (route) => ({
+          type: route.query.type,
+        }),
         component: () => import('@/pages/Lists.vue'),
       },
       {
@@ -28,7 +32,10 @@ const routes: RouteRecordRaw[] = [
       {
         path: constants.routes.list.path,
         name: constants.routes.list.name,
-        props: true,
+        props: (route) => ({
+          id: route.params.id,
+          type: route.query.type,
+        }),
         component: () =>
           import(/* webpackChunkName: "EditList" */ '@/pages/List.vue'),
       },
