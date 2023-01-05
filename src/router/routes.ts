@@ -1,6 +1,5 @@
 import { RouteRecordRaw } from 'vue-router';
 import constants from '@/util/constants';
-import { route } from 'quasar/wrappers';
 
 const routes: RouteRecordRaw[] = [
   {

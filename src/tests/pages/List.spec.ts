@@ -17,7 +17,6 @@ import List from '@/models/list';
 import UserService from '@/services/UserService';
 import User from '@/models/user';
 import { useUser } from '@/composables/useUser';
-import { withKeys } from 'vue';
 import flushPromises from 'flush-promises';
 
 vi.mock('@/services/ListService');
