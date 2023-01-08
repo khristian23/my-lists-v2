@@ -1,6 +1,5 @@
 import constants from '@/util/constants';
 import { Ref } from 'vue';
-import ListItem from './listItem';
 
 export type ActionIcon = keyof typeof constants.itemActionIcon;
 
@@ -42,7 +41,7 @@ export interface ManageableItem extends BaseItem, Sortable {
 
 export interface ParentObject {
   numberOfItems: number;
-  items: Array<ListItem>;
+  items: Array<IListItem>;
 }
 
 export interface UserData {
@@ -69,10 +68,21 @@ export interface ListData extends BaseItem, Sortable, Auditable, Shareable {
   isShared: boolean;
 }
 
-export interface ListItemData extends BaseItem, Sortable, Auditable {
+export interface ListItemData extends ManageableItem, Auditable {
   status: string;
   notes: string;
   listId: string;
+}
+
+export interface IList extends ListData, ParentObject {
+  pendingItems: Array<IListItem>;
+  hasPendingItems: boolean;
+  doneItems: Array<IListItem>;
+  hasDoneItems: boolean;
+}
+
+export interface IListItem extends ListItemData, ManageableItem {
+  parentListType: ListType;
 }
 
 export interface GlobalComposableReturnValue {

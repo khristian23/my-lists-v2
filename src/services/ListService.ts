@@ -15,8 +15,14 @@ import {
   deleteDoc,
 } from 'firebase/firestore';
 import { firestore } from '@/boot/firebase';
-import List from '@/models/list';
-import { Auditable, BaseItem, ListType, Sortable } from '@/models/models';
+import {
+  IList,
+  Auditable,
+  BaseItem,
+  ListType,
+  Sortable,
+  IListItem,
+} from '@/models/models';
 import { ListConverter, ListItemConverter } from './FirebaseConverters';
 import ListItem from '@/models/listItem';
 import constants from '@/util/constants';
@@ -27,8 +33,7 @@ export default {
   async getListsByType(
     userId: string,
     type: ListType | undefined
-  ): Promise<Array<List>> {
-    console.log('before query kists with user: ', userId);
+  ): Promise<Array<IList>> {
     type firebaseWhereArgs = [string, WhereFilterOp, unknown];
 
     const ownerArgs: firebaseWhereArgs = ['owner', '==', userId];
@@ -62,7 +67,7 @@ export default {
       .map((snapshot) => snapshot.data());
   },
 
-  async getListById(userId: string, listId: string): Promise<List> {
+  async getListById(userId: string, listId: string): Promise<IList> {
     const listReference = doc(firestore, 'lists', listId).withConverter(
       new ListConverter(userId)
     );
@@ -83,7 +88,7 @@ export default {
     userId: string,
     listId: string,
     listItemId: string
-  ): Promise<ListItem> {
+  ): Promise<IListItem> {
     const listItemReference = doc(
       firestore,
       `lists/${listId}/items/${listItemId}`
@@ -100,7 +105,7 @@ export default {
   async getListItemsByListId(
     userId: string,
     listId: string
-  ): Promise<Array<ListItem>> {
+  ): Promise<Array<IListItem>> {
     const listItemsCollection = collection(
       firestore,
       `lists/${listId}/items`
@@ -152,7 +157,7 @@ export default {
 
   async updateListsPriorities(
     userId: string,
-    lists: Array<List>
+    lists: Array<IList>
   ): Promise<void[]> {
     return this.updateListObjectPriorities(
       userId,
@@ -164,7 +169,7 @@ export default {
   async updateListItemsPriorities(
     userId: string,
     listId: string,
-    listItems: Array<ListItem>
+    listItems: Array<IListItem>
   ): Promise<void[]> {
     return this.updateListObjectPriorities(
       userId,
@@ -173,7 +178,7 @@ export default {
     );
   },
 
-  async setListItemStatus(listItem: ListItem, status: string): Promise<void> {
+  async setListItemStatus(listItem: IListItem, status: string): Promise<void> {
     const objectUpdate: { [k: string]: string | number } = {
       changedBy: listItem.changedBy,
       modifiedAt: listItem.modifiedAt,
@@ -192,7 +197,7 @@ export default {
     return deleteDoc(doc(firestore, `lists/${listId}/items/${listItemId}`));
   },
 
-  async saveList(userId: string, list: List): Promise<void> {
+  async saveList(userId: string, list: IList): Promise<void> {
     const listConverter = new ListConverter(userId);
 
     if (list.id) {

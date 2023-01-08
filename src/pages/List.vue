@@ -113,7 +113,12 @@ import { useRouter } from 'vue-router';
 import List from '@/models/list';
 import constants from '@/util/constants';
 import { QForm } from 'quasar';
-import { ListTypeOption, ListSubTypeOption, isListType } from '@/models/models';
+import {
+  IList,
+  ListTypeOption,
+  ListSubTypeOption,
+  isListType,
+} from '@/models/models';
 import { useGlobals } from '@/composables/useGlobals';
 import { useLists } from '@/composables/useLists';
 import { useUser } from '@/composables/useUser';
@@ -124,7 +129,7 @@ export default defineComponent({
   props: ['id', 'type'],
   emits: [constants.events.showError, constants.events.showToast],
   setup(props, { emit }) {
-    const list = ref<List>(new List({}));
+    const list = ref<IList>(new List({}));
     const selectedType = ref<ListTypeOption>();
     const selectedSubType = ref<ListSubTypeOption | null>();
     const shareableUsers = ref<Array<User>>();

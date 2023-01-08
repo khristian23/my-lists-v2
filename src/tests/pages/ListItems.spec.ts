@@ -3,6 +3,7 @@ import {
   fireEvent,
   render,
   RenderResult,
+  waitFor,
   within,
 } from '@testing-library/vue';
 import userEvent from '@testing-library/user-event';
@@ -49,6 +50,8 @@ describe('List Items page', () => {
 
   afterEach(() => {
     cleanup();
+
+    vi.resetAllMocks();
   });
 
   function renderListItems(): RenderResult {
@@ -72,7 +75,11 @@ describe('List Items page', () => {
 
   function mockListWithItems(): void {
     vi.mocked(ListService).getListById.mockResolvedValue(
-      new List({ id: FAKE_LIST_ID, name: FAKE_LIST_NAME })
+      new List({
+        id: FAKE_LIST_ID,
+        name: FAKE_LIST_NAME,
+        type: constants.listType.toDoList,
+      })
     );
     vi.mocked(ListService).getListItemsByListId.mockResolvedValue([
       new ListItem({
@@ -165,7 +172,9 @@ describe('List Items page', () => {
     );
     await fireEvent.click(setToDoneButton);
 
-    within(getByTestId(DONE_LIST)).getByText('Pending Item');
+    await waitFor(() => {
+      within(getByTestId(DONE_LIST)).getByText('Pending Item');
+    });
   });
 
   it('should set item to pending', async () => {
@@ -183,10 +192,12 @@ describe('List Items page', () => {
     );
     await fireEvent.click(setToPendingButton);
 
-    within(getByTestId(PENDING_LIST)).getByText('Done Item');
+    await waitFor(() => {
+      within(getByTestId(PENDING_LIST)).getByText('Done Item');
+    });
   });
 
-  it('should not change statius of item if error occurs', async () => {
+  it('should not change status of item if error occurs', async () => {
     vi.mocked(ListService).setListItemStatus.mockImplementation(() => {
       throw new Error('Unable to update list item status');
     });
@@ -309,5 +320,106 @@ describe('List Items page', () => {
     const items = container.getElementsByClassName('item-text');
     expect(items[0].textContent).toBe('Pending Item');
     expect(items[1].textContent).toBe(itemName);
+  });
+
+  describe('checklist', () => {
+    beforeEach(() => {
+      vi.mocked(ListService).getListById.mockResolvedValue(
+        new List({
+          id: FAKE_LIST_ID,
+          name: FAKE_LIST_NAME,
+          type: constants.listType.checklist,
+        })
+      );
+    });
+
+    it('should show checkboxes in checklist items', async () => {
+      const { getByTestId } = renderListItems();
+
+      await waitFor(() => {
+        within(getByTestId(PENDING_ITEM_ID)).getByText(
+          constants.itemActionIcon.unchecked
+        );
+      });
+    });
+
+    it('should not show the pending items title', async () => {
+      const { getByTestId } = renderListItems();
+
+      expect(
+        within(getByTestId('pendingList')).queryAllByText(/Pending$/).length
+      ).toBe(0);
+    });
+
+    it('should not show the done items list', async () => {
+      const { queryAllByTestId } = renderListItems();
+
+      expect(queryAllByTestId('doneList').length).toBe(0);
+    });
+
+    it('should not remove items from checklist when action button is clicked', async () => {
+      const { getByTestId } = renderListItems();
+
+      getByTestId(PENDING_ITEM_ID);
+      getByTestId(DONE_ITEM_ID);
+
+      const checkPendingItemButton = within(
+        getByTestId(PENDING_ITEM_ID)
+      ).getByRole('button', {
+        name: 'action',
+      });
+      await fireEvent.click(checkPendingItemButton);
+
+      getByTestId(PENDING_ITEM_ID);
+      getByTestId(DONE_ITEM_ID);
+    });
+
+    it('should change to checked icon on list item status change', async () => {
+      const { getByTestId } = renderListItems();
+
+      await flushPromises();
+
+      within(getByTestId(PENDING_ITEM_ID)).getByText(
+        constants.itemActionIcon.unchecked
+      );
+
+      const uncheckedItem = within(getByTestId(PENDING_ITEM_ID)).getByRole(
+        'button',
+        {
+          name: 'action',
+        }
+      );
+      await fireEvent.click(uncheckedItem);
+
+      await waitFor(() => {
+        within(getByTestId(PENDING_ITEM_ID)).getByText(
+          constants.itemActionIcon.checked
+        );
+      });
+    });
+
+    it('should change to unchecked icon on list item status change', async () => {
+      const { getByTestId } = renderListItems();
+
+      await flushPromises();
+
+      within(getByTestId(DONE_ITEM_ID)).getByText(
+        constants.itemActionIcon.checked
+      );
+
+      const checkedItem = within(getByTestId(DONE_ITEM_ID)).getByRole(
+        'button',
+        {
+          name: 'action',
+        }
+      );
+      await fireEvent.click(checkedItem);
+
+      await waitFor(() => {
+        within(getByTestId(DONE_ITEM_ID)).getByText(
+          constants.itemActionIcon.unchecked
+        );
+      });
+    });
   });
 });

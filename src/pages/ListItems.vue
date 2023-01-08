@@ -3,24 +3,23 @@
     <the-list
       id="pendingList"
       headerLabel="Pending"
-      :items="list.pendingItems"
-      actionIcon="done"
+      :showHeader="showPendingListHeader"
+      :items="pendingListItems"
       @itemPress="onItemPress"
-      @itemAction="onSetItemToDone"
+      @itemAction="onItemActionPressed"
       @itemDelete="onItemDelete"
-      v-if="list.hasPendingItems"
+      v-if="showPendingItemsList"
       @orderUpdated="onOrderUpdated"
     />
     <the-list
       id="doneList"
       headerLabel="Done"
       :items="list.doneItems"
-      actionIcon="redo"
       class="self-end"
       @itemPress="onItemPress"
-      @itemAction="onSetItemToPending"
+      @itemAction="onItemActionPressed"
       @itemDelete="onItemDelete"
-      v-if="list.hasDoneItems"
+      v-if="showDoneItemsList"
       :scratched="true"
     />
     <the-footer>
@@ -31,11 +30,11 @@
 
 <script lang="ts">
 import { useListItems } from '@/composables/useListItems';
-import { defineComponent, ref, onMounted, ComputedRef } from 'vue';
+import { defineComponent, ref, onMounted, ComputedRef, computed } from 'vue';
 import { useGlobals } from '@/composables/useGlobals';
 import { useRouter } from 'vue-router';
 import constants from '@/util/constants';
-import ListItem from '@/models/listItem';
+import { IListItem } from '@/models/models';
 
 export default defineComponent({
   name: 'list-items-page',
@@ -45,8 +44,7 @@ export default defineComponent({
     const {
       getCurrentListWithItems,
       loadListWithItems,
-      setItemToDone,
-      setItemToPending,
+      toggleItemStatus,
       deleteListItem,
       quickCreateListItem,
       updateItemsOrder,
@@ -68,17 +66,31 @@ export default defineComponent({
       }
     });
 
-    const onSetItemToDone = async (listItemId: string) => {
-      try {
-        await setItemToDone(list.value.id, listItemId);
-      } catch (e: unknown) {
-        emit(constants.events.showError, (e as Error).message);
-      }
-    };
+    const showPendingListHeader = computed(() => {
+      return list.value.type !== constants.listType.checklist;
+    });
 
-    const onSetItemToPending = async (listItemId: string) => {
+    const showPendingItemsList = computed(() => {
+      const isChecklistType = list.value.type === constants.listType.checklist;
+      return list.value.hasPendingItems || isChecklistType;
+    });
+
+    const showDoneItemsList = computed(() => {
+      const isNotChecklistType =
+        list.value.type !== constants.listType.checklist;
+      return list.value.hasDoneItems && isNotChecklistType;
+    });
+
+    const pendingListItems = computed(() => {
+      if (list.value.type === constants.listType.checklist) {
+        return list.value.items;
+      }
+      return list.value.pendingItems;
+    });
+
+    const onItemActionPressed = async (listItemId: string) => {
       try {
-        await setItemToPending(list.value.id, listItemId);
+        await toggleItemStatus(list.value.id, listItemId);
       } catch (e: unknown) {
         emit(constants.events.showError, (e as Error).message);
       }
@@ -114,7 +126,7 @@ export default defineComponent({
       });
     };
 
-    const onOrderUpdated = async (listItems: ComputedRef<ListItem[]>) => {
+    const onOrderUpdated = async (listItems: ComputedRef<IListItem[]>) => {
       try {
         await updateItemsOrder(list.value.id, listItems.value);
       } catch (e: unknown) {
@@ -126,8 +138,11 @@ export default defineComponent({
       list,
       newItem,
       showCreateButton,
-      onSetItemToDone,
-      onSetItemToPending,
+      showPendingListHeader,
+      showPendingItemsList,
+      showDoneItemsList,
+      pendingListItems,
+      onItemActionPressed,
       onQuickCreate,
       onCreate,
       onItemPress,

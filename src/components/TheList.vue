@@ -44,7 +44,7 @@
                 round
                 aria-label="action"
                 color="primary"
-                :icon="element.actionIcon || actionIcon"
+                :icon="element.actionIcon"
                 size="12px"
                 @click.stop="onItemAction(element.id)"
               />
@@ -110,13 +110,10 @@ export default defineComponent({
       type: Array as PropType<Array<ManageableItem>>,
       default: () => [],
     },
-    actionIcon: String,
     scratched: Boolean,
   },
   setup(props, { emit }) {
     const localItems = computed(() => [...props.items]);
-
-    const itemIcon = computed(() => props.actionIcon || 'çreate');
 
     const classes = computed(() => {
       return 'item-text' + (props.scratched ? ' scratched' : '');
@@ -129,7 +126,6 @@ export default defineComponent({
     });
 
     return {
-      itemIcon,
       classes,
       toggleCollapseIcon,
 

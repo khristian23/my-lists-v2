@@ -8,6 +8,7 @@ import List from '@/models/list';
 import constants from '@/util/constants';
 import ListItem from '@/models/listItem';
 import User from '@/models/user';
+import { IList } from '@/models/models';
 
 export class UserConverter implements FirestoreDataConverter<User> {
   toFirestore(user: PartialWithFieldValue<User>): DocumentData {
@@ -31,14 +32,14 @@ export class UserConverter implements FirestoreDataConverter<User> {
   }
 }
 
-export class ListConverter implements FirestoreDataConverter<List> {
+export class ListConverter implements FirestoreDataConverter<IList> {
   private userId: string;
 
   constructor(userId: string) {
     this.userId = userId;
   }
 
-  toFirestore(list: PartialWithFieldValue<List>): DocumentData {
+  toFirestore(list: PartialWithFieldValue<IList>): DocumentData {
     const userPriorities: { [k: string]: number } = {};
     userPriorities[this.userId] = list.priority as number;
 
@@ -55,7 +56,7 @@ export class ListConverter implements FirestoreDataConverter<List> {
     };
   }
 
-  toFirestoreUpdate(list: PartialWithFieldValue<List>): DocumentData {
+  toFirestoreUpdate(list: PartialWithFieldValue<IList>): DocumentData {
     return {
       name: list.name,
       description: list.description,
@@ -66,7 +67,7 @@ export class ListConverter implements FirestoreDataConverter<List> {
     };
   }
 
-  fromFirestore(snapshot: QueryDocumentSnapshot): List {
+  fromFirestore(snapshot: QueryDocumentSnapshot): IList {
     const data = snapshot.data();
 
     return new List({

@@ -5,10 +5,10 @@ import {
   UserConverter,
 } from '@/services/FirebaseConverters';
 import { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
-import List from '@/models/list';
 import constants from '@/util/constants';
 import ListItem from '@/models/listItem';
 import User from '@/models/user';
+import { IList } from '@/models/models';
 
 const CURRENT_USER_ID = 'fake_user_id';
 const ANOTHER_USER_ID = 'another_fake_user_id';
@@ -63,7 +63,7 @@ describe('Firebase Converters', () => {
       };
     });
 
-    function convertFirebaseList(firebaseList: DocumentData): List {
+    function convertFirebaseList(firebaseList: DocumentData): IList {
       return listConverter.fromFirestore({
         id: 'mmKOVL2r8BPacBl7QENM6uvKoKM2',
         data: vi.fn().mockReturnValue(firebaseList),

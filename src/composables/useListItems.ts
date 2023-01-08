@@ -3,12 +3,12 @@ import ListService from '@/services/ListService';
 import constants from '@/util/constants';
 import { useUser } from './useUser';
 import { setAuditableValues } from './useCommons';
-import { ListItemStatus } from '@/models/models';
+import { ListItemStatus, IList, IListItem } from '@/models/models';
 import List from '@/models/list';
 import { Ref, ref } from 'vue';
 
 const emptyList = new List({});
-const currentList: Ref<List> = ref(emptyList);
+const currentList: Ref<IList> = ref(emptyList);
 
 export function useListItems() {
   const userId = useUser().getCurrentUserId();
@@ -24,6 +24,7 @@ export function useListItems() {
     ]);
 
     currentList.value = list;
+    listItems.forEach((item) => (item.parentListType = list.type));
     currentList.value.items = listItems;
   };
 
@@ -36,15 +37,14 @@ export function useListItems() {
   const getListItemById = (
     listId: string,
     listItemId: string
-  ): Promise<ListItem> => {
+  ): Promise<IListItem> => {
     return ListService.getListItemById(userId, listId, listItemId);
   };
 
-  const setItemStatus = async (
+  const getListItem = async (
     listId: string,
-    listItemId: string,
-    status: ListItemStatus
-  ) => {
+    listItemId: string
+  ): Promise<IListItem> => {
     let listItem = getListItemFromCache(listId, listItemId);
 
     if (!listItem) {
@@ -55,19 +55,39 @@ export function useListItems() {
       }
     }
 
+    return listItem;
+  };
+
+  const setItemStatus = async (
+    listId: string,
+    listItemId: string,
+    status: ListItemStatus
+  ) => {
+    const listItem = await getListItem(listId, listItemId);
+
     setAuditableValues(listItem);
 
-    await ListService.setListItemStatus(listItem, status);
-
+    const previousStatus = listItem.status;
     listItem.status = status;
+    try {
+      await ListService.setListItemStatus(listItem, status);
+    } catch (e: unknown) {
+      listItem.status = previousStatus;
+      throw new Error((e as Error).message);
+    }
   };
 
-  const setItemToPending = async (listId: string, listItemId: string) => {
-    return setItemStatus(listId, listItemId, constants.itemStatus.pending);
-  };
+  const toggleItemStatus = async (
+    listId: string,
+    listItemId: string
+  ): Promise<void> => {
+    const listItem = await getListItem(listId, listItemId);
 
-  const setItemToDone = async (listId: string, listItemId: string) => {
-    return setItemStatus(listId, listItemId, constants.itemStatus.done);
+    if (listItem.status === constants.itemStatus.done) {
+      return setItemStatus(listId, listItemId, constants.itemStatus.pending);
+    } else {
+      return setItemStatus(listId, listItemId, constants.itemStatus.done);
+    }
   };
 
   const deleteListItem = async (listId: string, listItemId: string) => {
@@ -113,7 +133,7 @@ export function useListItems() {
 
   const updateItemsOrder = async (
     listId: string,
-    listItems: Array<ListItem>
+    listItems: Array<IListItem>
   ) => {
     listItems.forEach((item) => setAuditableValues(item));
 
@@ -136,8 +156,7 @@ export function useListItems() {
     getCurrentListWithItems,
     getListItemById,
     loadListWithItems,
-    setItemToPending,
-    setItemToDone,
+    toggleItemStatus,
     deleteListItem,
     quickCreateListItem,
     updateItemsOrder,

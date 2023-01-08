@@ -29,6 +29,7 @@ import { useGlobals } from '@/composables/useGlobals';
 import Constants from '@/util/constants';
 import { useLists } from '@/composables/useLists';
 import List from 'models/list';
+import { IList } from '@/models/models';
 
 export default defineComponent({
   name: 'lists-page',
@@ -37,7 +38,7 @@ export default defineComponent({
   setup(props, { emit }) {
     const confirmation = ref();
     const listNameToDelete = ref('');
-    const lists = ref<Array<List>>([]);
+    const lists = ref<Array<IList>>([]);
 
     const router = useRouter();
     const { setTitle } = useGlobals();
@@ -94,9 +95,8 @@ export default defineComponent({
       }
 
       let routeName = Constants.routes.listItems.name;
-      if (list.type === Constants.listType.checklist) {
-        routeName = Constants.routes.checklist.name;
-      } else if (list.type === Constants.listType.note) {
+
+      if (list.type === Constants.listType.note) {
         routeName = Constants.routes.note.name;
       }
 

@@ -4,7 +4,7 @@
 
 import { useUser } from '@/composables/useUser';
 import List from '@/models/list';
-import { ListType } from '@/models/models';
+import { IList, ListType } from '@/models/models';
 import ListService from '@/services/ListService';
 import constants from '@/util/constants';
 import { ref } from 'vue';
@@ -15,14 +15,14 @@ const isLoadingLists = ref(false);
 export function useLists() {
   const { getCurrentUserId } = useUser();
 
-  const createNewList = () =>
+  const createNewList = (): IList =>
     new List({
       type: constants.listType.toDoList,
     });
 
   const getListsByType = async (
     type: ListType | undefined
-  ): Promise<Array<List>> => {
+  ): Promise<Array<IList>> => {
     isLoadingLists.value = true;
 
     const userId = getCurrentUserId();
@@ -33,7 +33,7 @@ export function useLists() {
     return lists;
   };
 
-  const getListById = (listId: string): Promise<List> => {
+  const getListById = (listId: string): Promise<IList> => {
     const userId = getCurrentUserId();
     return ListService.getListById(userId, listId);
   };
@@ -44,7 +44,7 @@ export function useLists() {
     });
   };
 
-  const updateListsPriorities = (lists: Array<List>): Promise<void[]> => {
+  const updateListsPriorities = (lists: Array<IList>): Promise<void[]> => {
     const userId = getCurrentUserId();
 
     lists.forEach((list) => setAuditableValues(list));
@@ -54,7 +54,7 @@ export function useLists() {
     });
   };
 
-  const saveList = async (list: List) => {
+  const saveList = async (list: IList) => {
     setAuditableValues(list);
 
     const userId = getCurrentUserId();

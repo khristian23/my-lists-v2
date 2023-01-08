@@ -39,12 +39,6 @@ const routes: RouteRecordRaw[] = [
           import(/* webpackChunkName: "EditList" */ '@/pages/List.vue'),
       },
       //   {
-      //     path: '/checklist/:id/items',
-      //     name: Consts.routes.checklist,
-      //     component: () =>
-      //       import(/* webpackChunkName: "CheckList" */ 'pages/Checklist'),
-      //   },
-      //   {
       //     path: '/note/:id',
       //     name: Consts.routes.note,
       //     component: () => import(/* webpackChunkName: "Note" */ 'pages/Note'),

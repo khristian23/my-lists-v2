@@ -69,14 +69,14 @@ describe('List Items', () => {
   it('should set item to done', async () => {
     const spy = vi.spyOn(ListService, 'setListItemStatus');
 
-    const { getCurrentListWithItems, loadListWithItems, setItemToDone } =
+    const { getCurrentListWithItems, loadListWithItems, toggleItemStatus } =
       useListItems();
 
     const list = getCurrentListWithItems();
     await loadListWithItems(FAKE_LIST_ID);
 
     const pendingItem = list.value.pendingItems[0];
-    await setItemToDone(list.value.id, pendingItem.id);
+    await toggleItemStatus(list.value.id, pendingItem.id);
 
     expect(spy.mock.calls[0][0].status).toBe(constants.itemStatus.done);
     expect(spy.mock.calls[0][0].changedBy).toBe(FAKE_USER_ID);
@@ -89,14 +89,14 @@ describe('List Items', () => {
   it('should set item to pending', async () => {
     const spy = vi.spyOn(ListService, 'setListItemStatus');
 
-    const { getCurrentListWithItems, loadListWithItems, setItemToPending } =
+    const { getCurrentListWithItems, loadListWithItems, toggleItemStatus } =
       useListItems();
 
     const list = getCurrentListWithItems();
     await loadListWithItems(FAKE_LIST_ID);
 
     const doneItem = list.value.doneItems[0];
-    await setItemToPending(list.value.id, doneItem.id);
+    await toggleItemStatus(list.value.id, doneItem.id);
 
     expect(spy.mock.calls[0][0].status).toBe(constants.itemStatus.pending);
     expect(spy.mock.calls[0][0].changedBy).toBe(FAKE_USER_ID);
@@ -104,6 +104,20 @@ describe('List Items', () => {
     expect(spy.mock.calls[0][0].modifiedAt).toBe(mockDate.getTime());
 
     expect(doneItem.status).toBe(constants.itemStatus.pending);
+  });
+
+  it('should throw an exception on change status error', async () => {
+    vi.mocked(ListService).setListItemStatus.mockImplementationOnce(() => {
+      throw new Error('Change status error');
+    });
+
+    const { loadListWithItems, toggleItemStatus } = useListItems();
+
+    await loadListWithItems(FAKE_LIST_ID);
+
+    await expect(
+      toggleItemStatus(FAKE_LIST_ID, FAKE_LIST_ITEM_ID_1)
+    ).rejects.toThrow('Change status error');
   });
 
   it('should delete an item', async () => {

@@ -12,7 +12,7 @@ export default {
     toDoList: 'todo',
     shoppingCart: 'shop',
     whishlist: 'wish',
-    checklist: 'checklist',
+    checklist: 'check',
     note: 'note',
   },
 
@@ -111,7 +111,6 @@ export default {
     list: { name: 'list', path: '/list/:id' },
     listItems: { name: 'list-items', path: '/list/:id/items' },
     listItem: { name: 'list-item', path: '/list/:list/item/:id' },
-    checklist: { name: 'checklist', path: '/checklist/:id/items' },
     note: { name: 'note', path: '/note/:id' },
     login: { name: 'login', path: '/login' },
     register: { name: 'register', path: '/register' },
@@ -124,5 +123,7 @@ export default {
     delete: 'delete',
     done: 'done',
     redo: 'redo',
+    checked: 'check_box',
+    unchecked: 'check_box_outline_blank',
   },
 };

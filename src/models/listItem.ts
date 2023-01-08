@@ -1,17 +1,13 @@
-import {
-  Auditable,
-  ListItemData,
-  ListItemStatus,
-  ManageableItem,
-} from './models';
+import { IListItem, ListItemData, ListItemStatus, ListType } from './models';
 import constants from '@/util/constants';
 
-export default class ListItem implements ManageableItem, Auditable {
+export default class ListItem implements IListItem {
   id!: string;
   name!: string;
 
   priority = 0;
-  actionIcon = constants.itemActionIcon.edit;
+  private _actionIcon = constants.itemActionIcon.edit;
+  private _parentListType: ListType = constants.listType.toDoList;
   canBeDeleted = true;
 
   status: ListItemStatus = constants.itemStatus.pending;
@@ -24,5 +20,30 @@ export default class ListItem implements ManageableItem, Auditable {
 
   constructor(listItemData: Partial<ListItemData>) {
     Object.assign(this, listItemData);
+  }
+
+  set parentListType(listType: ListType) {
+    this._parentListType = listType;
+  }
+
+  get actionIcon() {
+    if (
+      this._parentListType === constants.listType.toDoList ||
+      this._parentListType === constants.listType.shoppingCart ||
+      this._parentListType === constants.listType.whishlist
+    ) {
+      if (this.status === constants.itemStatus.pending) {
+        this._actionIcon = constants.itemActionIcon.done;
+      } else {
+        this._actionIcon = constants.itemActionIcon.redo;
+      }
+    } else if (this._parentListType === constants.listType.checklist) {
+      if (this.status === constants.itemStatus.pending) {
+        this._actionIcon = constants.itemActionIcon.unchecked;
+      } else {
+        this._actionIcon = constants.itemActionIcon.checked;
+      }
+    }
+    return this._actionIcon;
   }
 }

@@ -1,10 +1,4 @@
-import {
-  ListData,
-  ManageableItem,
-  Auditable,
-  ParentObject,
-  Shareable,
-} from '@/models/models';
+import { ListData, IList } from '@/models/models';
 import constants from '@/util/constants';
 import Consts from '@/util/constants';
 import ListItem from './listItem';
@@ -16,9 +10,7 @@ function sortByPriority(a: ListItem, b: ListItem) {
   return a.priority - b.priority;
 }
 
-export default class List
-  implements ManageableItem, Auditable, ParentObject, Shareable
-{
+export default class List implements IList {
   id!: string;
   type!: string;
   subtype!: string;
