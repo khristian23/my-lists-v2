@@ -193,7 +193,7 @@ describe('Firebase Converters', () => {
         changedBy: 'mmKOVL2r8BPacBl7QENM6uvKoKM2',
         modifiedAt: 1671081121331,
         name: 'Revise documentation for Extensibility',
-        notes: '',
+        description: 'Here you find some notes',
         owner: 'mmKOVL2r8BPacBl7QENM6uvKoKM2',
         status: 'Done',
         userPriorities: { fake_user_id: 2 },
@@ -205,6 +205,7 @@ describe('Firebase Converters', () => {
 
       expect(listItem.id).toBe('0fVpVusKmZzfTrnbDF5D');
       expect(listItem.name).toBe('Revise documentation for Extensibility');
+      expect(listItem.notes).toBe('Here you find some notes');
       expect(listItem.owner).toBe('mmKOVL2r8BPacBl7QENM6uvKoKM2');
       expect(listItem.status).toBe(constants.itemStatus.done);
       expect(listItem.priority).toBe(2);
@@ -214,6 +215,7 @@ describe('Firebase Converters', () => {
     it('should convert a list item to firestore', () => {
       const listItem = new ListItem({
         name: 'Test list item name',
+        notes: 'More notes added',
         status: constants.itemStatus.pending,
         priority: 4,
       });
@@ -221,6 +223,7 @@ describe('Firebase Converters', () => {
       const firebaseListItem = listItemConverter.toFirestore(listItem);
 
       expect(firebaseListItem.name).toBe('Test list item name');
+      expect(firebaseListItem.description).toBe('More notes added');
       expect(firebaseListItem.status).toBe(constants.itemStatus.pending);
       expect(firebaseListItem.userPriorities[CURRENT_USER_ID]).toBe(4);
     });
