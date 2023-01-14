@@ -14,7 +14,7 @@
 
 <script lang="ts">
 import Note from '@/models/note';
-import { defineComponent, onMounted, ref, Ref, inject, nextTick } from 'vue';
+import { defineComponent, onMounted, ref, Ref, inject } from 'vue';
 import { useListables } from '@/composables/useListables';
 import { useGlobals } from '@/composables/useGlobals';
 import constants from '@/util/constants';

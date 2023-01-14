@@ -26,7 +26,6 @@ import {
   INote,
 } from '@/models/models';
 import { ListableConverter, ListItemConverter } from './FirebaseConverters';
-import ListItem from '@/models/listItem';
 import constants from '@/util/constants';
 
 type Prioritizable = BaseItem & Sortable & Auditable;

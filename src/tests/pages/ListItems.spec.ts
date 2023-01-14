@@ -20,6 +20,7 @@ import ListItem from '@/models/listItem';
 import List from '@/models/list';
 import flushPromises from 'flush-promises';
 import ListService from '@/services/ListService';
+import { IListItem } from '@/models/models';
 
 let router: Router;
 
@@ -303,7 +304,7 @@ describe('List Items page', () => {
   it('should add created items to the bottom of the pending list', async () => {
     const newItemId = 'newItemId';
     vi.mocked(ListService).saveListItem.mockImplementation(
-      (userId: string, listItem: ListItem) => {
+      (userId: string, listItem: IListItem) => {
         listItem.id = newItemId;
         return Promise.resolve();
       }
