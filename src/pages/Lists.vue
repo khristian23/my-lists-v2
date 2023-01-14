@@ -27,7 +27,7 @@ import { defineComponent, ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useGlobals } from '@/composables/useGlobals';
 import Constants from '@/util/constants';
-import { useLists } from '@/composables/useLists';
+import { useListables } from '@/composables/useListables';
 import List from 'models/list';
 import { IList } from '@/models/models';
 
@@ -47,7 +47,7 @@ export default defineComponent({
       getListsByType,
       updateListsPriorities,
       deleteListById,
-    } = useLists();
+    } = useListables();
 
     const loadListsByType = async (type?: string) => {
       lists.value = await getListsByType(type);

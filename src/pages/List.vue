@@ -120,7 +120,7 @@ import {
   isListType,
 } from '@/models/models';
 import { useGlobals } from '@/composables/useGlobals';
-import { useLists } from '@/composables/useLists';
+import { useListables } from '@/composables/useListables';
 import { useUser } from '@/composables/useUser';
 import User from '@/models/user';
 
@@ -136,7 +136,7 @@ export default defineComponent({
     const listForm = ref<QForm | null>(null);
 
     const { setTitle } = useGlobals();
-    const { getListById, createNewList, saveList } = useLists();
+    const { getListById, createNewList, saveList } = useListables();
     const { getUsersList } = useUser();
     const router = useRouter();
 
@@ -146,13 +146,13 @@ export default defineComponent({
 
     onMounted(async () => {
       if (!editMode) {
-        list.value = createNewList();
+        list.value = createNewList() as IList;
 
         if (isListType(props.type)) {
           list.value.type = props.type;
         }
       } else {
-        list.value = await getListById(props.id);
+        list.value = (await getListById(props.id)) as IList;
       }
 
       setTypeAndSubType();

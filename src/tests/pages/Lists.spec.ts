@@ -63,7 +63,7 @@ describe('The Lists', () => {
 
   describe('General Lists rendering', () => {
     beforeEach(async () => {
-      vi.mocked(ListService).getListsByType.mockResolvedValue(lists);
+      vi.mocked(ListService).getListablesByType.mockResolvedValue(lists);
 
       router.push({ name: constants.routes.lists.name });
       await router.isReady();
@@ -108,11 +108,11 @@ describe('The Lists', () => {
       router.push({ path: '/' });
       await router.isReady();
 
-      vi.mocked(ListService).getListsByType.mockResolvedValue(lists);
+      vi.mocked(ListService).getListablesByType.mockResolvedValue(lists);
 
       const { findAllByText } = renderComponent();
 
-      expect(ListService.getListsByType).toHaveBeenCalledWith(
+      expect(ListService.getListablesByType).toHaveBeenCalledWith(
         constants.user.anonymous,
         undefined
       );
@@ -124,7 +124,7 @@ describe('The Lists', () => {
     });
 
     it('should update page title when reaching the component', async () => {
-      vi.mocked(ListService).getListsByType.mockResolvedValue(
+      vi.mocked(ListService).getListablesByType.mockResolvedValue(
         filteredByToDoLists
       );
 
@@ -146,7 +146,7 @@ describe('The Lists', () => {
     });
 
     it('should update page title when change the filter', async () => {
-      vi.mocked(ListService).getListsByType.mockResolvedValue(
+      vi.mocked(ListService).getListablesByType.mockResolvedValue(
         filteredByToDoLists
       );
 
@@ -155,7 +155,7 @@ describe('The Lists', () => {
 
       const { getByText } = renderComponent();
 
-      vi.mocked(ListService).getListsByType.mockResolvedValue(
+      vi.mocked(ListService).getListablesByType.mockResolvedValue(
         filteredByWishLists
       );
 
@@ -170,7 +170,7 @@ describe('The Lists', () => {
       getByText('title: Whishlists');
       getByText(filteredByWishLists[0].name);
 
-      expect(ListService.getListsByType).toHaveBeenCalledWith(
+      expect(ListService.getListablesByType).toHaveBeenCalledWith(
         constants.user.anonymous,
         constants.listType.whishlist
       );
@@ -181,7 +181,7 @@ describe('The Lists', () => {
     let routerSpy: SpyInstance;
 
     beforeEach(() => {
-      vi.mocked(ListService).getListsByType.mockResolvedValue(lists);
+      vi.mocked(ListService).getListablesByType.mockResolvedValue(lists);
 
       routerSpy = vi.spyOn(router, 'push');
       routerSpy.mockImplementation(() => Promise.resolve());
@@ -229,7 +229,7 @@ describe('The Lists', () => {
     });
 
     it('should navigate to list creation page', async () => {
-      vi.mocked(ListService).getListsByType.mockResolvedValue([]);
+      vi.mocked(ListService).getListablesByType.mockResolvedValue([]);
 
       router.replace({
         path: constants.routes.lists.path,
@@ -268,7 +268,7 @@ describe('The Lists', () => {
     async function triggerDeleteForFirstItem(): Promise<RenderResult> {
       const firstList = lists[0];
 
-      vi.mocked(ListService).getListsByType.mockResolvedValue([firstList]);
+      vi.mocked(ListService).getListablesByType.mockResolvedValue([firstList]);
 
       const renderResult = renderComponent();
 

@@ -22,18 +22,20 @@ import {
   ListType,
   Sortable,
   IListItem,
+  Listable,
+  INote,
 } from '@/models/models';
-import { ListConverter, ListItemConverter } from './FirebaseConverters';
+import { ListableConverter, ListItemConverter } from './FirebaseConverters';
 import ListItem from '@/models/listItem';
 import constants from '@/util/constants';
 
 type Prioritizable = BaseItem & Sortable & Auditable;
 
 export default {
-  async getListsByType(
+  async getListablesByType(
     userId: string,
     type: ListType | undefined
-  ): Promise<Array<IList>> {
+  ): Promise<Array<Listable>> {
     type firebaseWhereArgs = [string, WhereFilterOp, unknown];
 
     const ownerArgs: firebaseWhereArgs = ['owner', '==', userId];
@@ -45,7 +47,7 @@ export default {
     const typeArgs: firebaseWhereArgs = ['type', '==', type];
 
     const listsCollection = collection(firestore, 'lists').withConverter(
-      new ListConverter(userId)
+      new ListableConverter(userId)
     );
 
     const ownedListWhere = [where(...ownerArgs)];
@@ -67,9 +69,9 @@ export default {
       .map((snapshot) => snapshot.data());
   },
 
-  async getListById(userId: string, listId: string): Promise<IList> {
+  async getListableById(userId: string, listId: string): Promise<Listable> {
     const listReference = doc(firestore, 'lists', listId).withConverter(
-      new ListConverter(userId)
+      new ListableConverter(userId)
     );
     const listSnapshot = await getDoc(listReference);
     if (listSnapshot.exists()) {
@@ -157,7 +159,7 @@ export default {
 
   async updateListsPriorities(
     userId: string,
-    lists: Array<IList>
+    lists: Array<Listable>
   ): Promise<void[]> {
     return this.updateListObjectPriorities(
       userId,
@@ -198,7 +200,7 @@ export default {
   },
 
   async saveList(userId: string, list: IList): Promise<void> {
-    const listConverter = new ListConverter(userId);
+    const listConverter = new ListableConverter(userId);
 
     if (list.id) {
       const listReference = doc(firestore, `lists/${list.id}`);
@@ -215,7 +217,7 @@ export default {
     }
   },
 
-  async saveListItem(userId: string, listItem: ListItem): Promise<void> {
+  async saveListItem(userId: string, listItem: IListItem): Promise<void> {
     if (!listItem.listId) {
       throw new Error('List item must have be part of a list');
     }
@@ -241,5 +243,17 @@ export default {
 
       listItem.id = createdItemRef.id;
     }
+  },
+
+  async saveNoteContent(note: INote): Promise<void> {
+    const objectUpdate: { [k: string]: string | number } = {
+      changedBy: note.changedBy,
+      modifiedAt: note.modifiedAt,
+      noteContent: note.noteContent,
+    };
+
+    const listItemReference = doc(firestore, `lists/${note.id}`);
+
+    return updateDoc(listItemReference, objectUpdate);
   },
 };

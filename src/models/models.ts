@@ -1,5 +1,4 @@
 import constants from '@/util/constants';
-import { Ref } from 'vue';
 
 export type ActionIcon = keyof typeof constants.itemActionIcon;
 
@@ -24,6 +23,19 @@ export function isListType(candidate: string | null): candidate is ListType {
   return Object.values(constants.listType).includes(candidate ?? '');
 }
 
+export interface ObjectData {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [field: string]: any;
+}
+
+export interface UserData {
+  id: string;
+  name?: string;
+  photoURL?: string;
+  email?: string;
+  location?: string;
+}
+
 export interface BaseItem {
   id: string;
   name: string;
@@ -44,14 +56,6 @@ export interface ParentObject {
   items: Array<IListItem>;
 }
 
-export interface UserData {
-  id: string;
-  name?: string;
-  photoURL?: string;
-  email?: string;
-  location?: string;
-}
-
 export interface Auditable {
   owner: string;
   changedBy: string;
@@ -60,35 +64,33 @@ export interface Auditable {
 
 export interface Shareable {
   sharedWith: Array<string>;
-}
-
-export interface ListData extends BaseItem, Sortable, Auditable, Shareable {
-  type: ListType;
-  subtype: ListSubType;
   isShared: boolean;
 }
 
-export interface ListItemData extends ManageableItem, Auditable {
+export interface Listable extends ManageableItem, Auditable, Shareable {
+  type: ListType;
+  subtype: ListSubType;
+}
+
+export interface ListableItem extends ManageableItem, Auditable {
   status: string;
   notes: string;
   listId: string;
 }
 
-export interface IList extends ListData, ParentObject {
+export interface IList extends Listable, ParentObject {
   pendingItems: Array<IListItem>;
   hasPendingItems: boolean;
   doneItems: Array<IListItem>;
   hasDoneItems: boolean;
 }
 
-export interface IListItem extends ListItemData, ManageableItem {
+export interface IListItem extends ListableItem {
   parentListType: ListType;
 }
 
-export interface GlobalComposableReturnValue {
-  title: Ref<string>;
-  setTitle: (value: string) => void;
-  displayHeaderBackButton: Ref<boolean>;
+export interface INote extends Listable {
+  noteContent: string;
 }
 
 export interface ListSubTypeOption {

@@ -1,14 +1,11 @@
 import { ref, watch } from 'vue';
 import { format } from 'quasar';
 import { useRoute } from 'vue-router';
-import { GlobalComposableReturnValue } from '@/models/models';
 
 const displayHeaderBackButton = ref(true);
 const title = ref('');
 
-export function useGlobals(
-  shouldDisplayBackButton = true
-): GlobalComposableReturnValue {
+export function useGlobals(shouldDisplayBackButton = true) {
   const route = useRoute();
 
   const formatTitle = (value: string) => {

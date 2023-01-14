@@ -39,6 +39,7 @@ import { defineComponent, ref, computed, onMounted, Ref, watch } from 'vue';
 import { useListItems } from '@/composables/useListItems';
 import { useRouter } from 'vue-router';
 import { useGlobals } from '@/composables/useGlobals';
+import { IListItem } from '@/models/models';
 
 export default defineComponent({
   name: 'list-item-page',
@@ -49,7 +50,7 @@ export default defineComponent({
     const { setTitle } = useGlobals();
     const listItemForm = ref<QForm | null>(null);
     const { saveListItem, getListItemById } = useListItems();
-    let listItem: Ref<ListItem> = ref(
+    let listItem: Ref<IListItem> = ref(
       new ListItem({
         status: constants.itemStatus.pending,
         listId: props.list,

@@ -264,7 +264,7 @@ describe('List page', () => {
     });
 
     it('should load list details', async () => {
-      vi.mocked(ListService).getListById.mockResolvedValue(
+      vi.mocked(ListService).getListableById.mockResolvedValue(
         new List({
           name: 'List Name',
           description: 'List Description',
@@ -302,7 +302,7 @@ describe('List page', () => {
         }),
       ]);
 
-      vi.mocked(ListService).getListById.mockResolvedValue(
+      vi.mocked(ListService).getListableById.mockResolvedValue(
         new List({
           name: 'Old Name',
           description: 'Old Description',
@@ -372,7 +372,7 @@ describe('List page', () => {
       });
       await router.isReady();
 
-      vi.mocked(ListService).getListById.mockResolvedValue(
+      vi.mocked(ListService).getListableById.mockResolvedValue(
         new List({
           id: FAKE_LIST_ID,
           name: 'List Name',

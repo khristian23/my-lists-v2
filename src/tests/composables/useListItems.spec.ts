@@ -37,7 +37,7 @@ describe('List Items', () => {
     vi.mocked(ListService).getListItemsByListId.mockResolvedValue(
       mockListItems
     );
-    vi.mocked(ListService).getListById.mockResolvedValue(
+    vi.mocked(ListService).getListableById.mockResolvedValue(
       new List({
         id: FAKE_LIST_ID,
         name: 'Mocked List',

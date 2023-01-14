@@ -1,14 +1,15 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
-  ListConverter,
   ListItemConverter,
   UserConverter,
+  ListableConverter,
 } from '@/services/FirebaseConverters';
 import { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
 import constants from '@/util/constants';
 import ListItem from '@/models/listItem';
+import Note from '@/models/note';
 import User from '@/models/user';
-import { IList } from '@/models/models';
+import { IListItem, INote, Listable } from '@/models/models';
 
 const CURRENT_USER_ID = 'fake_user_id';
 const ANOTHER_USER_ID = 'another_fake_user_id';
@@ -46,12 +47,12 @@ describe('Firebase Converters', () => {
     });
   });
 
-  describe('Lists Converters', () => {
-    let listConverter: ListConverter;
+  describe('List Converters', () => {
+    let listableConverter: ListableConverter;
     let firebaseList: DocumentData;
 
     beforeEach(() => {
-      listConverter = new ListConverter(CURRENT_USER_ID);
+      listableConverter = new ListableConverter(CURRENT_USER_ID);
 
       firebaseList = {
         description: 'list description',
@@ -63,8 +64,8 @@ describe('Firebase Converters', () => {
       };
     });
 
-    function convertFirebaseList(firebaseList: DocumentData): IList {
-      return listConverter.fromFirestore({
+    function convertFirebaseList(firebaseList: DocumentData): Listable {
+      return listableConverter.fromFirestore({
         id: 'mmKOVL2r8BPacBl7QENM6uvKoKM2',
         data: vi.fn().mockReturnValue(firebaseList),
       } as unknown as QueryDocumentSnapshot);
@@ -112,13 +113,73 @@ describe('Firebase Converters', () => {
     });
   });
 
+  describe('Note converter', () => {
+    let listableConverter: ListableConverter;
+    let firebaseNote: DocumentData;
+    let note: INote;
+
+    beforeEach(() => {
+      listableConverter = new ListableConverter(CURRENT_USER_ID);
+
+      firebaseNote = {
+        modifiedAt: 1665932296442,
+        name: 'Notes muy importantes',
+        description: 'Note description',
+        owner: 'mmKOVL2r8BPacBl7QENM6uvKoKM2',
+        type: constants.listType.note,
+        noteContent: 'Este es el contenido de la nota',
+      };
+
+      note = new Note({
+        modifiedAt: 1665932296442,
+        name: 'Notes muy importantes',
+        description: '',
+        owner: 'mmKOVL2r8BPacBl7QENM6uvKoKM2',
+        priority: 12,
+        type: constants.listType.note,
+        noteContent: 'Este es el contenido de la nota',
+      });
+    });
+
+    function convertFirebaseNote(firebaseNote: DocumentData): Listable {
+      return listableConverter.fromFirestore({
+        id: 'mmKOVL2r8BPacBl7QENM6uvKoKM2',
+        data: vi.fn().mockReturnValue(firebaseNote),
+      } as unknown as QueryDocumentSnapshot);
+    }
+
+    it('should convert a note from firestore', () => {
+      const note = convertFirebaseNote(firebaseNote) as INote;
+
+      expect(note.id).toBe('mmKOVL2r8BPacBl7QENM6uvKoKM2');
+      expect(note.name).toBe('Notes muy importantes');
+      expect(note.description).toBe('Note description');
+      expect(note.owner).toBe('mmKOVL2r8BPacBl7QENM6uvKoKM2');
+      expect(note.isShared).toBe(false);
+      expect(note.priority).toBe(constants.lists.priority.lowest);
+      expect(note.type).toBe(constants.listType.note);
+      expect(note.noteContent).toBe('Este es el contenido de la nota');
+    });
+
+    it('should convert a note from app to firestore', () => {
+      const convertedFirebaseNote = listableConverter.toFirestore(note);
+
+      expect(convertedFirebaseNote.id).toBe(note.id);
+      expect(convertedFirebaseNote.name).toBe(note.name);
+      expect(convertedFirebaseNote.description).toBe(note.description);
+      expect(convertedFirebaseNote.owner).toBe(CURRENT_USER_ID);
+      expect(convertedFirebaseNote.type).toBe(note.type);
+      expect(convertedFirebaseNote.noteContent).toBe(note.noteContent);
+    });
+  });
+
   describe('List Item Converter', () => {
     let firebaseListItem: DocumentData;
     let listItemConverter: ListItemConverter;
 
     function convertFirebaseToListItem(
       firebaseListItem: DocumentData
-    ): ListItem {
+    ): IListItem {
       return listItemConverter.fromFirestore({
         id: '0fVpVusKmZzfTrnbDF5D',
         data: vi.fn().mockReturnValue(firebaseListItem),

@@ -7,8 +7,9 @@ import {
 import List from '@/models/list';
 import constants from '@/util/constants';
 import ListItem from '@/models/listItem';
+import Note from '@/models/note';
 import User from '@/models/user';
-import { IList } from '@/models/models';
+import { INote, IListItem, Listable } from '@/models/models';
 
 export class UserConverter implements FirestoreDataConverter<User> {
   toFirestore(user: PartialWithFieldValue<User>): DocumentData {
@@ -32,45 +33,57 @@ export class UserConverter implements FirestoreDataConverter<User> {
   }
 }
 
-export class ListConverter implements FirestoreDataConverter<IList> {
-  private userId: string;
+export class ListableConverter implements FirestoreDataConverter<Listable> {
+  protected userId: string;
+  private noteConverter = new NoteConverter();
 
   constructor(userId: string) {
     this.userId = userId;
   }
 
-  toFirestore(list: PartialWithFieldValue<IList>): DocumentData {
+  toFirestore(listable: PartialWithFieldValue<Listable>): DocumentData {
     const userPriorities: { [k: string]: number } = {};
-    userPriorities[this.userId] = list.priority as number;
+    userPriorities[this.userId] = listable.priority as number;
 
-    return {
-      id: list.id,
-      name: list.name,
-      description: list.description,
-      type: list.type,
-      subtype: list.subtype ?? '',
-      priority: list.priority,
+    const firestoreData = {
+      name: listable.name,
+      description: listable.description,
+      type: listable.type,
+      subtype: listable.subtype ?? '',
+      priority: listable.priority,
       owner: this.userId,
-      sharedWith: list.sharedWith ?? [],
+      sharedWith: listable.sharedWith ?? [],
       userPriorities,
     };
+
+    if (listable.type === constants.listType.note) {
+      return this.noteConverter.toFirestore(listable, firestoreData);
+    }
+
+    return firestoreData;
   }
 
-  toFirestoreUpdate(list: PartialWithFieldValue<IList>): DocumentData {
-    return {
-      name: list.name,
-      description: list.description,
-      type: list.type,
-      subtype: list.subtype ?? '',
-      changedBy: list.changedBy,
-      modifiedAt: list.modifiedAt,
+  toFirestoreUpdate(listable: PartialWithFieldValue<Listable>): DocumentData {
+    const firestoreData = {
+      name: listable.name,
+      description: listable.description,
+      type: listable.type,
+      subtype: listable.subtype ?? '',
+      changedBy: listable.changedBy,
+      modifiedAt: listable.modifiedAt,
     };
+
+    if (listable.type === constants.listType.note) {
+      return this.noteConverter.toFirestoreUpdate(listable, firestoreData);
+    }
+
+    return firestoreData;
   }
 
-  fromFirestore(snapshot: QueryDocumentSnapshot): IList {
+  fromFirestore(snapshot: QueryDocumentSnapshot): Listable {
     const data = snapshot.data();
 
-    return new List({
+    const listableData = {
       id: snapshot.id,
       name: data.name,
       description: data.description,
@@ -82,14 +95,47 @@ export class ListConverter implements FirestoreDataConverter<IList> {
       owner: data.owner,
       changedBy: data.changedBy,
       modifiedAt: data.modifiedAt,
-    });
+    };
+
+    if (data.type === constants.listType.note) {
+      const noteConverter = new NoteConverter();
+      return noteConverter.fromFirestore(data, listableData);
+    }
+    return new List(listableData);
   }
 }
 
-export class ListItemConverter implements FirestoreDataConverter<ListItem> {
+class NoteConverter {
+  toFirestore(
+    listable: PartialWithFieldValue<Listable>,
+    firestoreData: DocumentData
+  ): DocumentData {
+    firestoreData.noteContent = (listable as INote).noteContent;
+    return firestoreData;
+  }
+
+  toFirestoreUpdate(
+    listable: PartialWithFieldValue<Listable>,
+    firestoreData: DocumentData
+  ): DocumentData {
+    firestoreData.noteContent = (listable as INote).noteContent;
+    return firestoreData;
+  }
+
+  fromFirestore(
+    firestoreData: DocumentData,
+    listableData: DocumentData
+  ): INote {
+    listableData.noteContent = firestoreData.noteContent;
+
+    return new Note(listableData);
+  }
+}
+
+export class ListItemConverter implements FirestoreDataConverter<IListItem> {
   constructor(private userId: string, private listId: string) {}
 
-  toFirestore(listItem: PartialWithFieldValue<ListItem>): DocumentData {
+  toFirestore(listItem: PartialWithFieldValue<IListItem>): DocumentData {
     const userPriorities: { [k: string]: number } = {};
     userPriorities[this.userId] = listItem.priority as number;
 
@@ -104,7 +150,7 @@ export class ListItemConverter implements FirestoreDataConverter<ListItem> {
     };
   }
 
-  toFirestoreUpdate(listItem: PartialWithFieldValue<ListItem>): DocumentData {
+  toFirestoreUpdate(listItem: PartialWithFieldValue<IListItem>): DocumentData {
     return {
       name: listItem.name,
       notes: listItem.notes ?? '',
@@ -114,7 +160,7 @@ export class ListItemConverter implements FirestoreDataConverter<ListItem> {
     };
   }
 
-  fromFirestore(snapshot: QueryDocumentSnapshot): ListItem {
+  fromFirestore(snapshot: QueryDocumentSnapshot): IListItem {
     const data = snapshot.data();
 
     return new ListItem({

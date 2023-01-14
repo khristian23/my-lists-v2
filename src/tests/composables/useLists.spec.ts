@@ -16,7 +16,7 @@ const { setCurrentUser } = useUser();
 import ListService from '@/services/ListService';
 vi.mock('@/services/ListService');
 
-import { useLists } from '@/composables/useLists';
+import { useListables } from '@/composables/useListables';
 
 const MAX_NUMBER_OF_LISTS = 30;
 const lists = generateLists(MAX_NUMBER_OF_LISTS);
@@ -31,34 +31,34 @@ describe('Lists Composable', () => {
   });
 
   it('should return all lists', async () => {
-    vi.mocked(ListService).getListsByType.mockResolvedValue(lists);
+    vi.mocked(ListService).getListablesByType.mockResolvedValue(lists);
 
-    const returnedLists = await useLists().getListsByType();
+    const returnedLists = await useListables().getListsByType(undefined);
 
     expect(returnedLists.length).toBe(MAX_NUMBER_OF_LISTS);
   });
 
   it('should return filtered set of lists', async () => {
     const spy = vi
-      .spyOn(ListService, 'getListsByType')
+      .spyOn(ListService, 'getListablesByType')
       .mockResolvedValue(lists);
 
     const type = Consts.listType.note;
 
-    const returnedLists = await useLists().getListsByType(type);
+    const returnedLists = await useListables().getListsByType(type);
 
     expect(returnedLists).toBe(lists);
     expect(spy).toHaveBeenCalledWith(FAKE_USER_ID, type);
   });
 
   it('should flag when lists are being loaded', async () => {
-    vi.mocked(ListService).getListsByType.mockImplementation(() => {
+    vi.mocked(ListService).getListablesByType.mockImplementation(() => {
       return new Promise<Array<List>>((resolve) => {
         setTimeout(() => resolve(lists), 200);
       });
     });
 
-    const { isLoadingLists, getListsByType } = useLists();
+    const { isLoadingLists, getListsByType } = useListables();
 
     expect(isLoadingLists.value).toBe(false);
 
@@ -72,7 +72,7 @@ describe('Lists Composable', () => {
   });
 
   it('should return one list by its id', async () => {
-    vi.mocked(ListService).getListById.mockResolvedValue(
+    vi.mocked(ListService).getListableById.mockResolvedValue(
       new List({
         id: 'ListId',
         type: Consts.listType.note,
@@ -81,7 +81,7 @@ describe('Lists Composable', () => {
       })
     );
 
-    const { getListById } = useLists();
+    const { getListById } = useListables();
 
     const returnedList = await getListById('ListId');
 
@@ -91,7 +91,7 @@ describe('Lists Composable', () => {
   it('should delete a list by Id', async () => {
     const spy = vi.spyOn(ListService, 'deleteListById').mockResolvedValue();
 
-    const { deleteListById } = useLists();
+    const { deleteListById } = useListables();
 
     await deleteListById('ListId');
 
@@ -102,7 +102,7 @@ describe('Lists Composable', () => {
     const error = new Error('A whatever kind of error deleting a list');
     vi.mocked(ListService).deleteListById.mockRejectedValue(error);
 
-    const { deleteListById } = useLists();
+    const { deleteListById } = useListables();
 
     await expect(deleteListById('ListId')).rejects.toThrow(
       'Error deleting list by id ListId'
@@ -114,7 +114,7 @@ describe('Lists Composable', () => {
       .spyOn(ListService, 'updateListsPriorities')
       .mockResolvedValue([]);
 
-    const { updateListsPriorities } = useLists();
+    const { updateListsPriorities } = useListables();
 
     const items = [
       new List({ id: 'ListId', name: 'Name', type: 'note', priority: 0 }),
@@ -129,7 +129,7 @@ describe('Lists Composable', () => {
     const error = new Error('A whatever kind of error updating a list');
     vi.mocked(ListService).updateListsPriorities.mockRejectedValue(error);
 
-    const { updateListsPriorities } = useLists();
+    const { updateListsPriorities } = useListables();
 
     const items = [
       new List({ id: 'ListId', name: 'Name', type: 'note', priority: 0 }),

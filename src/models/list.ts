@@ -1,38 +1,28 @@
-import { ListData, IList } from '@/models/models';
+import {
+  BaseItem,
+  IList,
+  IListItem,
+  ObjectData,
+  Sortable,
+} from '@/models/models';
 import constants from '@/util/constants';
-import Consts from '@/util/constants';
-import ListItem from './listItem';
+import ListableObject from './listableObject';
 
-function sortByPriority(a: ListItem, b: ListItem) {
-  if (a.priority === b.priority) {
+type SortableItem = Sortable & BaseItem;
+
+function sortByPriority(a: SortableItem, b: SortableItem) {
+  if (a.priority != undefined && a.priority === b.priority) {
     return a.name?.localeCompare(b.name);
   }
-  return a.priority - b.priority;
+  return (a.priority ?? 0) - (b.priority ?? 0);
 }
 
-export default class List implements IList {
-  id!: string;
-  type!: string;
-  subtype!: string;
-  name!: string;
-  description!: string;
-
-  readonly isShared = false;
-  owner!: string;
-
-  actionIcon = Consts.itemActionIcon.edit;
-  canBeDeleted = true;
-  priority = 0;
-
-  changedBy = '';
-  modifiedAt = 0;
-
+export default class List extends ListableObject implements IList {
   numberOfItems = 0;
-  items: Array<ListItem> = [];
+  items: Array<IListItem> = [];
 
-  sharedWith: Array<string> = [];
-
-  constructor(listData: Partial<ListData>) {
+  constructor(listData: ObjectData) {
+    super(listData);
     Object.assign(this, listData);
   }
 

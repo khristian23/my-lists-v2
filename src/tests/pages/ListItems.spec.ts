@@ -74,7 +74,7 @@ describe('List Items page', () => {
   }
 
   function mockListWithItems(): void {
-    vi.mocked(ListService).getListById.mockResolvedValue(
+    vi.mocked(ListService).getListableById.mockResolvedValue(
       new List({
         id: FAKE_LIST_ID,
         name: FAKE_LIST_NAME,
@@ -109,7 +109,7 @@ describe('List Items page', () => {
   });
 
   it('should navigate to lists if no list id is found', async () => {
-    vi.mocked(ListService).getListById.mockImplementation(() => {
+    vi.mocked(ListService).getListableById.mockImplementation(() => {
       throw new Error('List not found');
     });
 
@@ -324,7 +324,7 @@ describe('List Items page', () => {
 
   describe('checklist', () => {
     beforeEach(() => {
-      vi.mocked(ListService).getListById.mockResolvedValue(
+      vi.mocked(ListService).getListableById.mockResolvedValue(
         new List({
           id: FAKE_LIST_ID,
           name: FAKE_LIST_NAME,

@@ -94,6 +94,10 @@ export default {
     ],
   },
 
+  notes: {
+    autoSaveDelay: 5000,
+  },
+
   itemStatus: {
     done: 'Done',
     pending: 'Pending',

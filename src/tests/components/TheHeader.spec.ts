@@ -9,7 +9,6 @@ import {
 import { Quasar } from 'quasar';
 import TheHeader from '@/components/TheHeader.vue';
 import User from '@/models/user';
-import { GlobalComposableReturnValue } from '@/models/models';
 import { ref, Ref } from 'vue';
 
 import { useUser } from '@/composables/useUser';
@@ -31,7 +30,7 @@ describe('The header', () => {
     title?: Ref<string>;
     displayHeaderBackButton?: Ref<boolean>;
   }): void {
-    const globalValues: GlobalComposableReturnValue = {
+    const globalValues = {
       title: options.title ?? ref(''),
       displayHeaderBackButton: options.displayHeaderBackButton ?? ref(true),
       setTitle: vi.fn(),

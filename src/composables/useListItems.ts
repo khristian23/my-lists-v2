@@ -19,11 +19,11 @@ export function useListItems() {
 
   const loadListWithItems = async (listId: string) => {
     const [list, listItems] = await Promise.all([
-      ListService.getListById(userId, listId),
+      ListService.getListableById(userId, listId),
       ListService.getListItemsByListId(userId, listId),
     ]);
 
-    currentList.value = list;
+    currentList.value = list as IList;
     listItems.forEach((item) => (item.parentListType = list.type));
     currentList.value.items = listItems;
   };
@@ -146,7 +146,7 @@ export function useListItems() {
     });
   };
 
-  const saveListItem = async (listItem: ListItem) => {
+  const saveListItem = async (listItem: IListItem) => {
     setAuditableValues(listItem);
 
     return ListService.saveListItem(userId, listItem);
