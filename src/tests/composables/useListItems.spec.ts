@@ -8,18 +8,34 @@ import { useUser } from '@/composables/useUser';
 import constants from '@/util/constants';
 import ListItem from '@/models/listItem';
 import List from '@/models/list';
+import { IListItem } from '@/models/models';
 const { setCurrentUser } = useUser();
 
 const FAKE_USER_ID = 'UserId';
 const FAKE_LIST_ID = 'ListId';
 const FAKE_LIST_ITEM_ID_1 = 'ListItemId1';
 const FAKE_LIST_ITEM_ID_2 = 'ListItemId2';
+const FAKE_LIST_ITEM_ID_3 = 'ListItemId3';
+const FAKE_LIST_ITEM_ID_4 = 'ListItemId4';
 
 const mockListItems: Array<ListItem> = [
   new ListItem({
     id: FAKE_LIST_ITEM_ID_1,
     status: constants.itemStatus.pending,
     listId: FAKE_LIST_ID,
+    priority: 1,
+  }),
+  new ListItem({
+    id: FAKE_LIST_ITEM_ID_3,
+    status: constants.itemStatus.pending,
+    listId: FAKE_LIST_ID,
+    priority: 2,
+  }),
+  new ListItem({
+    id: FAKE_LIST_ITEM_ID_4,
+    status: constants.itemStatus.pending,
+    listId: FAKE_LIST_ID,
+    priority: 3,
   }),
   new ListItem({
     id: FAKE_LIST_ITEM_ID_2,
@@ -34,9 +50,9 @@ describe('List Items', () => {
   beforeEach(() => {
     setCurrentUser(new User({ id: FAKE_USER_ID }));
 
-    vi.mocked(ListService).getListItemsByListId.mockResolvedValue(
-      mockListItems
-    );
+    vi.mocked(ListService).getListItemsByListId.mockResolvedValue([
+      ...mockListItems,
+    ]);
     vi.mocked(ListService).getListableById.mockResolvedValue(
       new List({
         id: FAKE_LIST_ID,
@@ -62,7 +78,7 @@ describe('List Items', () => {
     await loadListWithItems(FAKE_LIST_ID);
 
     expect(list.value.name).toBe('Mocked List');
-    expect(list.value.items.length).toBe(2);
+    expect(list.value.items.length).toBe(4);
     expect(list.value.items[0].id).toBe(FAKE_LIST_ITEM_ID_1);
   });
 
@@ -141,7 +157,7 @@ describe('List Items', () => {
     const newItemId = 'newItemId';
     const spy = vi
       .spyOn(ListService, 'saveListItem')
-      .mockImplementation((userId: string, listItem: ListItem) => {
+      .mockImplementation((userId: string, listItem: IListItem) => {
         listItem.id = newItemId;
         return Promise.resolve();
       });
@@ -160,8 +176,40 @@ describe('List Items', () => {
       status: constants.itemStatus.pending,
       modifiedAt: new Date().getTime(),
       changedBy: FAKE_USER_ID,
+      priority: 4,
     });
 
     expect(spy).toBeCalledWith(FAKE_USER_ID, expectedListItem);
+  });
+
+  it('should update the priority of items', async () => {
+    const spy = vi
+      .spyOn(ListService, 'updateListItemsPriorities')
+      .mockImplementation(() => Promise.resolve([]));
+
+    const { updateItemsOrder, loadListWithItems, getCurrentListWithItems } =
+      useListItems();
+
+    await loadListWithItems(FAKE_LIST_ID);
+
+    const currentList = getCurrentListWithItems();
+
+    const getCurrentListItemById = (itemId: string) => {
+      return currentList.value.items.find(({ id }) => id === itemId);
+    };
+
+    expect(getCurrentListItemById(FAKE_LIST_ITEM_ID_1)?.priority).toBe(1);
+
+    const newListItems = [
+      new ListItem({ id: FAKE_LIST_ITEM_ID_4, priority: 1 }),
+      new ListItem({ id: FAKE_LIST_ITEM_ID_1, priority: 3 }),
+    ];
+
+    await updateItemsOrder(FAKE_LIST_ID, newListItems);
+
+    expect(getCurrentListItemById(FAKE_LIST_ITEM_ID_1)?.priority).toBe(3);
+    expect(getCurrentListItemById(FAKE_LIST_ITEM_ID_4)?.priority).toBe(1);
+
+    expect(spy).toHaveBeenCalled();
   });
 });

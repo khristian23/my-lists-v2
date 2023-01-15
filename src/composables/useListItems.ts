@@ -135,7 +135,14 @@ export function useListItems() {
     listId: string,
     listItems: Array<IListItem>
   ) => {
-    listItems.forEach((item) => setAuditableValues(item));
+    listItems.forEach((item) => {
+      setAuditableValues(item);
+
+      const cachedListItem = getListItemFromCache(listId, item.id);
+      if (cachedListItem) {
+        cachedListItem.priority = item.priority;
+      }
+    });
 
     return ListService.updateListItemsPriorities(
       userId,

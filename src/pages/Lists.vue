@@ -29,7 +29,7 @@ import { useGlobals } from '@/composables/useGlobals';
 import Constants from '@/util/constants';
 import { useListables } from '@/composables/useListables';
 import List from 'models/list';
-import { IList } from '@/models/models';
+import { IList, Listable } from '@/models/models';
 
 export default defineComponent({
   name: 'lists-page',
@@ -38,7 +38,7 @@ export default defineComponent({
   setup(props, { emit }) {
     const confirmation = ref();
     const listNameToDelete = ref('');
-    const lists = ref<Array<IList>>([]);
+    const lists = ref<Array<Listable>>([]);
 
     const router = useRouter();
     const { setTitle } = useGlobals();
@@ -50,7 +50,7 @@ export default defineComponent({
     } = useListables();
 
     const loadListsByType = async (type?: string) => {
-      lists.value = await getListsByType(type);
+      lists.value = (await getListsByType(type)) as IList[];
       if (!type) {
         setTitle('All Lists');
       } else {
@@ -143,6 +143,8 @@ export default defineComponent({
     };
 
     const onOrderUpdated = (listsToUpdate: Array<List>): void => {
+      lists.value = listsToUpdate;
+
       updateListsPriorities(listsToUpdate).catch((error) =>
         emit(Constants.events.showError, error.message)
       );

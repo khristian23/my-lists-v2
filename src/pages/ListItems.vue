@@ -30,7 +30,7 @@
 
 <script lang="ts">
 import { useListItems } from '@/composables/useListItems';
-import { defineComponent, ref, onMounted, ComputedRef, computed } from 'vue';
+import { defineComponent, ref, onMounted, computed } from 'vue';
 import { useGlobals } from '@/composables/useGlobals';
 import { useRouter } from 'vue-router';
 import constants from '@/util/constants';
@@ -126,9 +126,9 @@ export default defineComponent({
       });
     };
 
-    const onOrderUpdated = async (listItems: ComputedRef<IListItem[]>) => {
+    const onOrderUpdated = async (listItems: Array<IListItem>) => {
       try {
-        await updateItemsOrder(list.value.id, listItems.value);
+        await updateItemsOrder(list.value.id, listItems);
       } catch (e: unknown) {
         emit(constants.events.showError, (e as Error).message);
       }

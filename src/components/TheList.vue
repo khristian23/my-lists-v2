@@ -15,10 +15,10 @@
     </q-banner>
 
     <draggable
-      v-model="localItems"
+      :model-value="localItems"
       tag="div"
       class="q-list"
-      @end="onDrop"
+      @update:model-value="onOrderUpdated"
       handle=".handle"
       item-key="id"
       v-if="!showCollapseButton"
@@ -132,12 +132,12 @@ export default defineComponent({
       localItems,
       showCollapseButton: false,
 
-      onDrop: () => {
-        localItems.value.forEach((item, index) => {
+      onOrderUpdated: (newList: Array<ManageableItem>) => {
+        newList.forEach((item, index) => {
           item.priority = index + 1;
         });
 
-        emit('order-updated', localItems);
+        emit('order-updated', newList);
       },
 
       onItemAction: (id: string) => emit('item-action', id),
