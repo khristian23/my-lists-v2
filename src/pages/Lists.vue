@@ -38,19 +38,21 @@ export default defineComponent({
   setup(props, { emit }) {
     const confirmation = ref();
     const listNameToDelete = ref('');
-    const lists = ref<Array<Listable>>([]);
 
     const router = useRouter();
     const { setTitle } = useGlobals();
     const {
       isLoadingLists,
-      getListsByType,
+      loadListablesByType,
+      getCurrentLists,
       updateListsPriorities,
       deleteListById,
     } = useListables();
 
-    const loadListsByType = async (type?: string) => {
-      lists.value = (await getListsByType(type)) as IList[];
+    let lists = getCurrentLists();
+
+    const triggerLoadListablesByType = async (type: string) => {
+      await loadListablesByType(type);
       if (!type) {
         setTitle('All Lists');
       } else {
@@ -59,13 +61,13 @@ export default defineComponent({
     };
 
     onMounted(async () => {
-      await loadListsByType(props.type);
+      await triggerLoadListablesByType(props.type);
     });
 
     watch(
       () => props.type,
       async (filterRequest) => {
-        await loadListsByType(filterRequest as string);
+        await triggerLoadListablesByType(filterRequest as string);
       }
     );
 

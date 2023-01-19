@@ -124,13 +124,14 @@ export default {
 
     const itemsSnapshots = await getDocs(listsCollection);
 
-    return Promise.all(
-      itemsSnapshots.docs.map((itemSnapshot) => {
-        return deleteDoc(itemSnapshot.ref);
-      })
-    ).then(() => {
-      return deleteDoc(doc(firestore, `lists/${listId}`));
-    });
+    if (!itemsSnapshots.empty) {
+      await Promise.all(
+        itemsSnapshots.docs.map((itemSnapshot) => {
+          return deleteDoc(itemSnapshot.ref);
+        })
+      );
+    }
+    return deleteDoc(doc(firestore, `lists/${listId}`));
   },
 
   async updateListObjectPriorities(

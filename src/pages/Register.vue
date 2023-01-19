@@ -66,7 +66,7 @@
 import { mapActions } from 'vuex';
 
 export default {
-  name: 'register',
+  name: 'register-page',
   components: {
     TheFooter: require('components/TheFooter').default,
   },

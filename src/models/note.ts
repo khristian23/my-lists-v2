@@ -1,10 +1,10 @@
 import ListableObject from './listableObject';
-import { INote, ObjectData } from './models';
+import { INote, NoteData } from './models';
 
 export default class Note extends ListableObject implements INote {
   noteContent = '';
 
-  public constructor(noteData: ObjectData) {
+  public constructor(noteData: NoteData) {
     super(noteData);
     Object.assign(this, noteData);
   }

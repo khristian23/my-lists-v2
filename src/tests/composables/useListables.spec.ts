@@ -9,6 +9,7 @@ import Consts from '@/util/constants';
 import List from '@/models/list';
 
 const FAKE_USER_ID = 'UserId';
+const FAKE_LIST_ID = 'ListId';
 
 import { useUser } from '@/composables/useUser';
 const { setCurrentUser } = useUser();
@@ -33,9 +34,12 @@ describe('Lists Composable', () => {
   it('should return all lists', async () => {
     vi.mocked(ListService).getListablesByType.mockResolvedValue(lists);
 
-    const returnedLists = await useListables().getListsByType(undefined);
+    const { loadListablesByType, getCurrentLists } = useListables();
 
-    expect(returnedLists.length).toBe(MAX_NUMBER_OF_LISTS);
+    await loadListablesByType(undefined);
+    const returnedLists = getCurrentLists();
+
+    expect(returnedLists.value.length).toBe(MAX_NUMBER_OF_LISTS);
   });
 
   it('should return filtered set of lists', async () => {
@@ -45,9 +49,12 @@ describe('Lists Composable', () => {
 
     const type = Consts.listType.note;
 
-    const returnedLists = await useListables().getListsByType(type);
+    const { loadListablesByType, getCurrentLists } = useListables();
 
-    expect(returnedLists).toBe(lists);
+    await loadListablesByType(type);
+    const returnedLists = getCurrentLists();
+
+    expect(returnedLists.value.length).toBe(lists.length);
     expect(spy).toHaveBeenCalledWith(FAKE_USER_ID, type);
   });
 
@@ -58,15 +65,16 @@ describe('Lists Composable', () => {
       });
     });
 
-    const { isLoadingLists, getListsByType } = useListables();
+    const { isLoadingLists, loadListablesByType, getCurrentLists } =
+      useListables();
 
     expect(isLoadingLists.value).toBe(false);
 
-    const getListPromise = getListsByType(Consts.listType.shoppingCart);
+    const loadListPromise = loadListablesByType(Consts.listType.shoppingCart);
 
     expect(isLoadingLists.value).toBe(true);
 
-    await getListPromise;
+    await loadListPromise;
 
     expect(isLoadingLists.value).toBe(false);
   });

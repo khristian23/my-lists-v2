@@ -1,4 +1,9 @@
-import { IListItem, ListItemStatus, ListType, ObjectData } from './models';
+import {
+  IListItem,
+  ListableItemData,
+  ListItemStatus,
+  ListType,
+} from './models';
 import constants from '@/util/constants';
 
 export default class ListItem implements IListItem {
@@ -18,7 +23,7 @@ export default class ListItem implements IListItem {
   changedBy = '';
   modifiedAt = 0;
 
-  constructor(listItemData: ObjectData) {
+  constructor(listItemData: ListableItemData) {
     Object.assign(this, listItemData);
   }
 

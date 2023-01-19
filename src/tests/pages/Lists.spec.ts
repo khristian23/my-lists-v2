@@ -14,6 +14,7 @@ import {
   waitFor,
   fireEvent,
   within,
+  getByText,
 } from '@testing-library/vue';
 import { Quasar } from 'quasar';
 import TheList from '@/components/TheList.vue';
@@ -296,11 +297,12 @@ describe('The Lists', () => {
         return Promise.resolve();
       });
 
-      const { emitted } = await triggerDeleteForFirstItem();
+      const { emitted, queryAllByTestId } = await triggerDeleteForFirstItem();
 
       await flushPromises();
 
       expect(emitted()).toHaveProperty(constants.events.showToast);
+      expect(queryAllByTestId(lists[0].id).length).toBe(0);
     });
 
     it('should emit a show error event when error deleting item', async () => {

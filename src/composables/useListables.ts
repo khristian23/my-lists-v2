@@ -7,10 +7,11 @@ import List from '@/models/list';
 import { IList, ListType, Listable, INote } from '@/models/models';
 import ListService from '@/services/ListService';
 import constants from '@/util/constants';
-import { ref } from 'vue';
-import { setAuditableValues } from './useCommons';
+import { Ref, ref } from 'vue';
+import { setAuditableValues, sortByPriorityAndName } from './useCommons';
 
 const isLoadingLists = ref(false);
+const currentLists: Ref<Array<Listable>> = ref([]);
 
 export function useListables() {
   const { getCurrentUserId } = useUser();
@@ -20,17 +21,20 @@ export function useListables() {
       type: constants.listType.toDoList,
     });
 
-  const getListablesByType = async (
+  const loadListablesByType = async (
     type: ListType | undefined
-  ): Promise<Array<Listable>> => {
+  ): Promise<void> => {
     isLoadingLists.value = true;
 
     const userId = getCurrentUserId();
-    const lists = await ListService.getListablesByType(userId, type);
+    currentLists.value = await ListService.getListablesByType(userId, type);
+    currentLists.value.sort(sortByPriorityAndName);
 
     isLoadingLists.value = false;
+  };
 
-    return lists;
+  const getCurrentLists = (): Ref<Array<Listable>> => {
+    return currentLists;
   };
 
   const getListById = (listId: string): Promise<Listable> => {
@@ -38,10 +42,21 @@ export function useListables() {
     return ListService.getListableById(userId, listId);
   };
 
-  const deleteListById = (listId: string): Promise<void> => {
-    return ListService.deleteListById(listId).catch(() => {
+  const deleteListById = async (listId: string): Promise<void> => {
+    try {
+      await ListService.deleteListById(listId);
+
+      const deletedListIndex = currentLists.value.findIndex(
+        ({ id }) => id === listId
+      );
+      currentLists.value.splice(deletedListIndex, 1);
+    } catch (e: unknown) {
+      if ((e as Error).message === 'Missing or insufficient permissions.') {
+        throw new Error('List cannot be deleted as it is a shared list');
+      }
+
       throw new Error('Error deleting list by id ' + listId);
-    });
+    }
   };
 
   const updateListsPriorities = (lists: Array<Listable>): Promise<void[]> => {
@@ -74,7 +89,8 @@ export function useListables() {
   return {
     createNewList,
     isLoadingLists,
-    getListsByType: getListablesByType,
+    getCurrentLists,
+    loadListablesByType,
     getListById,
     deleteListById,
     updateListsPriorities,

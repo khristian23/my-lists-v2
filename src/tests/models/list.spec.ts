@@ -90,7 +90,7 @@ describe('List Class', () => {
       ];
     });
 
-    it('should return pending items sorted', () => {
+    it('should return pending items sorted by priority and name', () => {
       expect(list.pendingItems.length).toBe(5);
       expect(list.pendingItems[0].name).toBe('zero 1 pending');
       expect(list.pendingItems[2].name).toBe('first pending');

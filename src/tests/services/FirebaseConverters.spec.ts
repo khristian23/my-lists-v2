@@ -193,7 +193,7 @@ describe('Firebase Converters', () => {
         changedBy: 'mmKOVL2r8BPacBl7QENM6uvKoKM2',
         modifiedAt: 1671081121331,
         name: 'Revise documentation for Extensibility',
-        description: 'Here you find some notes',
+        notes: 'Here you find some notes',
         owner: 'mmKOVL2r8BPacBl7QENM6uvKoKM2',
         status: 'Done',
         userPriorities: { fake_user_id: 2 },
@@ -223,7 +223,7 @@ describe('Firebase Converters', () => {
       const firebaseListItem = listItemConverter.toFirestore(listItem);
 
       expect(firebaseListItem.name).toBe('Test list item name');
-      expect(firebaseListItem.description).toBe('More notes added');
+      expect(firebaseListItem.notes).toBe('More notes added');
       expect(firebaseListItem.status).toBe(constants.itemStatus.pending);
       expect(firebaseListItem.userPriorities[CURRENT_USER_ID]).toBe(4);
     });

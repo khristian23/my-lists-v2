@@ -1,4 +1,4 @@
-import { Listable, ObjectData } from '@/models/models';
+import { Listable, ListableData } from '@/models/models';
 import constants from '@/util/constants';
 
 export default abstract class ListableObject implements Listable {
@@ -20,7 +20,7 @@ export default abstract class ListableObject implements Listable {
 
   sharedWith: Array<string> = [];
 
-  constructor(listableData: ObjectData) {
+  constructor(listableData: ListableData) {
     Object.assign(this, listableData);
   }
 }

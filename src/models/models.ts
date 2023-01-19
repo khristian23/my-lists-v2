@@ -23,11 +23,6 @@ export function isListType(candidate: string | null): candidate is ListType {
   return Object.values(constants.listType).includes(candidate ?? '');
 }
 
-export interface ObjectData {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [field: string]: any;
-}
-
 export interface UserData {
   id: string;
   name?: string;
@@ -42,7 +37,7 @@ export interface BaseItem {
   description?: string;
 }
 
-export interface Sortable {
+export interface Sortable extends BaseItem {
   priority?: number;
 }
 
@@ -115,4 +110,33 @@ export interface BeforeInstallPromptEvent extends Event {
   }>;
 
   prompt(): Promise<void>;
+}
+
+export interface ListableData {
+  id?: string;
+  name?: string;
+  description?: string;
+  type?: string;
+  subtype?: string;
+  priority?: number;
+  status?: string;
+  owner?: string;
+  modifiedAt?: number;
+  changedBy?: string;
+}
+
+export interface NoteData extends ListableData {
+  noteContent?: string;
+}
+
+export interface ListableItemData {
+  id?: string;
+  name?: string;
+  notes?: string;
+  priority?: number;
+  listId?: string;
+  status?: string;
+  owner?: string;
+  modifiedAt?: number;
+  changedBy?: string;
 }

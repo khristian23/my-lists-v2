@@ -141,7 +141,7 @@ export class ListItemConverter implements FirestoreDataConverter<IListItem> {
 
     return {
       name: listItem.name,
-      description: listItem.notes,
+      notes: listItem.notes,
       userPriorities,
       owner: this.userId,
       changedBy: listItem.changedBy,
@@ -166,7 +166,7 @@ export class ListItemConverter implements FirestoreDataConverter<IListItem> {
     return new ListItem({
       id: snapshot.id,
       name: data.name,
-      notes: data.description,
+      notes: data.notes,
       status: data.status,
       priority:
         data.userPriorities?.[this.userId] ?? constants.lists.priority.lowest,
