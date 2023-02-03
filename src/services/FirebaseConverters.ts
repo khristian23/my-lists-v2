@@ -153,7 +153,7 @@ export class ListItemConverter implements FirestoreDataConverter<IListItem> {
   toFirestoreUpdate(listItem: PartialWithFieldValue<IListItem>): DocumentData {
     return {
       name: listItem.name,
-      description: listItem.notes ?? '',
+      notes: listItem.notes ?? '',
       status: listItem.status,
       changedBy: listItem.changedBy,
       modifiedAt: listItem.modifiedAt,

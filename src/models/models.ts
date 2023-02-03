@@ -120,6 +120,8 @@ export interface ListableData {
   subtype?: string;
   priority?: number;
   status?: string;
+  sharedWith?: Array<string>;
+  isShared?: boolean;
   owner?: string;
   modifiedAt?: number;
   changedBy?: string;

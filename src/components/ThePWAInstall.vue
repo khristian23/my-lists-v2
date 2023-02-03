@@ -1,4 +1,5 @@
 <template>
+  <span>Malade</span>
   <q-banner
     bordered
     inline-actions
@@ -39,28 +40,31 @@
 <script lang="ts">
 import { defineComponent, onMounted, ref } from 'vue';
 import { BeforeInstallPromptEvent } from '@/models/models';
-import { useQuasar } from 'quasar';
+import { getStorageBoolean, setStorageValue } from '@/composables/useCommons';
+import constants from '@/util/constants';
 
 let deferredPrompt: BeforeInstallPromptEvent;
 
 export default defineComponent({
   name: 'the-pwa-install',
   setup() {
-    const quasar = useQuasar();
     const showAppInstallBanner = ref(false);
+    const showAppInstallBannerKey =
+      constants.storedValues.dontShowAppInstallBanner;
 
     onMounted(() => {
-      const neverShowAppInstallBannerValue = quasar.localStorage.getItem(
-        'neverShowAppInstallBannerValue'
+      const dontShowAppInstallBannerValue = getStorageBoolean(
+        showAppInstallBannerKey
       );
-      if (!neverShowAppInstallBannerValue) {
+
+      if (!dontShowAppInstallBannerValue) {
         hookupBeforePWAInstallEvent();
       }
     });
 
     const neverShowAppInstallBanner = () => {
       showAppInstallBanner.value = false;
-      quasar.localStorage.set('neverShowAppInstallBannerValue', true);
+      setStorageValue(showAppInstallBannerKey, true);
     };
 
     const hookupBeforePWAInstallEvent = () => {

@@ -13,3 +13,11 @@ export function sortByPriorityAndName(a: Sortable, b: Sortable) {
   }
   return (a.priority ?? 0) - (b.priority ?? 0);
 }
+
+export function getStorageBoolean(itemName: string): boolean {
+  return window.localStorage.getItem(itemName) === 'true';
+}
+
+export function setStorageValue(itemName: string, value: string | boolean) {
+  window.localStorage.setItem(itemName, value.toString());
+}

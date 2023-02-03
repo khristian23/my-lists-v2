@@ -14,7 +14,6 @@ import {
   waitFor,
   fireEvent,
   within,
-  getByText,
 } from '@testing-library/vue';
 import { Quasar } from 'quasar';
 import TheList from '@/components/TheList.vue';

@@ -130,4 +130,8 @@ export default {
     checked: 'check_box',
     unchecked: 'check_box_outline_blank',
   },
+
+  storedValues: {
+    dontShowAppInstallBanner: 'dontShowAppInstallBanner',
+  },
 };

@@ -217,7 +217,8 @@ export default defineComponent({
         await saveList(list.value);
         emit(constants.events.showToast, 'List Item saved');
         router.replace({
-          name: constants.routes.lists.name,
+          name: constants.routes.listItems.name,
+          params: { id: list.value.id },
         });
       } catch (e: unknown) {
         emit(constants.events.showError, (e as Error).message);

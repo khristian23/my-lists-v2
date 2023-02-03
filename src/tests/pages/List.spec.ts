@@ -291,6 +291,8 @@ describe('List page', () => {
     });
 
     it('should save an existing list', async () => {
+      const spy = vi.spyOn(router, 'replace');
+
       vi.mocked(UserService).getUsersList.mockResolvedValue([
         new User({
           id: FAKE_USER_ID_2,
@@ -304,12 +306,14 @@ describe('List page', () => {
 
       vi.mocked(ListService).getListableById.mockResolvedValue(
         new List({
+          id: FAKE_LIST_ID,
           name: 'Old Name',
           description: 'Old Description',
           type: constants.listType.shoppingCart,
           subtype: constants.listSubType.house,
           sharedWith: [FAKE_USER_ID_2],
           isShared: false,
+          owner: FAKE_USER_ID,
         })
       );
 
@@ -348,7 +352,7 @@ describe('List page', () => {
       expect(ListService.saveList).toHaveBeenCalledWith(
         FAKE_USER_ID,
         new List({
-          id: undefined,
+          id: FAKE_LIST_ID,
           name: 'Changed Name',
           description: 'Changed Description',
           type: constants.listType.whishlist,
@@ -361,6 +365,11 @@ describe('List page', () => {
       );
 
       expect(emitted()).toHaveProperty(constants.events.showToast);
+
+      expect(spy).toHaveBeenCalledWith({
+        name: constants.routes.listItems.name,
+        params: { id: FAKE_LIST_ID },
+      });
     });
   });
 

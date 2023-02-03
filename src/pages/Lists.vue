@@ -29,7 +29,6 @@ import { useGlobals } from '@/composables/useGlobals';
 import Constants from '@/util/constants';
 import { useListables } from '@/composables/useListables';
 import List from 'models/list';
-import { IList, Listable } from '@/models/models';
 
 export default defineComponent({
   name: 'lists-page',
