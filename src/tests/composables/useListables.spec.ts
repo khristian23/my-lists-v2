@@ -9,7 +9,6 @@ import Consts from '@/util/constants';
 import List from '@/models/list';
 
 const FAKE_USER_ID = 'UserId';
-const FAKE_LIST_ID = 'ListId';
 
 import { useUser } from '@/composables/useUser';
 const { setCurrentUser } = useUser();
@@ -65,8 +64,7 @@ describe('Lists Composable', () => {
       });
     });
 
-    const { isLoadingLists, loadListablesByType, getCurrentLists } =
-      useListables();
+    const { isLoadingLists, loadListablesByType } = useListables();
 
     expect(isLoadingLists.value).toBe(false);
 

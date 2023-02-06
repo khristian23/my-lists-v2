@@ -11,7 +11,8 @@
     "dev": "quasar dev",
     "build": "vue-tsc --noEmit && vite build",
     "test": "vitest --environment jsdom",
-    "test:node": "vitest"
+    "test:node": "vitest",
+    "deploy": "quasar build -m pwa && firebase deploy --only hosting"
   },
   "dependencies": {
     "@quasar/extras": "^1.0.0",
