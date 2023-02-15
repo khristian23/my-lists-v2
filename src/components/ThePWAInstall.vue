@@ -1,5 +1,4 @@
 <template>
-  <span>Malade</span>
   <q-banner
     bordered
     inline-actions
