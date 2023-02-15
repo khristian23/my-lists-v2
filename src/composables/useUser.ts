@@ -19,9 +19,6 @@ export function useUser() {
     },
     setCurrentUserPhotoURL: (photoURL: string) =>
       (user.value.photoURL = photoURL),
-    logoutUser: () => {
-      throw new Error('not implemented');
-    },
     setUserLocation: (location: string) => {
       user.value.location = location;
       UserService.updateUserLocation(user.value, location);

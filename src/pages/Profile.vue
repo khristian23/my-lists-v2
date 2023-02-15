@@ -44,6 +44,7 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
 import { useUser } from '@/composables/useUser';
+import { useAuthentication } from '@/composables/useAuthentication';
 import constants from '@/util/constants';
 import { useRouter } from 'vue-router';
 import {
@@ -55,7 +56,8 @@ export default defineComponent({
   name: 'profile-page',
   emits: [constants.events.showError, constants.events.showToast],
   setup(_, { emit }) {
-    const { logoutUser, setUserLocation, getCurrentUserRef } = useUser();
+    const { setUserLocation, getCurrentUserRef } = useUser();
+    const { logoutUser } = useAuthentication();
     const { replace } = useRouter();
     const isLoadingLocation = ref(false);
 

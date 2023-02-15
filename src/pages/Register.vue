@@ -1,10 +1,10 @@
 <template>
   <q-page>
-    <q-form ref="myForm" class="q-pa-md">
+    <q-form ref="registrarForm" class="q-pa-md">
       <q-input
         outlined
         lazy-rules
-        v-model="formData.name"
+        v-model="userRegistrar.name"
         label="Name"
         :rules="[(val) => (val && val.length > 0) || 'Please enter a name']"
         class="q-mb-sm"
@@ -12,7 +12,7 @@
       <q-input
         outlined
         lazy-rules
-        v-model="formData.email"
+        v-model="userRegistrar.email"
         label="Email"
         type="email"
         :rules="[isValidEmail]"
@@ -21,7 +21,7 @@
       <q-input
         outlined
         label="Password"
-        v-model="formData.password"
+        v-model="userRegistrar.password"
         lazy-rules
         :type="protectPassword ? 'password' : 'text'"
         :rules="[isValidPassword]"
@@ -38,7 +38,7 @@
       <q-input
         outlined
         label="Confirm Password"
-        v-model="formData.confirmation"
+        v-model="userRegistrar.confirmation"
         lazy-rules
         :type="protectConfirmation ? 'password' : 'text'"
         :rules="[
@@ -55,69 +55,82 @@
         </template>
       </q-input>
     </q-form>
-    <TheFooter>
+    <the-footer>
       <q-btn unelevated to="/login">Back to Login</q-btn>
       <q-btn unelevated @click="onRegister">sign Up</q-btn>
-    </TheFooter>
+    </the-footer>
   </q-page>
 </template>
 
-<script>
-import { mapActions } from 'vuex';
+<script lang="ts">
+import { defineComponent, ref } from 'vue';
+import UserRegistrar from '@/models/userRegistrar';
+import { useRouter } from 'vue-router';
+import constants from '@/util/constants';
+import { QForm } from 'quasar';
+import { useAuthentication } from '@/composables/useAuthentication';
 
-export default {
+export default defineComponent({
   name: 'register-page',
-  components: {
-    TheFooter: require('components/TheFooter').default,
-  },
-  data() {
-    return {
-      protectPassword: true,
-      protectConfirmation: true,
-      formData: {
-        name: '',
-        email: '',
-        password: '',
-        confirmation: '',
-      },
-    };
-  },
-  methods: {
-    ...mapActions('auth', ['registerUser']),
-    isValidEmail(value) {
-      if (!value || value.length === 0) return 'Please enter an email';
+  emits: [constants.events.showToast, constants.events.showError],
+  setup(_, { emit }) {
+    const router = useRouter();
+    const registrarForm = ref<QForm | null>(null);
+    const userRegistrar = ref(new UserRegistrar());
+    const { registerUser } = useAuthentication();
 
-      const emailPattern =
-        /^(?=[a-zA-Z0-9@._%+-]{6,254}$)[a-zA-Z0-9._%+-]{1,64}@(?:[a-zA-Z0-9-]{1,63}\.){1,8}[a-zA-Z]{2,63}$/;
-      return emailPattern.test(value) || 'Invalid email';
-    },
-    isEqualToPassword(value) {
-      return (
-        this.formData.password === value ||
-        'Password confirmation does not match'
-      );
-    },
-    isValidPassword(value) {
-      if (!value && value.length === 0) return 'Please enter a password';
-      return value.length >= 6 || 'Password should be at least 6 characters';
-    },
-    onLogin() {
-      this.$router.replace({ name: 'login' });
-    },
-    async onRegister() {
-      const isValid = await this.$refs.myForm.validate();
+    const isValidEmail = (): boolean | string => {
+      try {
+        return userRegistrar.value.isEmailValid();
+      } catch (e: unknown) {
+        return (e as Error).message;
+      }
+    };
+
+    const isEqualToPassword = () => {
+      try {
+        return userRegistrar.value.isPasswordConfirmed();
+      } catch (e: unknown) {
+        return (e as Error).message;
+      }
+    };
+
+    const isValidPassword = (): boolean | string => {
+      try {
+        return userRegistrar.value.isPasswordValid();
+      } catch (e: unknown) {
+        return (e as Error).message;
+      }
+    };
+
+    const onLogin = () => router.replace({ name: constants.routes.login.name });
+
+    const onRegister = async () => {
+      const isValid = await registrarForm?.value?.validate();
       if (!isValid) {
         return;
       }
 
       try {
-        await this.registerUser(this.formData);
-        this.$emit('showToast', 'User registered');
-        this.$router.replace({ name: this.$Const.routes.lists.name });
-      } catch (e) {
-        this.$emit('showError', e.message);
+        await registerUser(userRegistrar.value);
+        emit(constants.events.showToast, 'User registered');
+        router.replace({ name: constants.routes.lists.name });
+      } catch (e: unknown) {
+        emit(constants.events.showError, (e as Error).message);
       }
-    },
+    };
+
+    return {
+      registrarForm,
+      protectPassword: true,
+      protectConfirmation: true,
+      userRegistrar,
+      isValidEmail,
+      isEqualToPassword,
+      isValidPassword,
+      onRegister,
+      onLogin,
+    };
   },
-};
+});
 </script>

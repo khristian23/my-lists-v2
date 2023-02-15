@@ -7,11 +7,14 @@ import {
   signInWithRedirect,
   getRedirectResult,
   User as FirebaseUser,
+  createUserWithEmailAndPassword,
+  updateProfile,
 } from 'firebase/auth';
 import { useUser } from './useUser';
 import UserService from '@/services/UserService';
 import { useRouter } from 'vue-router';
 import constants from '@/util/constants';
+import UserRegistrar from '@/models/userRegistrar';
 
 export function useAuthentication() {
   const {
@@ -97,11 +100,29 @@ export function useAuthentication() {
     }
   };
 
+  const registerUser = async ({ email, password, name }: UserRegistrar) => {
+    await createUserWithEmailAndPassword(firebaseAuth, email, password);
+
+    if (firebaseAuth.currentUser) {
+      await updateProfile(firebaseAuth.currentUser, {
+        displayName: name,
+      });
+    }
+  };
+
+  const logoutUser = () => {
+    firebaseAuth.signOut();
+
+    setCurrentUserAsAnonymous();
+  };
+
   return {
     startListeningForFirebaseChanges,
     loginWithEmailAndPassword,
     loginWithGoogleRedirect,
     setGoogleAuthProvider,
     checkForRedirectAfterAuthentication,
+    registerUser,
+    logoutUser,
   };
 }

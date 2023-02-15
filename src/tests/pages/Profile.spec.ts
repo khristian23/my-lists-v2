@@ -9,8 +9,7 @@ import User from '@/models/user';
 import * as LocationService from '@/services/LocationService';
 import { ref } from 'vue';
 import flushPromises from 'flush-promises';
-
-const logoutUser = vi.fn();
+import { firebaseAuth } from '@/boot/firebase';
 
 const mockUser = ref(
   new User({
@@ -22,11 +21,11 @@ const mockUser = ref(
 
 vi.mock('@/composables/useUser', () => ({
   useUser: () => ({
-    logoutUser,
     setUserLocation: (location: string) => {
       mockUser.value.location = location;
     },
     getCurrentUserRef: () => mockUser,
+    setCurrentUserAsAnonymous: vi.fn(),
   }),
 }));
 
@@ -45,6 +44,7 @@ describe('Profile page', () => {
 
   afterEach(() => {
     cleanup();
+    vi.restoreAllMocks();
   });
 
   function renderProfile(): RenderResult {
@@ -148,7 +148,7 @@ describe('Profile page', () => {
 
   describe('Logout User', async () => {
     it('should handle logout error', async () => {
-      logoutUser.mockImplementationOnce(() => {
+      vi.spyOn(firebaseAuth, 'signOut').mockImplementation(() => {
         throw new Error('Error login you out');
       });
 
@@ -157,10 +157,15 @@ describe('Profile page', () => {
       const logoutButton = getByText('Logout');
       await fireEvent.click(logoutButton);
 
-      expect(emitted()).toHaveProperty(constants.events.showError);
+      const errorEvent = emitted()[constants.events.showError];
+      const errorMessageList = errorEvent[0] as Array<string>;
+
+      expect(errorMessageList[0]).toBe('Error login you out');
     });
 
     it('should handle successful logout', async () => {
+      vi.spyOn(firebaseAuth, 'signOut').mockResolvedValue();
+
       const { getByText, emitted } = renderProfile();
 
       const logoutButton = getByText('Logout');
