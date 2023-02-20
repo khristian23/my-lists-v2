@@ -1,4 +1,3 @@
-import User from '@/models/user';
 import { firebaseAuth } from '@/boot/firebase';
 import {
   onAuthStateChanged,
@@ -11,16 +10,15 @@ import {
   updateProfile,
 } from 'firebase/auth';
 import { useUser } from './useUser';
-import UserService from '@/services/UserService';
 import { useRouter } from 'vue-router';
 import constants from '@/util/constants';
 import UserRegistrar from '@/models/userRegistrar';
 
 export function useAuthentication() {
   const {
+    createUserFromFirebaseUser,
     setCurrentUser,
-    getCurrentUserId,
-    setCurrentUserPhotoURL,
+    loadCurrentUserDetails,
     setCurrentUserAsAnonymous,
   } = useUser();
 
@@ -47,34 +45,17 @@ export function useAuthentication() {
   const handleFirebaseUserAuthenticated = async (
     firebaseUser: FirebaseUser
   ) => {
-    const user = new User({
-      name: firebaseUser.displayName ?? '',
-      email: firebaseUser.email ?? '',
-      id: firebaseUser.uid,
-      photoURL: firebaseUser.photoURL ?? '',
-    });
-
+    const user = createUserFromFirebaseUser(firebaseUser);
     setCurrentUser(user);
 
     replace({ name: constants.routes.lists.name });
 
-    return Promise.all([
-      UserService.addAuthenticatedUserToListApplication(user),
-      setUserPhotoFromApplication(),
-    ]);
+    return loadCurrentUserDetails();
   };
 
   const handleFirebaseUserNotAuthenticated = () => {
     setCurrentUserAsAnonymous();
     replace({ name: constants.routes.login.name });
-  };
-
-  const setUserPhotoFromApplication = async () => {
-    const photoURL = await UserService.getUserPhotoURLFromStorage(
-      getCurrentUserId()
-    );
-
-    setCurrentUserPhotoURL(photoURL);
   };
 
   const loginWithEmailAndPassword = (email: string, password: string) => {

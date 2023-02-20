@@ -31,4 +31,15 @@ describe('User', () => {
 
     expect(user.initials).toBe('T');
   });
+
+  it('should set basic user information', () => {
+    const user = new User({
+      name: 'Christian Montoya',
+      photoURL: 'http://my.photo.url',
+    });
+
+    expect(user.name).toBe('Christian Montoya');
+    expect(user.photoURL).toBe('http://my.photo.url');
+    expect(user.favorites.length).toBe(0);
+  });
 });

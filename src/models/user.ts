@@ -8,6 +8,7 @@ export default class User {
   photoURL: string;
   email: string;
   location: string;
+  favorites: Array<string> = [];
 
   constructor(userData: Partial<UserData>) {
     this.id = userData.id ?? '';

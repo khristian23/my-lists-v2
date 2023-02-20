@@ -98,9 +98,8 @@ export default {
     const listItemSnapshot = await getDoc(listItemReference);
     if (listItemSnapshot.exists()) {
       return listItemSnapshot.data();
-    } else {
-      throw new Error('List Item not found');
     }
+    throw new Error('List Item not found');
   },
 
   async getListItemsByListId(

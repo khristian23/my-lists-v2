@@ -39,7 +39,7 @@ vi.mock('@/boot/firebase', () => ({
 const mockUser: Partial<FirebaseUser> = Object.freeze({
   displayName: 'Mocked User',
   uid: '123',
-  photoUrl: '',
+  photoURL: 'http://picture.from.google.com',
   email: 'test@user.com',
   emailVerified: true,
 });
@@ -90,36 +90,6 @@ describe('Authentication Composable', () => {
       expect(getCurrentUserRef().value.isAnonymous).toBeTruthy();
       expect(addUserSpy).not.toHaveBeenCalled();
     });
-    it('should add authenticated user to application users list upon user authentication', () => {
-      const { startListeningForFirebaseChanges } = useAuthentication();
-      const userServiceSpy = vi.spyOn(
-        UserService,
-        'addAuthenticatedUserToListApplication'
-      );
-
-      mockAuthenticatedFirebaseUser(mockUser);
-      startListeningForFirebaseChanges();
-
-      expect(userServiceSpy).toHaveBeenCalledOnce();
-    });
-
-    it('should retrieve user photo from application storage upon user authentication', async () => {
-      const { startListeningForFirebaseChanges } = useAuthentication();
-      const { getCurrentUserRef } = useUser();
-      const mockPhotoUrl = 'https://my.photo.url';
-
-      vi.mocked(UserService).getUserPhotoURLFromStorage.mockResolvedValue(
-        mockPhotoUrl
-      );
-
-      mockAuthenticatedFirebaseUser(mockUser);
-
-      startListeningForFirebaseChanges();
-
-      await flushPromises();
-
-      expect(getCurrentUserRef().value.photoURL).toBe(mockPhotoUrl);
-    });
 
     it('should set the current user based on authenticated user', () => {
       const { startListeningForFirebaseChanges } = useAuthentication();
@@ -129,6 +99,42 @@ describe('Authentication Composable', () => {
       startListeningForFirebaseChanges();
 
       expect(getCurrentUserRef().value.name).toBe(mockUser.displayName);
+    });
+
+    it('should retrieve user photo from application storage upon user authentication', async () => {
+      const { startListeningForFirebaseChanges } = useAuthentication();
+      const { getCurrentUserRef } = useUser();
+      const mockPhotoUrl = 'https://my.photo.url';
+
+      vi.mocked(UserService).getUserById.mockResolvedValue(
+        new User({
+          photoURL: mockPhotoUrl,
+        })
+      );
+
+      mockAuthenticatedFirebaseUser(mockUser);
+      startListeningForFirebaseChanges();
+
+      await flushPromises();
+
+      expect(getCurrentUserRef().value.photoURL).toBe(mockPhotoUrl);
+    });
+
+    it('should add authenticated user to application users list if it does not exist yet', () => {
+      const { startListeningForFirebaseChanges } = useAuthentication();
+      const userServiceSpy = vi.spyOn(
+        UserService,
+        'addAuthenticatedUserToListApplication'
+      );
+
+      vi.mocked(UserService).getUserById.mockImplementationOnce(() => {
+        throw new Error('User not found');
+      });
+
+      mockAuthenticatedFirebaseUser(mockUser);
+      startListeningForFirebaseChanges();
+
+      expect(userServiceSpy).toHaveBeenCalledOnce();
     });
 
     it('should navigate to login page when user is not authenticated', () => {

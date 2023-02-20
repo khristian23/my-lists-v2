@@ -12,11 +12,13 @@ import { firestore } from '@/boot/firebase';
 import { UserConverter } from './FirebaseConverters';
 
 export default {
-  async getUserPhotoURLFromStorage(userId: string): Promise<string> {
-    const userRef = doc(firestore, 'users', userId);
+  async getUserById(userId: string): Promise<User> {
+    const userRef = doc(firestore, 'users', userId).withConverter(
+      new UserConverter()
+    );
     const userSnapshot = await getDoc(userRef);
     if (userSnapshot.exists()) {
-      return userSnapshot.data().photoURL;
+      return userSnapshot.data();
     }
     throw new Error('User not found');
   },
@@ -36,11 +38,21 @@ export default {
     }
   },
 
-  async updateUserLocation(user: User, location: string): Promise<void> {
+  async updateUserDetails(user: User, updateObject: { [k: string]: string }) {
     const userRef = doc(firestore, 'users', user.id);
 
-    return updateDoc(userRef, {
-      location,
+    return updateDoc(userRef, updateObject);
+  },
+
+  async updateUserLocation(user: User): Promise<void> {
+    return this.updateUserDetails(user, {
+      location: user.location,
+    });
+  },
+
+  async updateUserPhoto(user: User): Promise<void> {
+    return this.updateUserDetails(user, {
+      photoURL: user.photoURL,
     });
   },
 
