@@ -55,10 +55,6 @@ export default defineComponent({
       const dontShowAppInstallBannerValue = getStorageBoolean(
         showAppInstallBannerKey
       );
-      console.log(
-        'dontShowAppInstallBannerValue',
-        dontShowAppInstallBannerValue
-      );
 
       if (!dontShowAppInstallBannerValue) {
         hookupBeforePWAInstallEvent();
@@ -71,11 +67,7 @@ export default defineComponent({
     };
 
     const hookupBeforePWAInstallEvent = () => {
-      console.log('beforeInstallPromtp');
-
       window.addEventListener('beforeinstallprompt', (e) => {
-        console.log('Should how banner');
-
         // Prevent the mini-infobar from appearing on mobile
         e.preventDefault();
         // Stash the event so it can be triggered later
