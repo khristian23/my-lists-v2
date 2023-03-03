@@ -11,13 +11,14 @@ import { Quasar } from 'quasar';
 import { Router } from 'vue-router';
 import constants from '@/util/constants';
 import { createRouterForRoutes } from './helpers/router';
-import { Auditable, ListTypeOption } from '@/models/models';
+import { Auditable, Listable, ListTypeOption } from '@/models/models';
 import ListService from '@/services/ListService';
 import List from '@/models/list';
 import UserService from '@/services/UserService';
 import User from '@/models/user';
 import { useUser } from '@/composables/useUser';
 import flushPromises from 'flush-promises';
+import Note from '@/models/note';
 
 vi.mock('@/services/ListService');
 vi.mock('@/services/UserService');
@@ -49,6 +50,8 @@ describe('List page', () => {
     router = createRouterForRoutes([
       { name: constants.routes.list.name },
       { name: constants.routes.lists.name },
+      { name: constants.routes.listItems.name },
+      { name: constants.routes.note.name },
     ]);
 
     const { setCurrentUser } = useUser();
@@ -190,6 +193,27 @@ describe('List page', () => {
     });
 
     it('should save a new list', async () => {
+      const routerSpy = vi
+        .spyOn(router, 'replace')
+        .mockImplementationOnce(() => {
+          return Promise.resolve();
+        });
+
+      const expectedList = new List({
+        id: undefined,
+        name: 'Test List Name',
+        type: constants.listType.shoppingCart,
+        subtype: constants.listSubType.groceries,
+        sharedWith: [FAKE_USER_ID_2],
+        owner: FAKE_USER_ID,
+        changedBy: FAKE_USER_ID,
+        modifiedAt: mockDate.getTime(),
+      });
+
+      const newListId = 'NewListId';
+
+      vi.mocked(ListService).saveListable.mockResolvedValueOnce(newListId);
+
       vi.mocked(UserService).getUsersList.mockResolvedValue([
         new User({
           id: FAKE_USER_ID_2,
@@ -220,21 +244,90 @@ describe('List page', () => {
       const saveButton = getByRole('button', { name: 'Save' });
       await fireEvent.click(saveButton);
 
-      expect(ListService.saveList).toHaveBeenCalledWith(
-        FAKE_USER_ID,
-        new List({
-          id: undefined,
-          name: 'Test List Name',
-          type: constants.listType.shoppingCart,
-          subtype: constants.listSubType.groceries,
-          sharedWith: [FAKE_USER_ID_2],
-          owner: FAKE_USER_ID,
-          changedBy: FAKE_USER_ID,
-          modifiedAt: mockDate.getTime(),
-        })
-      );
+      await waitFor(() => {
+        expect(ListService.saveListable).toHaveBeenCalledWith(
+          FAKE_USER_ID,
+          expectedList
+        );
+      });
 
-      expect(emitted()).toHaveProperty(constants.events.showToast);
+      await waitFor(() => {
+        expect(emitted()).toHaveProperty(constants.events.showToast);
+      });
+
+      await waitFor(() => {
+        expect(routerSpy).toHaveBeenCalledWith({
+          name: constants.routes.listItems.name,
+          params: {
+            id: newListId,
+          },
+        });
+      });
+    });
+
+    it('should navigate to note details when saving a new note', async () => {
+      const routerSpy = vi
+        .spyOn(router, 'replace')
+        .mockImplementationOnce(() => {
+          return Promise.resolve();
+        });
+
+      const expectedNote = new Note({
+        id: undefined,
+        name: 'Test Note Name',
+        type: constants.listType.note,
+        subtype: '',
+        noteContent: '',
+        owner: FAKE_USER_ID,
+        changedBy: FAKE_USER_ID,
+        modifiedAt: mockDate.getTime(),
+      });
+
+      const newNoteId = 'NewNoteId';
+
+      vi.mocked(ListService).saveListable.mockResolvedValueOnce(newNoteId);
+
+      vi.mocked(UserService).getUsersList.mockResolvedValue([
+        new User({
+          id: FAKE_USER_ID_2,
+          name: 'Test User 2',
+        }),
+      ]);
+
+      const { getByLabelText, getByText, emitted, getByRole } = renderList();
+
+      await fireEvent.update(getByLabelText('Name'), 'Test Note Name');
+
+      const noteType = getListTypeOption(constants.listType.note);
+
+      const typeSelect = getByLabelText('Type');
+      await fireEvent.click(typeSelect);
+
+      await waitFor(() => getByText(noteType.label));
+      await fireEvent.click(getByText(noteType.label));
+
+      const saveButton = getByRole('button', { name: 'Save' });
+      await fireEvent.click(saveButton);
+
+      await waitFor(() => {
+        expect(ListService.saveListable).toHaveBeenCalledWith(
+          FAKE_USER_ID,
+          expectedNote
+        );
+      });
+
+      await waitFor(() => {
+        expect(emitted()).toHaveProperty(constants.events.showToast);
+      });
+
+      await waitFor(() => {
+        expect(routerSpy).toHaveBeenCalledWith({
+          name: constants.routes.note.name,
+          params: {
+            id: newNoteId,
+          },
+        });
+      });
     });
   });
 
@@ -291,7 +384,11 @@ describe('List page', () => {
     });
 
     it('should save an existing list', async () => {
-      const spy = vi.spyOn(router, 'replace');
+      const routerSpy = vi
+        .spyOn(router, 'replace')
+        .mockImplementationOnce(() => {
+          return Promise.resolve();
+        });
 
       vi.mocked(UserService).getUsersList.mockResolvedValue([
         new User({
@@ -349,7 +446,7 @@ describe('List page', () => {
       const saveButton = getByRole('button', { name: 'Save' });
       await fireEvent.click(saveButton);
 
-      expect(ListService.saveList).toHaveBeenCalledWith(
+      expect(ListService.saveListable).toHaveBeenCalledWith(
         FAKE_USER_ID,
         new List({
           id: FAKE_LIST_ID,
@@ -364,9 +461,11 @@ describe('List page', () => {
         })
       );
 
-      expect(emitted()).toHaveProperty(constants.events.showToast);
+      await waitFor(() => {
+        expect(emitted()).toHaveProperty(constants.events.showToast);
+      });
 
-      expect(spy).toHaveBeenCalledWith({
+      expect(routerSpy).toHaveBeenCalledWith({
         name: constants.routes.listItems.name,
         params: { id: FAKE_LIST_ID },
       });

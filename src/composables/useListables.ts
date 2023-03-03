@@ -4,7 +4,8 @@
 
 import { useUser } from '@/composables/useUser';
 import List from '@/models/list';
-import { IList, ListType, Listable, INote } from '@/models/models';
+import { ListType, Listable, INote, ListableData } from '@/models/models';
+import Note from '@/models/note';
 import ListService from '@/services/ListService';
 import constants from '@/util/constants';
 import { Ref, ref } from 'vue';
@@ -16,7 +17,7 @@ const currentLists: Ref<Array<Listable>> = ref([]);
 export function useListables() {
   const { getCurrentUserId } = useUser();
 
-  const createNewList = (): Listable =>
+  const createNewListable = (): Listable =>
     new List({
       type: constants.listType.toDoList,
     });
@@ -69,15 +70,48 @@ export function useListables() {
     });
   };
 
-  const saveList = async (list: IList) => {
-    setAuditableValues(list);
-
-    const userId = getCurrentUserId();
+  const saveListable = async (list: Listable): Promise<Listable> => {
     if (!list.id) {
-      list.owner = userId;
+      return saveNewListable(list);
+    } else {
+      return saveUpdateListable(list);
+    }
+  };
+
+  const saveNewListable = async (candidate: Listable): Promise<Listable> => {
+    let listable: Listable;
+
+    const listableData: ListableData = {
+      name: candidate.name,
+      description: candidate.description,
+      type: candidate.type,
+      subtype: candidate.subtype,
+      sharedWith: candidate.sharedWith,
+      owner: getCurrentUserId(),
+    };
+
+    if (candidate.type === constants.listType.note) {
+      listable = new Note(listableData);
+    } else {
+      listable = new List(listableData);
     }
 
-    return ListService.saveList(userId, list);
+    setAuditableValues(listable);
+
+    const newListId = await ListService.saveListable(
+      getCurrentUserId(),
+      listable
+    );
+    listable.id = newListId ?? '';
+    return listable;
+  };
+
+  const saveUpdateListable = async (listable: Listable): Promise<Listable> => {
+    setAuditableValues(listable);
+
+    await ListService.saveListable(getCurrentUserId(), listable);
+
+    return listable;
   };
 
   const saveNoteContent = async (note: INote) => {
@@ -87,14 +121,14 @@ export function useListables() {
   };
 
   return {
-    createNewList,
+    createNewListable,
     isLoadingLists,
     getCurrentLists,
     loadListablesByType,
     getListById,
     deleteListById,
     updateListsPriorities,
-    saveList,
+    saveListable,
     saveNoteContent,
   };
 }

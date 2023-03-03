@@ -2,7 +2,7 @@
  * Copyright (C) mailto:christian.montoya@gmail.com
  */
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useUser } from '@/composables/useUser';
 import Constants from '@/util/constants';
 import User from '@/models/user';
@@ -11,11 +11,7 @@ import { User as FirebaseUser } from 'firebase/auth';
 
 vi.mock('@/services/UserService');
 
-const mockUser = new User({
-  id: 'TestUserID',
-  name: 'Test User',
-  email: 'testuser@test.com',
-});
+let mockUser: User;
 
 const mockFirebaseUser = Object.freeze({
   displayName: 'Mocked User',
@@ -26,6 +22,14 @@ const mockFirebaseUser = Object.freeze({
 }) as unknown as FirebaseUser;
 
 describe('User Composable', () => {
+  beforeEach(() => {
+    mockUser = new User({
+      id: 'TestUserID',
+      name: 'Test User',
+      email: 'testuser@test.com',
+    });
+  });
+
   it('should provide an anonymous reactive user by default', () => {
     const { getCurrentUserRef } = useUser();
 
@@ -95,8 +99,6 @@ describe('User Composable', () => {
   });
 
   it('should trigger user location storage', () => {
-    vi.mock('@/services/UserService');
-
     const { setCurrentUser, setUserLocation } = useUser();
 
     setCurrentUser(mockUser);

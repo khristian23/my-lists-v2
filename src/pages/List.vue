@@ -118,6 +118,7 @@ import {
   ListTypeOption,
   ListSubTypeOption,
   isListType,
+  Listable,
 } from '@/models/models';
 import { useGlobals } from '@/composables/useGlobals';
 import { useListables } from '@/composables/useListables';
@@ -129,14 +130,14 @@ export default defineComponent({
   props: ['id', 'type'],
   emits: [constants.events.showError, constants.events.showToast],
   setup(props, { emit }) {
-    const list = ref<IList>(new List({}));
+    const list = ref<Listable>(new List({}));
     const selectedType = ref<ListTypeOption>();
     const selectedSubType = ref<ListSubTypeOption | null>();
     const shareableUsers = ref<Array<User>>();
     const listForm = ref<QForm | null>(null);
 
     const { setTitle } = useGlobals();
-    const { getListById, createNewList, saveList } = useListables();
+    const { getListById, createNewListable, saveListable } = useListables();
     const { getUsersList } = useUser();
     const router = useRouter();
 
@@ -146,13 +147,13 @@ export default defineComponent({
 
     onMounted(async () => {
       if (!editMode) {
-        list.value = createNewList() as IList;
+        list.value = createNewListable();
 
         if (isListType(props.type)) {
           list.value.type = props.type;
         }
       } else {
-        list.value = (await getListById(props.id)) as IList;
+        list.value = await getListById(props.id);
       }
 
       setTypeAndSubType();
@@ -214,12 +215,20 @@ export default defineComponent({
       list.value.subtype = selectedSubType.value?.value ?? '';
 
       try {
-        await saveList(list.value);
+        const listable = await saveListable(list.value);
         emit(constants.events.showToast, 'List Item saved');
-        router.replace({
-          name: constants.routes.listItems.name,
-          params: { id: list.value.id },
-        });
+
+        if (list.value.type === constants.listType.note) {
+          router.replace({
+            name: constants.routes.note.name,
+            params: { id: listable.id },
+          });
+        } else {
+          router.replace({
+            name: constants.routes.listItems.name,
+            params: { id: listable.id },
+          });
+        }
       } catch (e: unknown) {
         emit(constants.events.showError, (e as Error).message);
       }

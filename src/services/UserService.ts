@@ -7,6 +7,9 @@ import {
   doc,
   setDoc,
   updateDoc,
+  arrayUnion,
+  FieldValue,
+  arrayRemove,
 } from 'firebase/firestore';
 import { firestore } from '@/boot/firebase';
 import { UserConverter } from './FirebaseConverters';
@@ -38,7 +41,10 @@ export default {
     }
   },
 
-  async updateUserDetails(user: User, updateObject: { [k: string]: string }) {
+  async updateUserDetails(
+    user: User,
+    updateObject: { [k: string]: string | FieldValue }
+  ) {
     const userRef = doc(firestore, 'users', user.id);
 
     return updateDoc(userRef, updateObject);
@@ -53,6 +59,18 @@ export default {
   async updateUserPhoto(user: User): Promise<void> {
     return this.updateUserDetails(user, {
       photoURL: user.photoURL,
+    });
+  },
+
+  async addToFavorites(user: User, favoriteId: string): Promise<void> {
+    return this.updateUserDetails(user, {
+      favorites: arrayUnion(favoriteId),
+    });
+  },
+
+  async removeFromFavorites(user: User, favoriteId: string): Promise<void> {
+    return this.updateUserDetails(user, {
+      favorites: arrayRemove(favoriteId),
     });
   },
 

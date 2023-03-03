@@ -1,9 +1,11 @@
 import { ref, watch } from 'vue';
 import { format } from 'quasar';
 import { useRoute } from 'vue-router';
+import { EventListener, EventManager } from '@/util/eventListener';
 
 const displayHeaderBackButton = ref(true);
 const title = ref('');
+const eventManager = new EventManager();
 
 export function useGlobals(shouldDisplayBackButton = true) {
   const route = useRoute();
@@ -31,5 +33,7 @@ export function useGlobals(shouldDisplayBackButton = true) {
     title,
     setTitle,
     displayHeaderBackButton,
+    addEventListener: (eventName: string, listener: EventListener) =>
+      eventManager.addListener(eventName, listener),
   };
 }

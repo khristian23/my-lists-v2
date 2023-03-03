@@ -16,6 +16,7 @@ export default class User {
     this.photoURL = userData.photoURL ?? '';
     this.email = userData.email ?? '';
     this.location = userData.location ?? '';
+    this.favorites = userData.favorites ?? [];
   }
 
   get name() {
@@ -41,5 +42,19 @@ export default class User {
       }
     }
     return '';
+  }
+
+  addToFavorites(favoriteId: string) {
+    if (!this.favorites.some((favorite) => favorite === favoriteId)) {
+      this.favorites.push(favoriteId);
+    }
+  }
+
+  removeFromFavorites(favoriteId: string) {
+    const index = this.favorites.indexOf(favoriteId);
+
+    if (index >= 0) {
+      this.favorites.splice(index, 1);
+    }
   }
 }

@@ -5,8 +5,8 @@ export default abstract class ListableObject implements Listable {
   id!: string;
   type!: string;
   subtype!: string;
-  name!: string;
-  description!: string;
+  name = '';
+  description = '';
 
   readonly isShared = false;
   owner!: string;

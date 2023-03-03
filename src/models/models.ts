@@ -29,6 +29,7 @@ export interface UserData {
   photoURL?: string;
   email?: string;
   location?: string;
+  favorites?: Array<string>;
 }
 
 export interface BaseItem {

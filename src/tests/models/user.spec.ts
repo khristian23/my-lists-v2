@@ -42,4 +42,56 @@ describe('User', () => {
     expect(user.photoURL).toBe('http://my.photo.url');
     expect(user.favorites.length).toBe(0);
   });
+
+  it('should add an item to favorite list', () => {
+    const listId = 'TestListId';
+    const user = new User({});
+
+    user.addToFavorites(listId);
+
+    expect(user.favorites).contains(listId);
+  });
+
+  it('should add an item to favorite list only once', () => {
+    const listId = 'TestListId';
+    const user = new User({
+      favorites: ['TestListId2', listId],
+    });
+
+    user.addToFavorites(listId);
+
+    expect(user.favorites).contains(listId);
+    expect(user.favorites.length).toBe(2);
+  });
+
+  it('should remove an item from favorite list', () => {
+    const listId = 'TestListId';
+    const user = new User({
+      favorites: ['testListId3', listId, 'testListId2'],
+    });
+
+    user.removeFromFavorites(listId);
+
+    expect(user.favorites).not.contains(listId);
+    expect(user.favorites.length).toBe(2);
+  });
+
+  it('should remove nothing from empty favorite list', () => {
+    const user = new User({});
+
+    user.removeFromFavorites('TestListId');
+
+    expect(user.favorites.length).toBe(0);
+  });
+
+  it('should remove nothing if favorite item is not found', () => {
+    const user = new User({
+      favorites: ['TestListId1'],
+    });
+
+    user.removeFromFavorites('TestListId');
+
+    expect(user.favorites.length).toBe(1);
+    expect(user.favorites).contains('TestListId1');
+  });
 });

@@ -9,6 +9,16 @@ const anonymousUser = new User({ id: Constants.user.anonymous });
 const user = ref<User>(anonymousUser);
 
 export function useUser() {
+  const validateLoggedUser = () => {
+    if (!user.value.isLoggedIn) {
+      throw new Error('User not logged in');
+    }
+  };
+
+  const getUserFavorites = () => {
+    return user.value.favorites;
+  };
+
   return {
     createUserFromFirebaseUser: (firebaseUser: FirebaseUser): User =>
       new User({
@@ -41,18 +51,34 @@ export function useUser() {
     },
 
     setCurrentUserPhotoURL: (photoURL: string) => {
+      validateLoggedUser();
       user.value.photoURL = photoURL;
-      UserService.updateUserPhoto(user.value);
+      return UserService.updateUserPhoto(user.value);
     },
 
     setUserLocation: (location: string) => {
+      validateLoggedUser();
       user.value.location = location;
-      UserService.updateUserLocation(user.value);
+      return UserService.updateUserLocation(user.value);
+    },
+
+    addToFavorites: (favoriteId: string) => {
+      validateLoggedUser();
+      user.value.addToFavorites(favoriteId);
+      return UserService.addToFavorites(user.value, favoriteId);
+    },
+
+    removeFromFavorites: (favoriteId: string) => {
+      validateLoggedUser();
+      user.value.removeFromFavorites(favoriteId);
+      return UserService.removeFromFavorites(user.value, favoriteId);
     },
 
     getUsersList: async () => {
       const users = (await UserService.getUsersList()) ?? [];
       return users.filter(({ id }) => id !== user.value.id);
     },
+
+    getUserFavorites,
   };
 }

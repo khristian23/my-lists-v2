@@ -16,7 +16,6 @@ import {
 } from 'firebase/firestore';
 import { firestore } from '@/boot/firebase';
 import {
-  IList,
   Auditable,
   BaseItem,
   ListType,
@@ -198,21 +197,27 @@ export default {
     return deleteDoc(doc(firestore, `lists/${listId}/items/${listItemId}`));
   },
 
-  async saveList(userId: string, list: IList): Promise<void> {
+  async saveListable(
+    userId: string,
+    listable: Listable
+  ): Promise<void | string> {
     const listConverter = new ListableConverter(userId);
 
-    if (list.id) {
-      const listReference = doc(firestore, `lists/${list.id}`);
+    if (listable.id) {
+      const listReference = doc(firestore, `lists/${listable.id}`);
 
-      return updateDoc(listReference, listConverter.toFirestoreUpdate(list));
+      return updateDoc(
+        listReference,
+        listConverter.toFirestoreUpdate(listable)
+      );
     } else {
       const createdListReference = doc(
         collection(firestore, 'lists')
       ).withConverter(listConverter);
 
-      await setDoc(createdListReference, list);
+      await setDoc(createdListReference, listable);
 
-      list.id = createdListReference.id;
+      return createdListReference.id;
     }
   },
 
