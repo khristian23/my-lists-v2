@@ -114,7 +114,6 @@ import List from '@/models/list';
 import constants from '@/util/constants';
 import { QForm } from 'quasar';
 import {
-  IList,
   ListTypeOption,
   ListSubTypeOption,
   isListType,

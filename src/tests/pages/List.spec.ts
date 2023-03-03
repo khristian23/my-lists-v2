@@ -11,7 +11,7 @@ import { Quasar } from 'quasar';
 import { Router } from 'vue-router';
 import constants from '@/util/constants';
 import { createRouterForRoutes } from './helpers/router';
-import { Auditable, Listable, ListTypeOption } from '@/models/models';
+import { Auditable, ListTypeOption } from '@/models/models';
 import ListService from '@/services/ListService';
 import List from '@/models/list';
 import UserService from '@/services/UserService';
