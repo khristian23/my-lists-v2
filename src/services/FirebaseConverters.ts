@@ -45,6 +45,10 @@ export class ListableConverter implements FirestoreDataConverter<Listable> {
     const userPriorities: { [k: string]: number } = {};
     userPriorities[this.userId] = listable.priority as number;
 
+    if (listable.isFavorite) {
+      listable.favorites = [this.userId];
+    }
+
     const firestoreData = {
       name: listable.name,
       description: listable.description,
@@ -53,6 +57,7 @@ export class ListableConverter implements FirestoreDataConverter<Listable> {
       priority: listable.priority,
       owner: this.userId,
       sharedWith: listable.sharedWith ?? [],
+      favorites: listable.favorites ?? [],
       userPriorities,
     };
 
@@ -92,6 +97,7 @@ export class ListableConverter implements FirestoreDataConverter<Listable> {
       priority:
         data.userPriorities?.[this.userId] ?? constants.lists.priority.lowest,
       isShared: data.sharedWith?.includes(this.userId) ?? false,
+      isFavorite: data.favorites?.includes(this.userId) ?? false,
       owner: data.owner,
       changedBy: data.changedBy,
       modifiedAt: data.modifiedAt,

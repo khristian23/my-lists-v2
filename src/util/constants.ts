@@ -6,6 +6,9 @@ export default {
   events: {
     showError: 'show-error',
     showToast: 'show-toast',
+    listables: {
+      loaded: 'list-loaded',
+    },
   },
 
   listType: {

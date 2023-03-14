@@ -13,6 +13,9 @@ import {
   WhereFilterOp,
   updateDoc,
   deleteDoc,
+  arrayUnion,
+  FieldValue,
+  arrayRemove,
 } from 'firebase/firestore';
 import { firestore } from '@/boot/firebase';
 import {
@@ -28,6 +31,7 @@ import { ListableConverter, ListItemConverter } from './FirebaseConverters';
 import constants from '@/util/constants';
 
 type Prioritizable = BaseItem & Sortable & Auditable;
+type ObjectUpdate = { [k: string]: string | number | FieldValue };
 
 export default {
   async getListablesByType(
@@ -141,7 +145,7 @@ export default {
       listObjects.map((object) => {
         const listReference = doc(firestore, referenceBuilder(object));
 
-        const objectUpdate: { [k: string]: string | number } = {
+        const objectUpdate: ObjectUpdate = {
           changedBy: object.changedBy,
           modifiedAt: object.modifiedAt,
         };
@@ -179,7 +183,7 @@ export default {
   },
 
   async setListItemStatus(listItem: IListItem, status: string): Promise<void> {
-    const objectUpdate: { [k: string]: string | number } = {
+    const objectUpdate: ObjectUpdate = {
       changedBy: listItem.changedBy,
       modifiedAt: listItem.modifiedAt,
       status: status,
@@ -250,7 +254,7 @@ export default {
   },
 
   async saveNoteContent(note: INote): Promise<void> {
-    const objectUpdate: { [k: string]: string | number } = {
+    const objectUpdate: ObjectUpdate = {
       changedBy: note.changedBy,
       modifiedAt: note.modifiedAt,
       noteContent: note.noteContent,
@@ -259,5 +263,30 @@ export default {
     const listItemReference = doc(firestore, `lists/${note.id}`);
 
     return updateDoc(listItemReference, objectUpdate);
+  },
+
+  async updateFavorites(listId: string, objectUpdate: ObjectUpdate) {
+    const listReference = doc(firestore, `lists/${listId}`);
+
+    return updateDoc(listReference, objectUpdate);
+  },
+
+  async addToFavorites(listId: string, auditable: Auditable): Promise<void> {
+    return this.updateFavorites(listId, {
+      changedBy: auditable.changedBy,
+      modifiedAt: auditable.modifiedAt,
+      favorites: arrayUnion(auditable.changedBy),
+    });
+  },
+
+  async removeFromFavorites(
+    listId: string,
+    auditable: Auditable
+  ): Promise<void> {
+    return this.updateFavorites(listId, {
+      changedBy: auditable.changedBy,
+      modifiedAt: auditable.modifiedAt,
+      favorites: arrayRemove(auditable.changedBy),
+    });
   },
 };

@@ -26,7 +26,7 @@
       />
     </q-form>
     <the-footer>
-      <q-btn unelevated icon="save" @click="onSave" label="Save" />
+      <q-btn unelevated icon="save" @click="onSave" label="Save" no-caps />
     </the-footer>
   </q-page>
 </template>

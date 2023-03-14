@@ -7,36 +7,44 @@
       @update:model-value="onContentUpdate"
     />
     <the-footer>
-      <q-btn unelevated icon="save" @click="onSave" label="Save" />
+      <the-favorite-button @click="onFavorite" :favorite="note.isFavorite" />
+      <q-btn unelevated no-caps icon="save" @click="onSave" label="Save" />
     </the-footer>
   </q-page>
 </template>
 
 <script lang="ts">
 import Note from '@/models/note';
-import { defineComponent, onMounted, ref, Ref, inject } from 'vue';
+import { defineComponent, onMounted, ref, Ref, inject, watch } from 'vue';
 import { useListables } from '@/composables/useListables';
 import { useGlobals } from '@/composables/useGlobals';
 import constants from '@/util/constants';
 import { INote } from '@/models/models';
+import { useFavorites } from '@/composables/useFavorites';
 
 export default defineComponent({
   name: 'notes-page',
   props: ['id'],
   setup(props, { emit }) {
-    const { getListById, saveNoteContent } = useListables();
+    const { getListableById, saveNoteContent } = useListables();
     const { setTitle } = useGlobals();
+    const { handleFavorite } = useFavorites();
+
     let originalContent = '';
     let saveTimer: number;
     const saveTimeout = inject('saveDelay') ?? constants.notes.autoSaveDelay;
 
     const note: Ref<INote> = ref(new Note({}));
 
-    onMounted(async () => {
-      note.value = (await getListById(props.id)) as INote;
+    const loadContents = async () => {
+      note.value = (await getListableById(props.id)) as INote;
       setTitle(note.value.name);
       originalContent = note.value.noteContent;
-    });
+    };
+
+    onMounted(loadContents);
+
+    watch(() => props.id, loadContents);
 
     const onSave = async () => {
       try {
@@ -62,10 +70,20 @@ export default defineComponent({
       }, saveTimeout as number) as unknown as number;
     };
 
+    const onFavorite = async () => {
+      try {
+        await handleFavorite(note.value.id);
+        console.log(note.value.isFavorite);
+      } catch (e: unknown) {
+        emit(constants.events.showError, (e as Error).message);
+      }
+    };
+
     return {
       note,
       onSave,
       onContentUpdate,
+      onFavorite,
     };
   },
 });

@@ -101,6 +101,7 @@
         icon="save"
         @click="onSave"
         label="Save"
+        no-caps
         v-if="!disable"
       />
     </the-footer>
@@ -136,7 +137,7 @@ export default defineComponent({
     const listForm = ref<QForm | null>(null);
 
     const { setTitle } = useGlobals();
-    const { getListById, createNewListable, saveListable } = useListables();
+    const { getListableById, createNewListable, saveListable } = useListables();
     const { getUsersList } = useUser();
     const router = useRouter();
 
@@ -152,7 +153,7 @@ export default defineComponent({
           list.value.type = props.type;
         }
       } else {
-        list.value = await getListById(props.id);
+        list.value = await getListableById(props.id);
       }
 
       setTypeAndSubType();

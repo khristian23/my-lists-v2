@@ -1,21 +1,21 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { EventManager } from '@/util/eventListener';
+import { describe, it, expect, vi } from 'vitest';
+import EventManager from '@/services/EventManager';
 
-describe('Event Listener', () => {
-  let eventManager: EventManager;
+describe('Event Manager', () => {
+  // let eventManager: EventManager;
   const eventName1 = 'testEvent1';
   const eventName2 = 'testEvent2';
 
-  beforeEach(() => {
-    eventManager = new EventManager();
+  it('should not trigger event with empty listeners', () => {
+    EventManager.triggerEvent('An-unkown-listener');
   });
 
   it('should add and receive and event', () => {
     const fakeFunction = vi.fn();
 
-    eventManager.addListener(eventName1, fakeFunction);
+    EventManager.addListener(eventName1, fakeFunction);
 
-    eventManager.triggerEvent(eventName1);
+    EventManager.triggerEvent(eventName1);
 
     expect(fakeFunction).toHaveBeenCalledOnce();
   });
@@ -24,10 +24,10 @@ describe('Event Listener', () => {
     const fakeFunction1 = vi.fn();
     const fakeFunction2 = vi.fn();
 
-    eventManager.addListener(eventName1, fakeFunction1);
-    eventManager.addListener(eventName1, fakeFunction2);
+    EventManager.addListener(eventName1, fakeFunction1);
+    EventManager.addListener(eventName1, fakeFunction2);
 
-    eventManager.triggerEvent(eventName1);
+    EventManager.triggerEvent(eventName1);
 
     expect(fakeFunction1).toHaveBeenCalledOnce();
     expect(fakeFunction2).toHaveBeenCalledOnce();
@@ -37,10 +37,10 @@ describe('Event Listener', () => {
     const fakeFunction1 = vi.fn();
     const fakeFunction2 = vi.fn();
 
-    eventManager.addListener(eventName1, fakeFunction1);
-    eventManager.addListener(eventName2, fakeFunction2);
+    EventManager.addListener(eventName1, fakeFunction1);
+    EventManager.addListener(eventName2, fakeFunction2);
 
-    eventManager.triggerEvent(eventName2);
+    EventManager.triggerEvent(eventName2);
 
     expect(fakeFunction1).not.toHaveBeenCalled();
     expect(fakeFunction2).toHaveBeenCalledOnce();
@@ -50,12 +50,12 @@ describe('Event Listener', () => {
     const fakeFunction1 = vi.fn();
     const fakeFunction2 = vi.fn();
 
-    eventManager.addListener(eventName1, fakeFunction1);
-    eventManager.addListener(eventName1, fakeFunction2);
+    EventManager.addListener(eventName1, fakeFunction1);
+    EventManager.addListener(eventName1, fakeFunction2);
 
-    eventManager.removeListener(eventName1, fakeFunction1);
+    EventManager.removeListener(eventName1, fakeFunction1);
 
-    eventManager.triggerEvent(eventName1);
+    EventManager.triggerEvent(eventName1);
 
     expect(fakeFunction1).not.toHaveBeenCalled();
     expect(fakeFunction2).toHaveBeenCalledOnce();

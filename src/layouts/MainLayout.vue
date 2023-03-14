@@ -20,6 +20,7 @@
           v-bind="link"
         />
       </q-list>
+      <the-favorites />
       <the-pwa-install />
     </q-drawer>
 

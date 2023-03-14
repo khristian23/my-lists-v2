@@ -36,7 +36,7 @@
       </q-input>
     </q-form>
     <the-footer>
-      <q-btn unelevated @click="onLogout">Logout</q-btn>
+      <q-btn unelevated no-caps @click="onLogout">Logout</q-btn>
     </the-footer>
   </q-page>
 </template>

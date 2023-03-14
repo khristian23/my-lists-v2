@@ -69,6 +69,9 @@ describe('List Items page', () => {
           TheFooter: {
             template: '<div><slot></slot></div>',
           },
+          TheFavoriteButton: {
+            template: '<div><slot></slot></div>',
+          },
         },
       },
     });

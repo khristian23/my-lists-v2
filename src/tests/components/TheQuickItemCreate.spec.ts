@@ -8,6 +8,11 @@ describe('The Quick Item Create', () => {
     return render(TheQuickItemCreate, {
       global: {
         plugins: [Quasar],
+        stubs: {
+          TheFavoriteButton: {
+            template: '<div><slot></slot></div>',
+          },
+        },
       },
     });
   }

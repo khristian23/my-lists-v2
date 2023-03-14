@@ -12,15 +12,18 @@
     @blur="onQuickCreateBlur"
     @keyup="onQuickCreateKeyup"
   >
+    <template v-slot:before>
+      <the-favorite-button @click="onFavorite" :favorite="isfavorite" />
+    </template>
     <template v-slot:after>
       <q-btn
-        round
         dense
         flat
         @click="onCreate"
         color="white"
         icon="add"
         label="Create"
+        no-caps
         v-if="showCreateButton"
       />
     </template>
@@ -34,8 +37,9 @@ import { defineComponent, ref } from 'vue';
 const ENTER_KEY = 'Enter';
 
 export default defineComponent({
+  props: ['isfavorite'],
   name: 'the-quick-create',
-  emits: ['quick-create', 'create'],
+  emits: ['quick-create', 'create', 'favorite'],
   setup(_, { emit }) {
     const newItem = ref('');
     const showCreateButton = ref(true);
@@ -63,6 +67,8 @@ export default defineComponent({
 
     const onCreate = () => emit('create');
 
+    const onFavorite = () => emit('favorite');
+
     return {
       newItem,
       quickCreateInput,
@@ -70,6 +76,7 @@ export default defineComponent({
       onQuickCreateBlur,
       onQuickCreateKeyup,
       onCreate,
+      onFavorite,
     };
   },
 });

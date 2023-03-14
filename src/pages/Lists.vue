@@ -17,13 +17,13 @@
     </the-confirmation>
 
     <the-footer>
-      <q-btn unelevated icon="add" @click="onCreate">Create</q-btn>
+      <q-btn unelevated no-caps icon="add" @click="onCreate">Create</q-btn>
     </the-footer>
   </q-page>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch, onMounted } from 'vue';
+import { defineComponent, ref, watch, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useGlobals } from '@/composables/useGlobals';
 import Constants from '@/util/constants';

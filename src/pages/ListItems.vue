@@ -23,18 +23,24 @@
       :scratched="true"
     />
     <the-footer>
-      <the-quick-item-create @quickCreate="onQuickCreate" @create="onCreate" />
+      <the-quick-item-create
+        @quickCreate="onQuickCreate"
+        @create="onCreate"
+        @favorite="onFavorite"
+        :isfavorite="list.isFavorite"
+      />
     </the-footer>
   </q-page>
 </template>
 
 <script lang="ts">
 import { useListItems } from '@/composables/useListItems';
-import { defineComponent, ref, onMounted, computed } from 'vue';
+import { defineComponent, ref, watch, computed, onMounted } from 'vue';
 import { useGlobals } from '@/composables/useGlobals';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import constants from '@/util/constants';
 import { IListItem } from '@/models/models';
+import { useFavorites } from '@/composables/useFavorites';
 
 export default defineComponent({
   name: 'list-items-page',
@@ -50,13 +56,14 @@ export default defineComponent({
       updateItemsOrder,
     } = useListItems();
     const { setTitle } = useGlobals();
+    const { handleFavorite } = useFavorites();
 
     const router = useRouter();
     const newItem = ref('');
     const showCreateButton = ref(true);
     const list = getCurrentListWithItems();
 
-    onMounted(async () => {
+    const loadContents = async () => {
       try {
         await loadListWithItems(props.id);
         setTitle(list.value.name);
@@ -64,7 +71,11 @@ export default defineComponent({
         router.replace({ name: constants.routes.lists.name });
         emit(constants.events.showError, (e as Error).message);
       }
-    });
+    };
+
+    onMounted(loadContents);
+
+    watch(() => props.id, loadContents);
 
     const showPendingListHeader = computed(() => {
       return list.value.type !== constants.listType.checklist;
@@ -134,6 +145,14 @@ export default defineComponent({
       }
     };
 
+    const onFavorite = async () => {
+      try {
+        await handleFavorite(list.value.id);
+      } catch (e: unknown) {
+        emit(constants.events.showError, (e as Error).message);
+      }
+    };
+
     return {
       list,
       newItem,
@@ -148,6 +167,7 @@ export default defineComponent({
       onItemPress,
       onItemDelete,
       onOrderUpdated,
+      onFavorite,
     };
   },
 });

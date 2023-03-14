@@ -87,11 +87,29 @@ describe('Lists Composable', () => {
       })
     );
 
-    const { getListById } = useListables();
+    const { getListableById } = useListables();
 
-    const returnedList = await getListById('ListId');
+    const returnedList = await getListableById('ListId');
 
     expect(returnedList?.name).toBe('ListName');
+  });
+
+  it('should cache one list returned', async () => {
+    const listId = 'ListIdToBeCached';
+
+    vi.mocked(ListService).getListableById.mockResolvedValue(
+      new List({
+        id: listId,
+      })
+    );
+
+    const { getListableById, getCurrentLists } = useListables();
+
+    const returnedListable = await getListableById(listId);
+
+    expect(
+      getCurrentLists().value.find(({ id }) => id === returnedListable.id)
+    ).toBeTruthy();
   });
 
   it('should delete a list by Id', async () => {
@@ -144,5 +162,88 @@ describe('Lists Composable', () => {
     await expect(updateListsPriorities(items)).rejects.toThrow(
       'Error updating lists priorities'
     );
+  });
+
+  describe('Favorites', () => {
+    const mockDate = new Date();
+
+    beforeEach(() => {
+      vi.mocked(ListService).getListablesByType.mockResolvedValue(lists);
+      vi.useFakeTimers();
+      vi.setSystemTime(mockDate);
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('should add list as favorite on existing list', async () => {
+      const { getCurrentLists, addListableAsFavorite, loadListablesByType } =
+        useListables();
+
+      await loadListablesByType(undefined);
+
+      const list = getCurrentLists().value[0];
+
+      expect(list.isFavorite).toBe(false);
+
+      await addListableAsFavorite(list.id);
+
+      expect(ListService.addToFavorites).toHaveBeenCalled();
+      expect(list.isFavorite).toBe(true);
+      expect(list.favorites.length).toBe(1);
+      expect(list.changedBy).toBe(FAKE_USER_ID);
+      expect(list.modifiedAt).toBe(mockDate.getTime());
+    });
+
+    it('should add an item to favorite list only once', async () => {
+      const { getCurrentLists, addListableAsFavorite, loadListablesByType } =
+        useListables();
+
+      await loadListablesByType(undefined);
+
+      const list = getCurrentLists().value[0];
+      list.isFavorite = false;
+      list.favorites = [];
+
+      await addListableAsFavorite(list.id);
+      await addListableAsFavorite(list.id);
+
+      expect(list.favorites.length).toBe(1);
+      expect(list.favorites[0]).toBe(FAKE_USER_ID);
+      expect(list.isFavorite).toBe(true);
+    });
+
+    it('should remove a list as favorite', async () => {
+      const { getCurrentLists, removeListableAsFavorite, loadListablesByType } =
+        useListables();
+
+      await loadListablesByType(undefined);
+
+      const list = getCurrentLists().value[0];
+      list.isFavorite = true;
+      list.favorites = [FAKE_USER_ID];
+
+      await removeListableAsFavorite(list.id);
+
+      expect(ListService.removeFromFavorites).toHaveBeenCalled();
+      expect(list.isFavorite).toBe(false);
+      expect(list.favorites.length).toBe(0);
+      expect(list.changedBy).toBe(FAKE_USER_ID);
+      expect(list.modifiedAt).toBe(mockDate.getTime());
+    });
+
+    it('should remove nothing from empty favorite list', async () => {
+      const { getCurrentLists, removeListableAsFavorite } = useListables();
+
+      const list = getCurrentLists().value[0];
+      list.isFavorite = false;
+      list.favorites = [];
+
+      await removeListableAsFavorite(list.id);
+
+      expect(list.isFavorite).toBe(false);
+      expect(list.favorites.length).toBe(0);
+    });
   });
 });

@@ -45,7 +45,7 @@
       </div>
     </q-form>
     <the-footer>
-      <q-btn unelevated to="/register">Register</q-btn>
+      <q-btn unelevated no-caps to="/register">Register</q-btn>
     </the-footer>
   </q-page>
 </template>

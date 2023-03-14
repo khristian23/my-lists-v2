@@ -27,6 +27,9 @@ describe('Notes page', () => {
           TheFooter: {
             template: '<div><slot></slot></div>',
           },
+          TheFavoriteButton: {
+            template: '<div><slot></slot></div>',
+          },
         },
         provide: {
           saveDelay: () => 100,

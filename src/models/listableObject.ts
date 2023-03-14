@@ -20,6 +20,9 @@ export default abstract class ListableObject implements Listable {
 
   sharedWith: Array<string> = [];
 
+  readonly isFavorite = false;
+  favorites: Array<string> = [];
+
   constructor(listableData: ListableData) {
     Object.assign(this, listableData);
   }

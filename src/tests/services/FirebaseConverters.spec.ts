@@ -10,6 +10,7 @@ import ListItem from '@/models/listItem';
 import Note from '@/models/note';
 import User from '@/models/user';
 import { IListItem, INote, Listable } from '@/models/models';
+import List from '@/models/list';
 
 const CURRENT_USER_ID = 'fake_user_id';
 const ANOTHER_USER_ID = 'another_fake_user_id';
@@ -64,52 +65,71 @@ describe('Firebase Converters', () => {
       };
     });
 
-    function convertFirebaseList(firebaseList: DocumentData): Listable {
-      return listableConverter.fromFirestore({
-        id: 'mmKOVL2r8BPacBl7QENM6uvKoKM2',
-        data: vi.fn().mockReturnValue(firebaseList),
-      } as unknown as QueryDocumentSnapshot);
-    }
+    describe('Firebase to List', () => {
+      function convertFirebaseList(firebaseList: DocumentData): Listable {
+        return listableConverter.fromFirestore({
+          id: 'mmKOVL2r8BPacBl7QENM6uvKoKM2',
+          data: vi.fn().mockReturnValue(firebaseList),
+        } as unknown as QueryDocumentSnapshot);
+      }
 
-    it('should convert a list from firestore', () => {
-      const list = convertFirebaseList(firebaseList);
+      it('should convert a list from firestore', () => {
+        const list = convertFirebaseList(firebaseList);
 
-      expect(list.id).toBe('mmKOVL2r8BPacBl7QENM6uvKoKM2');
-      expect(list.description).toBe('list description');
-      expect(list.name).toBe('Compras para la casa');
-      expect(list.owner).toBe('mmKOVL2r8BPacBl7QENM6uvKoKM2');
-      expect(list.isShared).toBe(false);
-      expect(list.priority).toBe(constants.lists.priority.lowest);
-      expect(list.type).toBe(constants.listType.shoppingCart);
-      expect(list.subtype).toBe(constants.listSubType.house);
+        expect(list.id).toBe('mmKOVL2r8BPacBl7QENM6uvKoKM2');
+        expect(list.description).toBe('list description');
+        expect(list.name).toBe('Compras para la casa');
+        expect(list.owner).toBe('mmKOVL2r8BPacBl7QENM6uvKoKM2');
+        expect(list.isShared).toBe(false);
+        expect(list.priority).toBe(constants.lists.priority.lowest);
+        expect(list.type).toBe(constants.listType.shoppingCart);
+        expect(list.subtype).toBe(constants.listSubType.house);
+      });
+
+      it('should flag list as shared when list owner is not current user', () => {
+        firebaseList.sharedWith = [CURRENT_USER_ID];
+        firebaseList.owner = ANOTHER_USER_ID;
+
+        const list = convertFirebaseList(firebaseList);
+
+        expect(list.isShared).toBe(true);
+      });
+
+      it('should flag list as not shared when list owner is current user', () => {
+        firebaseList.sharedWith = [ANOTHER_USER_ID];
+        firebaseList.owner = CURRENT_USER_ID;
+
+        const list = convertFirebaseList(firebaseList);
+
+        expect(list.isShared).toBe(false);
+      });
+
+      it('should get proper list priority', () => {
+        firebaseList.userPriorities = {};
+        firebaseList.userPriorities[ANOTHER_USER_ID] = 3;
+        firebaseList.userPriorities[CURRENT_USER_ID] = 42;
+
+        const list = convertFirebaseList(firebaseList);
+
+        expect(list.priority).toBe(42);
+      });
+
+      it('should flag list as favorite', () => {
+        firebaseList.favorites = [ANOTHER_USER_ID, CURRENT_USER_ID];
+
+        const list = convertFirebaseList(firebaseList);
+        expect(list.isFavorite).toBe(true);
+      });
     });
 
-    it('should flag list as shared when list owner is not current user', () => {
-      firebaseList.sharedWith = [CURRENT_USER_ID];
-      firebaseList.owner = ANOTHER_USER_ID;
+    describe('List to Firebase', () => {
+      it('should create list with favorite', () => {
+        const list = new List({ isFavorite: true });
 
-      const list = convertFirebaseList(firebaseList);
+        const firebaseList = listableConverter.toFirestore(list);
 
-      expect(list.isShared).toBe(true);
-    });
-
-    it('should flag list as not shared when list owner is current user', () => {
-      firebaseList.sharedWith = [ANOTHER_USER_ID];
-      firebaseList.owner = CURRENT_USER_ID;
-
-      const list = convertFirebaseList(firebaseList);
-
-      expect(list.isShared).toBe(false);
-    });
-
-    it('should get proper list priority', () => {
-      firebaseList.userPriorities = {};
-      firebaseList.userPriorities[ANOTHER_USER_ID] = 3;
-      firebaseList.userPriorities[CURRENT_USER_ID] = 42;
-
-      const list = convertFirebaseList(firebaseList);
-
-      expect(list.priority).toBe(42);
+        expect(firebaseList.favorites).includes(CURRENT_USER_ID);
+      });
     });
   });
 

@@ -29,7 +29,6 @@ export interface UserData {
   photoURL?: string;
   email?: string;
   location?: string;
-  favorites?: Array<string>;
 }
 
 export interface BaseItem {
@@ -63,7 +62,16 @@ export interface Shareable {
   isShared: boolean;
 }
 
-export interface Listable extends ManageableItem, Auditable, Shareable {
+export interface Favorite {
+  isFavorite: boolean;
+  favorites: Array<string>;
+}
+
+export interface Listable
+  extends ManageableItem,
+    Auditable,
+    Shareable,
+    Favorite {
   type: ListType;
   subtype: ListSubType;
 }
@@ -123,6 +131,8 @@ export interface ListableData {
   status?: string;
   sharedWith?: Array<string>;
   isShared?: boolean;
+  favorites?: Array<string>;
+  isFavorite?: boolean;
   owner?: string;
   modifiedAt?: number;
   changedBy?: string;
@@ -142,4 +152,10 @@ export interface ListableItemData {
   owner?: string;
   modifiedAt?: number;
   changedBy?: string;
+}
+
+export interface FavoriteEntry {
+  id: string;
+  name: string;
+  type: string;
 }

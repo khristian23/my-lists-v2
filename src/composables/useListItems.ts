@@ -6,12 +6,14 @@ import { setAuditableValues } from './useCommons';
 import { ListItemStatus, IList, IListItem } from '@/models/models';
 import List from '@/models/list';
 import { Ref, ref } from 'vue';
+import { useListables } from './useListables';
 
 const emptyList = new List({});
 const currentList: Ref<IList> = ref(emptyList);
 
 export function useListItems() {
   const userId = useUser().getCurrentUserId();
+  const { refreshListableById } = useListables();
 
   const getCurrentListWithItems = () => {
     return currentList;
@@ -26,6 +28,8 @@ export function useListItems() {
     currentList.value = list as IList;
     listItems.forEach((item) => (item.parentListType = list.type));
     currentList.value.items = listItems;
+
+    refreshListableById(currentList.value);
   };
 
   const getListItemFromCache = (listId: string, listItemId: string) => {

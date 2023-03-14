@@ -22,6 +22,7 @@
           size="lg"
           round
           unelevated
+          no-caps
           @click="captureImage"
           v-show="!imageCaptured"
           v-if="hasCameraSupport"
@@ -32,6 +33,7 @@
           size="lg"
           round
           unelevated
+          no-caps
           @click="imageCaptured = false"
           v-show="imageCaptured"
           v-if="hasCameraSupport"
@@ -52,7 +54,7 @@
       </div>
     </q-form>
     <TheFooter>
-      <q-btn unelevated @click="onSave" icon="save" label="Save" />
+      <q-btn unelevated no-caps @click="onSave" icon="save" label="Save" />
     </TheFooter>
   </q-page>
 </template>
