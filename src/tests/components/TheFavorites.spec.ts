@@ -1,4 +1,4 @@
-import { describe, it, beforeEach, afterEach, vi, expect } from 'vitest';
+import { describe, it, beforeEach, afterEach, vi } from 'vitest';
 import { cleanup, render, waitFor } from '@testing-library/vue';
 import { Quasar } from 'quasar';
 import TheFavorites from '@/components/TheFavorites.vue';

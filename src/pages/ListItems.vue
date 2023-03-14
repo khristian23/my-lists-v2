@@ -37,7 +37,7 @@
 import { useListItems } from '@/composables/useListItems';
 import { defineComponent, ref, watch, computed, onMounted } from 'vue';
 import { useGlobals } from '@/composables/useGlobals';
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 import constants from '@/util/constants';
 import { IListItem } from '@/models/models';
 import { useFavorites } from '@/composables/useFavorites';
