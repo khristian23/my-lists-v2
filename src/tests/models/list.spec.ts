@@ -11,6 +11,10 @@ describe('List Class', () => {
   });
 
   describe('Pending and Done items', () => {
+    beforeEach(() => {
+      list.keepDoneItems = true;
+    });
+
     it('should have zero items when new list', () => {
       expect(list.numberOfItems).toBe(0);
       expect(list.hasPendingItems).toBe(false);
@@ -46,6 +50,33 @@ describe('List Class', () => {
 
       expect(list.hasPendingItems).toBe(false);
       expect(list.hasDoneItems).toBe(true);
+    });
+  });
+
+  describe('List not keeping Done Items', () => {
+    beforeEach(() => {
+      list.keepDoneItems = false;
+    });
+
+    it('should indicate that only pending items are found', () => {
+      list.items = [
+        new ListItem({ status: constants.itemStatus.done }),
+        new ListItem({ status: constants.itemStatus.pending }),
+        new ListItem({ status: constants.itemStatus.done }),
+      ];
+
+      expect(list.hasPendingItems).toBe(true);
+      expect(list.hasDoneItems).toBe(false);
+    });
+
+    it('should indicate that not pending nor done items are found', () => {
+      list.items = [
+        new ListItem({ status: constants.itemStatus.done }),
+        new ListItem({ status: constants.itemStatus.done }),
+      ];
+
+      expect(list.hasPendingItems).toBe(false);
+      expect(list.hasDoneItems).toBe(false);
     });
   });
 

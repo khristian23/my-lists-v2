@@ -31,6 +31,8 @@ const FAKE_USER_ID_3 = 'UserId3';
 const NEW_LIST_ID = 'new';
 const FAKE_LIST_ID = 'ListId';
 
+const KEEP_ITEMS_DONE = "Keep items with 'Done' status.";
+
 const currentUser = new User({
   id: FAKE_USER_ID,
   name: 'Fake User',
@@ -99,7 +101,7 @@ describe('List page', () => {
 
   describe('Basic controls', () => {
     beforeEach(async () => {
-      router.push({
+      await router.push({
         name: constants.routes.list.name,
         params: { id: NEW_LIST_ID },
       });
@@ -164,7 +166,7 @@ describe('List page', () => {
       await waitFor(() => getByText(groceriesListItem));
     });
 
-    it('should update ttile with list name', async () => {
+    it('should update title with list name', async () => {
       const { getByLabelText, getByText } = renderList();
       const listName = 'A new list name';
 
@@ -176,7 +178,7 @@ describe('List page', () => {
 
   describe('New list', () => {
     beforeEach(async () => {
-      router.push({
+      await router.push({
         name: constants.routes.list.name,
         params: { id: NEW_LIST_ID },
       });
@@ -190,6 +192,7 @@ describe('List page', () => {
       getByText(getListTypeOption(constants.listType.toDoList).label);
       getByLabelText('Sub Type');
       getByText(getFirstListSubTypeLabel(constants.listType.toDoList));
+      getByLabelText(KEEP_ITEMS_DONE);
     });
 
     it('should save a new list', async () => {
@@ -204,6 +207,7 @@ describe('List page', () => {
         name: 'Test List Name',
         type: constants.listType.shoppingCart,
         subtype: constants.listSubType.groceries,
+        keepDoneItems: true,
         sharedWith: [FAKE_USER_ID_2],
         owner: FAKE_USER_ID,
         changedBy: FAKE_USER_ID,
@@ -235,6 +239,11 @@ describe('List page', () => {
 
       await waitFor(() => getByText(shoppingListType.label));
       await fireEvent.click(getByText(shoppingListType.label));
+
+      const keepDoneToggle = within(getByLabelText(KEEP_ITEMS_DONE)).getByRole(
+        'checkbox'
+      );
+      await fireEvent.click(keepDoneToggle);
 
       const shareUserButton = within(getByTestId('shareableUser')).getAllByRole(
         'checkbox'
@@ -294,7 +303,13 @@ describe('List page', () => {
         }),
       ]);
 
-      const { getByLabelText, getByText, emitted, getByRole } = renderList();
+      const {
+        getByLabelText,
+        getByText,
+        emitted,
+        getByRole,
+        queryAllByLabelText,
+      } = renderList();
 
       await fireEvent.update(getByLabelText('Name'), 'Test Note Name');
 
@@ -308,6 +323,8 @@ describe('List page', () => {
 
       const saveButton = getByRole('button', { name: 'Save' });
       await fireEvent.click(saveButton);
+
+      expect(await queryAllByLabelText(KEEP_ITEMS_DONE).length).toBe(0);
 
       await waitFor(() => {
         expect(ListService.saveListable).toHaveBeenCalledWith(
@@ -333,7 +350,7 @@ describe('List page', () => {
 
   describe('New List with query', () => {
     it('should default passed list type on list creation', async () => {
-      router.push({
+      await router.push({
         path: `/list/${NEW_LIST_ID}`,
         query: { type: constants.listType.whishlist },
       });
@@ -349,7 +366,7 @@ describe('List page', () => {
 
   describe('Existing list', () => {
     beforeEach(async () => {
-      router.push({
+      await router.push({
         name: constants.routes.list.name,
         params: { id: FAKE_LIST_ID },
       });
@@ -363,10 +380,11 @@ describe('List page', () => {
           description: 'List Description',
           type: constants.listType.shoppingCart,
           subtype: constants.listSubType.house,
+          keepDoneItems: true,
         })
       );
 
-      const { getByLabelText, getByText } = renderList();
+      const { getByLabelText, getByText, debug } = renderList();
 
       await waitFor(() => getByText('title: List name'));
 
@@ -381,6 +399,10 @@ describe('List page', () => {
       getByText(
         getListTypeOption(constants.listType.shoppingCart).subTypes[1].label
       );
+
+      const keepDoneItems = getByLabelText(KEEP_ITEMS_DONE);
+
+      expect(keepDoneItems.getAttribute('aria-checked')).toBe('true');
     });
 
     it('should save an existing list', async () => {
@@ -408,6 +430,7 @@ describe('List page', () => {
           description: 'Old Description',
           type: constants.listType.shoppingCart,
           subtype: constants.listSubType.house,
+          keepDoneItems: false,
           sharedWith: [FAKE_USER_ID_2],
           isShared: false,
           owner: FAKE_USER_ID,
@@ -433,6 +456,9 @@ describe('List page', () => {
       await waitFor(() => getByText(wishlistType.label));
       await fireEvent.click(getByText(wishlistType.label));
 
+      const keepDoneToggle = getByLabelText(KEEP_ITEMS_DONE);
+      await fireEvent.click(keepDoneToggle);
+
       const fakeUser2SharedButton = within(
         getAllByTestId('shareableUser')[0]
       ).getAllByRole('checkbox')[0];
@@ -454,6 +480,7 @@ describe('List page', () => {
           description: 'Changed Description',
           type: constants.listType.whishlist,
           subtype: '',
+          keepDoneItems: true,
           sharedWith: [FAKE_USER_ID_3],
           owner: FAKE_USER_ID,
           changedBy: FAKE_USER_ID,
@@ -474,7 +501,7 @@ describe('List page', () => {
 
   describe('Shareable list', () => {
     beforeEach(async () => {
-      router.push({
+      await router.push({
         name: constants.routes.list.name,
         params: { id: FAKE_LIST_ID },
       });

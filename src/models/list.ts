@@ -6,9 +6,11 @@ import ListableObject from './listableObject';
 export default class List extends ListableObject implements IList {
   numberOfItems = 0;
   items: Array<IListItem> = [];
+  keepDoneItems;
 
   constructor(listData: ListableData) {
     super(listData);
+    this.keepDoneItems = listData.keepDoneItems ?? true;
   }
 
   get pendingItems() {
@@ -18,6 +20,10 @@ export default class List extends ListableObject implements IList {
   }
 
   get doneItems() {
+    if (!this.keepDoneItems) {
+      return [];
+    }
+
     return this.items
       .filter(({ status }) => status === constants.itemStatus.done)
       .sort(sortByPriorityAndName);

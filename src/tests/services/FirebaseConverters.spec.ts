@@ -9,7 +9,7 @@ import constants from '@/util/constants';
 import ListItem from '@/models/listItem';
 import Note from '@/models/note';
 import User from '@/models/user';
-import { IListItem, INote, Listable } from '@/models/models';
+import { IList, IListItem, INote, Listable } from '@/models/models';
 import List from '@/models/list';
 
 const CURRENT_USER_ID = 'fake_user_id';
@@ -62,6 +62,7 @@ describe('Firebase Converters', () => {
         owner: 'mmKOVL2r8BPacBl7QENM6uvKoKM2',
         type: constants.listType.shoppingCart,
         subtype: constants.listSubType.house,
+        keepDoneItems: false,
       };
     });
 
@@ -84,6 +85,7 @@ describe('Firebase Converters', () => {
         expect(list.priority).toBe(constants.lists.priority.lowest);
         expect(list.type).toBe(constants.listType.shoppingCart);
         expect(list.subtype).toBe(constants.listSubType.house);
+        expect((list as IList).keepDoneItems).toBe(false);
       });
 
       it('should flag list as shared when list owner is not current user', () => {
@@ -123,6 +125,14 @@ describe('Firebase Converters', () => {
     });
 
     describe('List to Firebase', () => {
+      it('should create a list that does not store done items', () => {
+        const list = new List({ keepDoneItems: false });
+
+        const firebaseList = listableConverter.toFirestore(list);
+
+        expect(firebaseList.keepDoneItems).toBeFalsy();
+      });
+
       it('should create list with favorite', () => {
         const list = new List({ isFavorite: true });
 

@@ -9,7 +9,7 @@ import constants from '@/util/constants';
 import ListItem from '@/models/listItem';
 import Note from '@/models/note';
 import User from '@/models/user';
-import { INote, IListItem, Listable } from '@/models/models';
+import { IList, INote, IListItem, Listable } from '@/models/models';
 
 export class UserConverter implements FirestoreDataConverter<User> {
   toFirestore(user: PartialWithFieldValue<User>): DocumentData {
@@ -36,6 +36,7 @@ export class UserConverter implements FirestoreDataConverter<User> {
 export class ListableConverter implements FirestoreDataConverter<Listable> {
   protected userId: string;
   private noteConverter = new NoteConverter();
+  private listConverter = new ListConverter();
 
   constructor(userId: string) {
     this.userId = userId;
@@ -65,7 +66,7 @@ export class ListableConverter implements FirestoreDataConverter<Listable> {
       return this.noteConverter.toFirestore(listable, firestoreData);
     }
 
-    return firestoreData;
+    return this.listConverter.toFirestore(listable, firestoreData);
   }
 
   toFirestoreUpdate(listable: PartialWithFieldValue<Listable>): DocumentData {
@@ -81,8 +82,7 @@ export class ListableConverter implements FirestoreDataConverter<Listable> {
     if (listable.type === constants.listType.note) {
       return this.noteConverter.toFirestoreUpdate(listable, firestoreData);
     }
-
-    return firestoreData;
+    return this.listConverter.toFirestoreUpdate(listable, firestoreData);
   }
 
   fromFirestore(snapshot: QueryDocumentSnapshot): Listable {
@@ -104,9 +104,36 @@ export class ListableConverter implements FirestoreDataConverter<Listable> {
     };
 
     if (data.type === constants.listType.note) {
-      const noteConverter = new NoteConverter();
-      return noteConverter.fromFirestore(data, listableData);
+      return this.noteConverter.fromFirestore(data, listableData);
     }
+
+    return this.listConverter.fromFirestore(data, listableData);
+  }
+}
+
+class ListConverter {
+  toFirestore(
+    listable: PartialWithFieldValue<Listable>,
+    firestoreData: DocumentData
+  ): DocumentData {
+    firestoreData.keepDoneItems = (listable as IList).keepDoneItems;
+    return firestoreData;
+  }
+
+  toFirestoreUpdate(
+    listable: PartialWithFieldValue<Listable>,
+    firestoreData: DocumentData
+  ): DocumentData {
+    firestoreData.keepDoneItems = (listable as IList).keepDoneItems;
+    return firestoreData;
+  }
+
+  fromFirestore(
+    firestoreData: DocumentData,
+    listableData: DocumentData
+  ): IList {
+    listableData.keepDoneItems = firestoreData.keepDoneItems ?? true;
+
     return new List(listableData);
   }
 }

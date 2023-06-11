@@ -51,10 +51,6 @@ export function useListables() {
     return currentLists.value.find(({ id }) => listId === id);
   };
 
-  const refreshListables = (listables: Array<Listable>) => {
-    listables.forEach(refreshListableById);
-  };
-
   const refreshListableById = (listable: Listable) => {
     if (getLoadedListableById(listable.id)) {
       const listableIndex = currentLists.value.findIndex(

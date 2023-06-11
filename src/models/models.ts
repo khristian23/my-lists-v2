@@ -83,6 +83,7 @@ export interface ListableItem extends ManageableItem, Auditable {
 }
 
 export interface IList extends Listable, ParentObject {
+  keepDoneItems: boolean;
   pendingItems: Array<IListItem>;
   hasPendingItems: boolean;
   doneItems: Array<IListItem>;
@@ -133,6 +134,7 @@ export interface ListableData {
   isShared?: boolean;
   favorites?: Array<string>;
   isFavorite?: boolean;
+  keepDoneItems?: boolean;
   owner?: string;
   modifiedAt?: number;
   changedBy?: string;

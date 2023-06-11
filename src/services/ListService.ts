@@ -16,6 +16,7 @@ import {
   arrayUnion,
   FieldValue,
   arrayRemove,
+  QueryConstraint,
 } from 'firebase/firestore';
 import { firestore } from '@/boot/firebase';
 import {
@@ -105,16 +106,42 @@ export default {
     throw new Error('List Item not found');
   },
 
-  async getListItemsByListId(
+  async getAllListItemsByListId(
     userId: string,
     listId: string
   ): Promise<Array<IListItem>> {
+    return this.getListItemsByListId(userId, listId);
+  },
+
+  async getPendingListItemsByListId(
+    userId: string,
+    listId: string
+  ): Promise<Array<IListItem>> {
+    const withOnlyPendingListItems = where(
+      'status',
+      '==',
+      constants.itemStatus.pending
+    );
+
+    return this.getListItemsByListId(userId, listId, withOnlyPendingListItems);
+  },
+
+  async getListItemsByListId(
+    userId: string,
+    listId: string,
+    constraint?: QueryConstraint
+  ): Promise<Array<IListItem>> {
+    const constraints = [];
+    if (constraint) {
+      constraints.push(constraint);
+    }
+
     const listItemsCollection = collection(
       firestore,
       `lists/${listId}/items`
     ).withConverter(new ListItemConverter(userId, listId));
 
-    const listItemsQuery = query(listItemsCollection);
+    const listItemsQuery = query(listItemsCollection, ...constraints);
 
     const listItemsSnapshots = await getDocs(listItemsQuery);
 

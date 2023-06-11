@@ -5,7 +5,7 @@
       <q-input
         :disable="disable"
         outlined
-        v-model="list.name"
+        v-model="listable.name"
         label="Name"
         class="q-mb-sm"
         :rules="[(val) => (val && val.length > 0) || 'Please enter a name']"
@@ -13,7 +13,7 @@
       <q-input
         :disable="disable"
         outlined
-        v-model="list.description"
+        v-model="listable.description"
         label="Description"
         class="q-mb-md"
       />
@@ -56,6 +56,22 @@
         </template>
       </q-select>
 
+      <div class="text-h6 q-mt-md" v-if="options.isList">Options</div>
+      <div
+        class="q-pa-md q-mx-auto"
+        style="max-width: 400px"
+        v-if="options.isList"
+      >
+        <q-list bordered>
+          <q-item>
+            <q-toggle
+              v-model="options.keepDoneItems"
+              label="Keep items with 'Done' status."
+            />
+          </q-item>
+        </q-list>
+      </div>
+
       <div class="text-h6 q-mt-md">Shared With</div>
       <div class="q-pa-md q-mx-auto" style="max-width: 400px">
         <q-list bordered>
@@ -80,13 +96,13 @@
               <q-chip
                 color="green"
                 text-color="white"
-                v-if="user.id === list.owner"
+                v-if="user.id === listable.owner"
                 >Owner</q-chip
               >
               <q-toggle
                 :disable="disable"
                 color="green"
-                v-model="list.sharedWith"
+                v-model="listable.sharedWith"
                 v-else
                 :val="user.id"
               />
@@ -109,7 +125,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, watch, onMounted } from 'vue';
+import {
+  defineComponent,
+  ref,
+  computed,
+  watch,
+  onMounted,
+  reactive,
+} from 'vue';
 import { useRouter } from 'vue-router';
 import List from '@/models/list';
 import constants from '@/util/constants';
@@ -119,6 +142,7 @@ import {
   ListSubTypeOption,
   isListType,
   Listable,
+  IList,
 } from '@/models/models';
 import { useGlobals } from '@/composables/useGlobals';
 import { useListables } from '@/composables/useListables';
@@ -130,7 +154,11 @@ export default defineComponent({
   props: ['id', 'type'],
   emits: [constants.events.showError, constants.events.showToast],
   setup(props, { emit }) {
-    const list = ref<Listable>(new List({}));
+    const listable = ref<Listable>(new List({}));
+    const options = reactive({
+      isList: false,
+      keepDoneItems: false,
+    });
     const selectedType = ref<ListTypeOption>();
     const selectedSubType = ref<ListSubTypeOption | null>();
     const shareableUsers = ref<Array<User>>();
@@ -142,34 +170,47 @@ export default defineComponent({
     const router = useRouter();
 
     const editMode = props.id != 'new';
-    const disable = computed(() => list.value?.isShared);
+    const disable = computed(() => listable.value?.isShared);
     const listTypeOptions = ref(constants.lists.types);
 
     onMounted(async () => {
       if (!editMode) {
-        list.value = createNewListable();
+        listable.value = createNewListable();
 
         if (isListType(props.type)) {
-          list.value.type = props.type;
+          listable.value.type = props.type;
         }
       } else {
-        list.value = await getListableById(props.id);
+        listable.value = await getListableById(props.id);
       }
 
       setTypeAndSubType();
+      loadListableOptions();
       loadShareableUsers();
     });
 
+    watch(
+      () => selectedType.value?.value,
+      (listType) => {
+        options.isList = listType != constants.listType.note;
+      }
+    );
+
+    watch(
+      () => listable.value?.name,
+      () => setHeaderTitle()
+    );
+
     const setTypeAndSubType = () => {
       selectedType.value = listTypeOptions.value.find(
-        ({ value }) => value === list.value.type
+        ({ value }) => value === listable.value.type
       );
 
       onTypeSelection();
 
-      if (list.value.subtype) {
+      if (listable.value.subtype) {
         selectedSubType.value = selectedType.value?.subTypes.find(
-          ({ value }) => value === list.value.subtype
+          ({ value }) => value === listable.value.subtype
         );
       }
     };
@@ -178,14 +219,15 @@ export default defineComponent({
       shareableUsers.value = await getUsersList();
     };
 
-    watch(
-      () => list.value?.name,
-      () => setHeaderTitle()
-    );
+    const loadListableOptions = () => {
+      if (!options.isList) {
+        options.keepDoneItems = (listable.value as IList).keepDoneItems;
+      }
+    };
 
     const setHeaderTitle = () => {
-      if (list.value?.name) {
-        setTitle(list.value.name);
+      if (listable.value?.name) {
+        setTitle(listable.value.name);
       } else if (editMode) {
         setTitle(`Create ${selectedType.value?.type}`);
       } else {
@@ -211,22 +253,26 @@ export default defineComponent({
         return;
       }
 
-      list.value.type = selectedType.value?.value ?? '';
-      list.value.subtype = selectedSubType.value?.value ?? '';
+      listable.value.type = selectedType.value?.value ?? '';
+      listable.value.subtype = selectedSubType.value?.value ?? '';
+
+      if (listable.value.type != constants.listType.note) {
+        (listable.value as IList).keepDoneItems = options.keepDoneItems;
+      }
 
       try {
-        const listable = await saveListable(list.value);
+        const savedListable = await saveListable(listable.value);
         emit(constants.events.showToast, 'List Item saved');
 
-        if (list.value.type === constants.listType.note) {
+        if (listable.value.type === constants.listType.note) {
           router.replace({
             name: constants.routes.note.name,
-            params: { id: listable.id },
+            params: { id: savedListable.id },
           });
         } else {
           router.replace({
             name: constants.routes.listItems.name,
-            params: { id: listable.id },
+            params: { id: savedListable.id },
           });
         }
       } catch (e: unknown) {
@@ -236,7 +282,8 @@ export default defineComponent({
 
     return {
       listForm,
-      list,
+      listable,
+      options,
       selectedType,
       selectedSubType,
       disable,
