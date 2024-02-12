@@ -9,6 +9,7 @@ import constants from '@/util/constants';
 import ListItem from '@/models/listItem';
 import List from '@/models/list';
 import { IListItem } from '@/models/models';
+
 const { setCurrentUser } = useUser();
 
 const FAKE_USER_ID = 'UserId';
@@ -50,13 +51,21 @@ describe('List Items', () => {
   beforeEach(() => {
     setCurrentUser(new User({ id: FAKE_USER_ID }));
 
-    vi.mocked(ListService).getListItemsByListId.mockResolvedValue([
+    vi.mocked(ListService).getAllListItemsByListId.mockResolvedValue([
       ...mockListItems,
     ]);
+
+    vi.mocked(ListService).getPendingListItemsByListId.mockResolvedValue([
+      ...mockListItems.filter(
+        (item) => item.status == constants.itemStatus.pending
+      ),
+    ]);
+
     vi.mocked(ListService).getListableById.mockResolvedValue(
       new List({
         id: FAKE_LIST_ID,
         name: 'Mocked List',
+        keepDoneItems: true,
       })
     );
 
@@ -69,6 +78,30 @@ describe('List Items', () => {
     vi.resetAllMocks();
 
     vi.useRealTimers();
+  });
+
+  it('should get all items from list', async () => {
+    const { loadListWithItems } = useListItems();
+
+    await loadListWithItems(FAKE_LIST_ID);
+
+    expect(ListService.getAllListItemsByListId).toHaveBeenCalled();
+  });
+
+  it('should get only pending items from list', async () => {
+    vi.mocked(ListService).getListableById.mockResolvedValue(
+      new List({
+        id: FAKE_LIST_ID,
+        name: 'Mocked List',
+        keepDoneItems: false,
+      })
+    );
+
+    const { loadListWithItems } = useListItems();
+
+    await loadListWithItems(FAKE_LIST_ID);
+
+    expect(ListService.getPendingListItemsByListId).toHaveBeenCalled();
   });
 
   it('should get list with items', async () => {

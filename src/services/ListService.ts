@@ -34,6 +34,28 @@ import constants from '@/util/constants';
 type Prioritizable = BaseItem & Sortable & Auditable;
 type ObjectUpdate = { [k: string]: string | number | FieldValue };
 
+const getListItemsByListId = async (
+  userId: string,
+  listId: string,
+  constraint?: QueryConstraint
+): Promise<Array<IListItem>> => {
+  const constraints = [];
+  if (constraint) {
+    constraints.push(constraint);
+  }
+
+  const listItemsCollection = collection(
+    firestore,
+    `lists/${listId}/items`
+  ).withConverter(new ListItemConverter(userId, listId));
+
+  const listItemsQuery = query(listItemsCollection, ...constraints);
+
+  const listItemsSnapshots = await getDocs(listItemsQuery);
+
+  return listItemsSnapshots.docs.map((snapshot) => snapshot.data());
+};
+
 export default {
   async getListablesByType(
     userId: string,
@@ -110,7 +132,7 @@ export default {
     userId: string,
     listId: string
   ): Promise<Array<IListItem>> {
-    return this.getListItemsByListId(userId, listId);
+    return getListItemsByListId(userId, listId);
   },
 
   async getPendingListItemsByListId(
@@ -123,29 +145,7 @@ export default {
       constants.itemStatus.pending
     );
 
-    return this.getListItemsByListId(userId, listId, withOnlyPendingListItems);
-  },
-
-  async getListItemsByListId(
-    userId: string,
-    listId: string,
-    constraint?: QueryConstraint
-  ): Promise<Array<IListItem>> {
-    const constraints = [];
-    if (constraint) {
-      constraints.push(constraint);
-    }
-
-    const listItemsCollection = collection(
-      firestore,
-      `lists/${listId}/items`
-    ).withConverter(new ListItemConverter(userId, listId));
-
-    const listItemsQuery = query(listItemsCollection, ...constraints);
-
-    const listItemsSnapshots = await getDocs(listItemsQuery);
-
-    return listItemsSnapshots.docs.map((snapshot) => snapshot.data());
+    return getListItemsByListId(userId, listId, withOnlyPendingListItems);
   },
 
   async deleteListById(listId: string): Promise<void> {

@@ -85,7 +85,7 @@ describe('List Items page', () => {
         type: constants.listType.toDoList,
       })
     );
-    vi.mocked(ListService).getListItemsByListId.mockResolvedValue([
+    vi.mocked(ListService).getAllListItemsByListId.mockResolvedValue([
       new ListItem({
         id: 'PendingId',
         name: 'Pending Item',

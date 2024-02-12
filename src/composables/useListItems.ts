@@ -20,10 +20,19 @@ export function useListItems() {
   };
 
   const loadListWithItems = async (listId: string) => {
-    const [list, listItems] = await Promise.all([
-      ListService.getListableById(userId, listId),
-      ListService.getListItemsByListId(userId, listId),
-    ]);
+    const list = await ListService.getListableById(userId, listId);
+
+    let listItems;
+
+    const readOnlyPendingItems =
+      list.type != constants.listType.note &&
+      (list as IList).keepDoneItems == false;
+
+    if (readOnlyPendingItems) {
+      listItems = await ListService.getPendingListItemsByListId(userId, listId);
+    } else {
+      listItems = await ListService.getAllListItemsByListId(userId, listId);
+    }
 
     currentList.value = list as IList;
     listItems.forEach((item) => (item.parentListType = list.type));
