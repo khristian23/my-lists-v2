@@ -1,0 +1,14 @@
+---
+name: Continuous Deployment
+
+on: push
+
+jobs:
+  test_and_lint:
+    name: Test and Lint
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Run Tests
+        run: echo "RUNNING TESTS!"
