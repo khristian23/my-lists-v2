@@ -11,4 +11,4 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Run Tests
-        run: echo "RUNNING TESTS!"
+        run: npm run test
