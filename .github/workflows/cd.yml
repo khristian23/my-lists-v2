@@ -16,8 +16,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Run Tests
-      - run: npm ci
-      - run: npm run test
+        run: | 
+          npm ci
+          npm run test
 
 
   deploy-firebase:
