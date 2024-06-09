@@ -1,7 +1,12 @@
 ---
 name: Continuous Deployment
 
-on: push
+on: 
+  push:
+    branches:
+      - main
+      - cicd
+  pull_request: []
 
 jobs:
   test_and_lint:
@@ -11,4 +16,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Run Tests
-        run: npm run test
+        run: npm ci
+          run: npm run test
+
+
+  deploy-firebase:
+    name: Deploy to Firebase
+    runs-on: ubuntu-22.04
+    needs: [test_and_lint]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Deploy to Firebase
+        run: echo "Deploy to firebase"
