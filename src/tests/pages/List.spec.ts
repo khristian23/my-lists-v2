@@ -384,7 +384,7 @@ describe('List page', () => {
         })
       );
 
-      const { getByLabelText, getByText, debug } = renderList();
+      const { getByLabelText, getByText } = renderList();
 
       await waitFor(() => getByText('title: List name'));
 
