@@ -19,7 +19,7 @@ jobs:
         run: | 
           npm install
           npm run test
-
+          npm run lint
 
   deploy-firebase:
     name: Deploy to Firebase
