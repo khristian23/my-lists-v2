@@ -15,11 +15,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Install Dependencies
+        run: npm install
       - name: Run Tests
-        run: | 
-          npm install
-          npm run test
-          npm run lint
+        run: npm run test
+      - name: Run Linter
+        run: npm run lint
 
   deploy-firebase:
     name: Deploy to Firebase
