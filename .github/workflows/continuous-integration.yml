@@ -30,7 +30,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Install Dependencies
-        run: npm install
+        run: npm install && npm -g install @quasar/cli
       - name: Build project
         run: quasar build -m pwa
       - name: Deploy to Firebase
