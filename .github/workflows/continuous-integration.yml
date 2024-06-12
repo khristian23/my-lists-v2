@@ -30,5 +30,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Install Dependencies
+        run: npm install
+      - name: Build project
+        run: quasar build -m pwa
       - name: Deploy to Firebase
-        run: echo "Deploy to firebase"
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_MY_LISTS_2C9DD }}'
+          projectId: my-lists-2c9dd
