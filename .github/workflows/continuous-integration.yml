@@ -1,0 +1,43 @@
+---
+name: Continuous Integration
+
+on: 
+  push:
+    branches:
+      - main
+    paths:
+      - '!functions/**'
+  pull_request: []
+
+jobs:
+  test_and_lint:
+    name: Test and Lint
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Dependencies
+        run: npm install
+      - name: Run Tests
+        run: npm run test
+      - name: Run Linter
+        run: npm run lint
+
+  deploy-firebase:
+    name: Deploy to Firebase
+    runs-on: ubuntu-22.04
+    needs: [test_and_lint]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Dependencies
+        run: npm install
+      - name: Build project
+        run: quasar build -m pwa
+      - name: Deploy to Firebase
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_MY_LISTS_2C9DD }}'
+          projectId: my-lists-2c9dd
