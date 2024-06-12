@@ -5,7 +5,8 @@ on:
   push:
     branches:
       - main
-      - cicd
+    paths:
+      - '!functions/**'
   pull_request: []
 
 jobs:
