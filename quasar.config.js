@@ -153,15 +153,15 @@ module.exports = configure(function (/* ctx */) {
 
     // https://v2.quasar.dev/quasar-cli-vite/developing-pwa/configuring-pwa
     pwa: {
-      workboxMode: 'generateSW', // or 'injectManifest'
+      workboxMode: 'injectManifest', // 'generateSW' or 'injectManifest'
       injectPwaMetaTags: true,
       swFilename: 'sw.js',
       manifestFilename: 'manifest.json',
       useCredentialsForManifestTag: false,
-      // extendGenerateSWOptions (cfg) {}
+      // extendGenerateSWOptions (cfg) {},
       // extendInjectManifestOptions (cfg) {},
-      // extendManifestJson (json) {}
-      // extendPWACustomSWConf (esbuildConf) {}
+      // extendManifestJson (json) {},
+      // extendPWACustomSWConf (esbuildConf) {},
       manifest: {
         name: 'Organize your Lists',
         short_name: 'My Lists',
