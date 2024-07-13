@@ -6,9 +6,9 @@
 
 console.log('CUSTOM SERVICE WORKER');
 
-import { clientsClaim } from 'workbox-core'
-import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from 'workbox-precaching'
-import { registerRoute, NavigationRoute } from 'workbox-routing'
+//import { clientsClaim } from 'workbox-core'
+import { precacheAndRoute/*, cleanupOutdatedCaches, createHandlerBoundToURL*/ } from 'workbox-precaching'
+//import { registerRoute, NavigationRoute } from 'workbox-routing'
 
 // self.skipWaiting()
 // clientsClaim()
