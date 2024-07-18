@@ -11,11 +11,9 @@ export default defineComponent({
   setup() {
     const {
       startListeningForFirebaseChanges,
-      checkForRedirectAfterAuthentication,
     } = useAuthentication();
 
     startListeningForFirebaseChanges();
-    checkForRedirectAfterAuthentication();
   },
 });
 </script>
