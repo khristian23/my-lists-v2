@@ -4,7 +4,7 @@ import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,
   User as FirebaseUser,
   createUserWithEmailAndPassword,
   updateProfile,
@@ -74,11 +74,8 @@ export function useAuthentication() {
     return signInWithRedirect(firebaseAuth, googleAuthProvider);
   };
 
-  const checkForRedirectAfterAuthentication = async () => {
-    const userCredential = await getRedirectResult(firebaseAuth);
-    if (userCredential?.user) {
-      replace({ name: constants.routes.lists.name });
-    }
+  const loginWithGooglePopup = async () => {
+    return signInWithPopup(firebaseAuth, googleAuthProvider);
   };
 
   const registerUser = async ({ email, password, name }: UserRegistrar) => {
@@ -101,8 +98,8 @@ export function useAuthentication() {
     startListeningForFirebaseChanges,
     loginWithEmailAndPassword,
     loginWithGoogleRedirect,
+    loginWithGooglePopup,
     setGoogleAuthProvider,
-    checkForRedirectAfterAuthentication,
     registerUser,
     logoutUser,
   };

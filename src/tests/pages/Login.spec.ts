@@ -16,7 +16,7 @@ import MainLayoutTest from './helpers/MainLayoutTest.vue';
 
 const mockedAuthentication = {
   loginWithEmailAndPassword: vi.fn(),
-  loginWithGoogleRedirect: vi.fn(),
+  loginWithGooglePopup: vi.fn()
 };
 vi.mock('@/composables/useAuthentication', () => ({
   useAuthentication: () => mockedAuthentication,
@@ -139,7 +139,7 @@ describe('Login', () => {
       const googleButton = getByLabelText('Login with Google');
       await fireEvent.click(googleButton);
 
-      expect(mockedAuthentication.loginWithGoogleRedirect).toHaveBeenCalled();
+      expect(mockedAuthentication.loginWithGooglePopup).toHaveBeenCalled();
     });
   });
 
