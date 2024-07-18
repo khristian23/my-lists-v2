@@ -69,8 +69,7 @@ export default defineComponent({
 
     const {
       loginWithEmailAndPassword,
-      loginWithGoogleRedirect,
-      checkForRedirectAfterAuthentication,
+      loginWithGooglePopup,
     } = useAuthentication();
 
     const onLogin = async () => {
@@ -88,8 +87,7 @@ export default defineComponent({
 
     const onGoogle = async () => {
       try {
-        await loginWithGoogleRedirect();
-        checkForRedirectAfterAuthentication();
+        await loginWithGooglePopup();
       } catch (e: unknown) {
         emit(constants.events.showError, (e as Error).message);
       }

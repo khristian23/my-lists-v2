@@ -6,7 +6,6 @@ import { useAuthentication } from '@/composables/useAuthentication';
 
 const mockUseAuthentication = {
   startListeningForFirebaseChanges: vi.fn(),
-  checkForRedirectAfterAuthentication: vi.fn(),
 };
 
 vi.mock('@/composables/useAuthentication', () => ({
@@ -36,11 +35,4 @@ describe('Main App Initialization', () => {
     ).toHaveBeenCalledOnce();
   });
 
-  it('should check for user authentication redirect', () => {
-    renderApp();
-
-    expect(
-      mockUseAuthentication.checkForRedirectAfterAuthentication
-    ).toHaveBeenCalledOnce();
-  });
 });

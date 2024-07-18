@@ -12,7 +12,7 @@ import {
   User as FirebaseUser,
   Auth,
   signInWithEmailAndPassword,
-  signInWithRedirect,
+  signInWithPopup,
   GoogleAuthProvider,
   getRedirectResult,
   UserCredential,
@@ -206,31 +206,18 @@ describe('Authentication Composable', () => {
       );
     });
     it('should trigger user login with google', () => {
-      const { loginWithGoogleRedirect, setGoogleAuthProvider } =
+      const { loginWithGooglePopup, setGoogleAuthProvider } =
         useAuthentication();
 
       const googleAuthProvider = new GoogleAuthProvider();
       setGoogleAuthProvider(googleAuthProvider);
-      loginWithGoogleRedirect();
+      loginWithGooglePopup();
 
-      expect(signInWithRedirect).toHaveBeenLastCalledWith(
+      expect(signInWithPopup).toHaveBeenLastCalledWith(
         firebaseAuth,
         googleAuthProvider
       );
     });
 
-    it('should redirect to lists after successful google signin redirect', async () => {
-      const { checkForRedirectAfterAuthentication } = useAuthentication();
-
-      vi.mocked(getRedirectResult).mockResolvedValue({
-        user: {},
-      } as UserCredential);
-
-      await checkForRedirectAfterAuthentication();
-
-      expect(replace).toHaveBeenCalledWith({
-        name: constants.routes.lists.name,
-      });
-    });
   });
 });
