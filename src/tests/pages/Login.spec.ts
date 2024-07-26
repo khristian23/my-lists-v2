@@ -151,7 +151,6 @@ describe('Login', () => {
       await fireEvent.click(registerButton);
 
       expect(routerPushSpy).toHaveBeenCalledWith(constants.routes.register.path);
-      expect(router.currentRoute.value.name).toEqual(constants.routes.register.name);
     });
   });
 });

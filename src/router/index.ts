@@ -8,6 +8,7 @@ import {
   createWebHistory,
   RouterHistory,
 } from 'vue-router';
+import { beforeEachRoute } from './routerHooks';
 
 import routes from './routes';
 
@@ -48,16 +49,7 @@ export default route(function () {
     history: createHistory(process.env.VUE_ROUTER_BASE),
   });
 
-  router.beforeEach((to, from, next) => {
-    if (
-      to.name != constants.routes.login.name &&
-      !currentUser.value.isLoggedIn
-    ) {
-      next({ name: constants.routes.login.name });
-    } else {
-      next();
-    }
-  });
+  router.beforeEach(beforeEachRoute);
 
   return router;
 });
