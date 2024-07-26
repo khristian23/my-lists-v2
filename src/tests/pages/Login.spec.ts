@@ -23,7 +23,7 @@ vi.mock('@/composables/useAuthentication', () => ({
 }));
 
 let router: Router;
-let routerSpy: SpyInstance;
+let routerPushSpy: SpyInstance;
 
 describe('Login', () => {
   beforeEach(async () => {
@@ -35,14 +35,13 @@ describe('Login', () => {
     router.push({ name: constants.routes.login.name });
     await router.isReady();
 
-    routerSpy = vi.spyOn(router, 'push');
-    routerSpy.mockImplementation(() => Promise.resolve());
+    routerPushSpy = vi.spyOn(router, 'push');
   });
 
   afterEach(() => {
     vi.resetAllMocks();
     cleanup();
-    routerSpy.mockRestore();
+    routerPushSpy.mockRestore();
   });
 
   function renderLogin(): RenderResult {
@@ -151,7 +150,7 @@ describe('Login', () => {
       const registerButton = getByText('Register');
       await fireEvent.click(registerButton);
 
-      expect(routerSpy).toHaveBeenCalledWith(constants.routes.register.path);
+      expect(routerPushSpy).toHaveBeenCalledWith(constants.routes.register.path);
     });
   });
 });
