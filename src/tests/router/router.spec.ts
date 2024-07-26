@@ -92,4 +92,4 @@ describe('Before Each Route', () => {
         const parameterUsedToCallNextFn = next.mock.calls[0][0];
         expect(parameterUsedToCallNextFn).toBeUndefined();
     });
-});  
+}); 

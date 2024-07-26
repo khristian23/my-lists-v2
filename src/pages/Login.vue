@@ -59,7 +59,7 @@ import constants from '@/util/constants';
 export default defineComponent({
   name: 'login-user',
   setup(_, { emit }) {
-    const { replace, push } = useRouter();
+    const { replace } = useRouter();
 
     const userCredentials = reactive({
       protectPassword: true,
