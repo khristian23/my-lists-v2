@@ -6,25 +6,25 @@
 
 console.log('CUSTOM SERVICE WORKER');
 
-//import { clientsClaim } from 'workbox-core'
-import { precacheAndRoute/*, cleanupOutdatedCaches, createHandlerBoundToURL*/ } from 'workbox-precaching'
-//import { registerRoute, NavigationRoute } from 'workbox-routing'
+import { precacheAndRoute/*, cleanupOutdatedCaches, createHandlerBoundToURL*/ } from 'workbox-precaching';
+import { registerRoute } from 'workbox-routing';
+import { NetworkFirst } from 'workbox-strategies';
 
-// self.skipWaiting()
-// clientsClaim()
 
 // Use with precache injection set in quasar config file as InjectManifest workbox mode
 precacheAndRoute(self.__WB_MANIFEST)
 
-// cleanupOutdatedCaches()
+/**
+ * WorkBox Cache Strategy
+ * https://developer.chrome.com/docs/workbox/caching-strategies-overview
+ */
 
-// // Non-SSR fallback to index.html
-// // Production SSR fallback to offline.html (except for dev)
-// if (process.env.MODE !== 'ssr' || process.env.PROD) {
-//   registerRoute(
-//     new NavigationRoute(
-//       createHandlerBoundToURL(process.env.PWA_FALLBACK_HTML),
-//       { denylist: [/sw\.js$/, /workbox-(.)*\.js$/] }
-//     )
-//   )
-// }
+/**
+ * Network First Falling Back to Cache Strategy
+ * It fetches the data from Internet, if no network connection exists it fetches from cache
+ * Once a 200 is obtained from network, the response is cached
+ */ 
+registerRoute(
+    ({url}) => url.pathname.startsWith('a'),
+    new NetworkFirst()
+);
