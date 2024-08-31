@@ -21,6 +21,9 @@ export function beforeEachRoute(
         if (to.name === constants.routes.register.name) {
             return next();
         }
-        return next({ name: constants.routes.login.name });
+        if (to.name !== constants.routes.login.name) {
+            return next({ name: constants.routes.login.name });
+        }
+        return next();
     }
 };
