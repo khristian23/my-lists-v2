@@ -6,9 +6,7 @@
 
 console.log('CUSTOM SERVICE WORKER');
 
-import { precacheAndRoute/*, cleanupOutdatedCaches, createHandlerBoundToURL*/ } from 'workbox-precaching';
-import { registerRoute } from 'workbox-routing';
-import { NetworkFirst } from 'workbox-strategies';
+import { precacheAndRoute } from 'workbox-precaching';
 
 
 // Use with precache injection set in quasar config file as InjectManifest workbox mode
@@ -24,7 +22,19 @@ precacheAndRoute(self.__WB_MANIFEST)
  * It fetches the data from Internet, if no network connection exists it fetches from cache
  * Once a 200 is obtained from network, the response is cached
  */ 
+
+/**
+ * Firebase communication is done thru Firestore API, which uses the following href and pathname
+ * href: http://localhost:8080/google.firestore.v1.Firestore/Listen/channel?database=projects%2Fmy-lists-2c9dd
+ * pathname: /google.firestore.v1.Firestore/Listen/channel
+ */
+
+/*
+import { registerRoute } from 'workbox-routing';
+import { NetworkFirst } from 'workbox-strategies';
+
 registerRoute(
-    ({url}) => url.pathname.startsWith('a'),
+    ({url}) => url.pathname.endsWith('/Listen/channel'),
     new NetworkFirst()
 );
+*/
