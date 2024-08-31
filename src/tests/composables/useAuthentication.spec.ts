@@ -13,9 +13,7 @@ import {
   Auth,
   signInWithEmailAndPassword,
   signInWithPopup,
-  GoogleAuthProvider,
-  getRedirectResult,
-  UserCredential,
+  GoogleAuthProvider
 } from 'firebase/auth';
 vi.mock('firebase/auth');
 

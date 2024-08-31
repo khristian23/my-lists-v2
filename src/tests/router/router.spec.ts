@@ -92,4 +92,22 @@ describe('Before Each Route', () => {
         const parameterUsedToCallNextFn = next.mock.calls[0][0];
         expect(parameterUsedToCallNextFn).toBeUndefined();
     });
+
+    it('should avoid circular navigation to login page for anonymous users', async () => {
+        const { setCurrentUserAsAnonymous, getCurrentUserRef } = useUser();
+
+        setCurrentUserAsAnonymous();
+        expect(getCurrentUserRef().value.isLoggedIn).toBeFalsy();
+
+        const to = { name: constants.routes.login.name } as RouteLocationNormalized;
+        const from = {} as RouteLocationNormalized;
+        const next = vi.fn();
+
+        beforeEachRoute(to, from, next);
+
+        expect(next).toBeCalled();
+
+        const parameterUsedToCallNextFn = next.mock.calls[0][0];
+        expect(parameterUsedToCallNextFn).toBeUndefined();
+    });
 }); 

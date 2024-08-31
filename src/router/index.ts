@@ -1,5 +1,3 @@
-import { useUser } from '@/composables/useUser';
-import constants from '@/util/constants';
 import { route } from 'quasar/wrappers';
 import {
   createMemoryHistory,
@@ -36,8 +34,6 @@ function selectRouterHistoryType(): IReturnRouterHistory {
  */
 export default route(function () {
   const createHistory = selectRouterHistoryType();
-  const { getCurrentUserRef } = useUser();
-  const currentUser = getCurrentUserRef();
 
   const router = createRouter({
     routes,
