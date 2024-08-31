@@ -6,25 +6,35 @@
 
 console.log('CUSTOM SERVICE WORKER');
 
-//import { clientsClaim } from 'workbox-core'
-import { precacheAndRoute/*, cleanupOutdatedCaches, createHandlerBoundToURL*/ } from 'workbox-precaching'
-//import { registerRoute, NavigationRoute } from 'workbox-routing'
+import { precacheAndRoute } from 'workbox-precaching';
 
-// self.skipWaiting()
-// clientsClaim()
 
 // Use with precache injection set in quasar config file as InjectManifest workbox mode
 precacheAndRoute(self.__WB_MANIFEST)
 
-// cleanupOutdatedCaches()
+/**
+ * WorkBox Cache Strategy
+ * https://developer.chrome.com/docs/workbox/caching-strategies-overview
+ */
 
-// // Non-SSR fallback to index.html
-// // Production SSR fallback to offline.html (except for dev)
-// if (process.env.MODE !== 'ssr' || process.env.PROD) {
-//   registerRoute(
-//     new NavigationRoute(
-//       createHandlerBoundToURL(process.env.PWA_FALLBACK_HTML),
-//       { denylist: [/sw\.js$/, /workbox-(.)*\.js$/] }
-//     )
-//   )
-// }
+/**
+ * Network First Falling Back to Cache Strategy
+ * It fetches the data from Internet, if no network connection exists it fetches from cache
+ * Once a 200 is obtained from network, the response is cached
+ */ 
+
+/**
+ * Firebase communication is done thru Firestore API, which uses the following href and pathname
+ * href: http://localhost:8080/google.firestore.v1.Firestore/Listen/channel?database=projects%2Fmy-lists-2c9dd
+ * pathname: /google.firestore.v1.Firestore/Listen/channel
+ */
+
+/*
+import { registerRoute } from 'workbox-routing';
+import { NetworkFirst } from 'workbox-strategies';
+
+registerRoute(
+    ({url}) => url.pathname.endsWith('/Listen/channel'),
+    new NetworkFirst()
+);
+*/
