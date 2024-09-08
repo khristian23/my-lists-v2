@@ -136,5 +136,6 @@ export default {
 
   storedValues: {
     dontShowAppInstallBanner: 'dontShowAppInstallBanner',
+    dontShowNotificationsBanner: 'dontShowNotificationsBanner',
   },
 };
