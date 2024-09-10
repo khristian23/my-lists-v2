@@ -46,13 +46,11 @@ import { useUser } from '@/composables/useUser';
 import { useServiceWorker } from '@/composables/useServiceWorker';
 import constants from '@/util/constants';
 
-let deferredPrompt: BeforeInstallPromptEvent;
-
 export default defineComponent({
   name: 'the-notifications-banner',
   setup() {
     const { getCurrentUserRef } = useUser();
-    const { triggerNotification } = useServiceWorker();
+    const { triggerPushNotification } = useServiceWorker();
     const showNotificationsBanner = ref(false);
     const pushNotificationsSupported = ref(false);
     const dontShowNotificationsBannerKey = constants.storedValues.dontShowNotificationsBanner;
@@ -68,25 +66,13 @@ export default defineComponent({
       setStorageValue(dontShowNotificationsBannerKey, true);
     };
 
-    // const hookupBeforeNotificationsEvent = () => {
-    //   window.addEventListener('beforeinstallprompt', (e) => {
-    //     // Prevent the mini-infobar from appearing on mobile
-    //     e.preventDefault();
-    //     // Stash the event so it can be triggered later
-    //     deferredPrompt = e;
-    //     // Update UI notify the user they can install the PWA
-    //     showNotificationsBanner.value = true;
-    //   });
-    // };
-
     const enableNotifications = async () => {
       if (pushNotificationsSupported.value) {
         Notification.requestPermission(result => {
           neverShowNotificationsBanner();
 
           if (result === 'granted') {
-            console.error('Before Trigger Subscription Notification!!!');
-            triggerNotification('You are subscribed to notifications');
+            triggerPushNotification();
           }
         });
       }
