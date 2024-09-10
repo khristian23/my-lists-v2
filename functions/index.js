@@ -1,26 +1,50 @@
-/**
- * Import function triggers from their respective submodules:
- *
- * const {onCall} = require("firebase-functions/v2/https");
- * const {onDocumentWritten} = require("firebase-functions/v2/firestore");
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
+const functions = require('firebase-functions');
+const admin = require('firebase-admin');
+const express = require('express');
+const cors = require('cors');
 
-const { onRequest } = require('firebase-functions/v2/https');
-const logger = require('firebase-functions/logger');
+const app = express();
 
-// Create and deploy your first functions
-// https://firebase.google.com/docs/functions/get-started
+// Firebase Service Account
+var serviceAccount = require("./service-account.json");
 
-exports.lists = onRequest((request, response) => {
-  const lists = [
-    { listId: 1, name: 'Christian' },
-    { listId: 2, name: 'Ivonne' },
-    { listId: 3, name: 'Rafaella' },
-    { listId: 4, name: 'Emilia' },
-  ];
-
-  logger.info('Hello logs!', { structuredData: true });
-  response.send(lists);
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
 });
+const db = admin.firestore();
+
+
+// CORS
+app.use(cors({ origin: true }));
+
+
+// Routes
+app.get('/hello-world', (request, response) => {
+  return response.status(200).send('Hello World!!');
+});
+
+// Create
+app.post('/api/create', async (request, response) => {
+    try {
+      const newProduct  = await db.collection('products').add({
+        name: request.body.name,
+        description: request.body.description,
+        price: request.body.price
+      });
+
+      return response.status(200).send(`Success with new ID: ${newProduct.id}`);
+    } catch (error) {
+      console.error(error);
+      return response.status(500).send(error);
+    }
+});
+
+// Read
+
+
+// Update
+
+//Delete
+
+// Export the API to Firebase Cloud Functions
+exports.app = functions.https.onRequest(app);
