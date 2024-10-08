@@ -3,6 +3,7 @@ import { User as FirebaseUser } from 'firebase/auth';
 import User from '@/models/user';
 import Constants from '@/util/constants';
 import UserService from '@/services/UserService';
+import { NotificationSubscription } from '@/models/models';
 
 const anonymousUser = new User({ id: Constants.user.anonymous });
 
@@ -60,6 +61,11 @@ export function useUser() {
       validateLoggedUser();
       user.value.location = location;
       return UserService.updateUserLocation(user.value);
+    },
+
+    setUserNotificationSubscription: (notificationSubscription: NotificationSubscription) => {
+      validateLoggedUser();
+      return UserService.updateUserNotificationSubscription(user.value, notificationSubscription);
     },
 
     addToFavorites: (favoriteId: string) => {

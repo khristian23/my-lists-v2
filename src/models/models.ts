@@ -23,6 +23,15 @@ export function isListType(candidate: string | null): candidate is ListType {
   return Object.values(constants.listType).includes(candidate ?? '');
 }
 
+export interface NotificationSubscription {
+  endpoint?: string;
+  expirationTime?: string;
+  keys?: {
+    p256dh: string;
+    auth: string;
+  }
+}
+
 export interface UserData {
   id: string;
   name?: string;

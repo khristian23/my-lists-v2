@@ -9,6 +9,7 @@ import TheQuickItemCreate from 'components/TheQuickItemCreate.vue';
 import ThePWAInstall from 'components/ThePWAInstall.vue';
 import TheFavorites from 'components/TheFavorites.vue';
 import TheFavoriteButton from 'components/TheFavoriteButton.vue';
+import TheNotificationsBanner from 'components/TheNotificationsBanner.vue';
 
 export default boot(({ app }) => {
   app.component('the-list', TheList);
@@ -21,4 +22,5 @@ export default boot(({ app }) => {
   app.component('the-pwa-install', ThePWAInstall);
   app.component('the-favorites', TheFavorites);
   app.component('the-favorite-button', TheFavoriteButton);
+  app.component('the-notifications-banner', TheNotificationsBanner);
 });

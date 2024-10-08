@@ -38,3 +38,19 @@ registerRoute(
     new NetworkFirst()
 );
 */
+
+
+
+/**
+ * Event Listeners
+ */
+self.addEventListener('notificationclick', event => {
+    const notification = event.notification;
+
+    console.error('From Service Worker, notification is: ', notification);
+
+    const promiseChain = clients.openWindow(notification.data.Url);
+    event.waitUntil(promiseChain);
+
+    notification.close();
+});

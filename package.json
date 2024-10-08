@@ -14,7 +14,7 @@
     "test": "vitest --environment jsdom",
     "test:node": "vitest",
     "deploy": "quasar build -m pwa && firebase deploy --only hosting",
-    "emulator": "firebase emulators:start"
+    "emulators": "firebase emulators:start"
   },
   "dependencies": {
     "@quasar/extras": "^1.0.0",

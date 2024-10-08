@@ -1,4 +1,5 @@
 import User from '@/models/user';
+import { NotificationSubscription } from '@/models/models';
 import {
   getDocs,
   query,
@@ -43,7 +44,7 @@ export default {
 
   async updateUserDetails(
     user: User,
-    updateObject: { [k: string]: string | FieldValue }
+    updateObject: { [k: string]: any | FieldValue }
   ) {
     const userRef = doc(firestore, 'users', user.id);
 
@@ -60,6 +61,10 @@ export default {
     return this.updateUserDetails(user, {
       photoURL: user.photoURL,
     });
+  },
+
+  async updateUserNotificationSubscription(user: User, notificationSubscription: NotificationSubscription): Promise<void> {
+    return this.updateUserDetails(user, { notificationSubscription });
   },
 
   async addToFavorites(user: User, favoriteId: string): Promise<void> {

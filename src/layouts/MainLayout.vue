@@ -2,6 +2,7 @@
   <q-layout view="hHh Lpr lFf">
     <q-header elevated class="bg-primary">
       <the-header @toggle-drawer="leftDrawerOpen = !leftDrawerOpen" />
+      <the-notifications-banner />
     </q-header>
 
     <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
