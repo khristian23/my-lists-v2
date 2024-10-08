@@ -1,8 +1,15 @@
+import { NotificationSubscription } from '@/models/models';
+import { useUser } from './useUser';
+
 export function useServiceWorker() {
+
+  const { setUserNotificationSubscription } = useUser();
 
   const isServiceWorkerSupported = ('serviceWorker' in navigator);
   
   const isPushNotificationSupported = ('PushManager' in window);
+
+  const vapidPublicKey = "BCEXZLGCY-d_ZBEHLEuqrNyVCZjOs_tuW1m5Vn2Kdb0VpbQCzmHzA7Zijm6qezH6PARJAPo4Y-C9CCd-WfqlX4k";
 
   const triggerPushNotification = async () => {
     if (isServiceWorkerSupported && isPushNotificationSupported) {
@@ -11,17 +18,23 @@ export function useServiceWorker() {
       const pushManagerSubscription = await serviceWorkerRegistration.pushManager.getSubscription();
 
       if (!pushManagerSubscription) {
-        createPushNotification(serviceWorkerRegistration);
+        createPushNotificationSubscription(serviceWorkerRegistration);
       }
 
     }
   };
 
-  const createPushNotification = async (serviceWorkerRegistration: ServiceWorkerRegistration) => {
+  const createPushNotificationSubscription = async (serviceWorkerRegistration: ServiceWorkerRegistration) => {
+    const subscription = await serviceWorkerRegistration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: vapidPublicKey
+    });
 
-    serviceWorkerRegistration.pushManager.subscribe();
-      
-        // serviceWorkerRegistration.showNotification('You are subscribed to notifications', {
+    const subscriptionObject = subscription.toJSON();
+    return setUserNotificationSubscription(subscriptionObject as NotificationSubscription);
+  };
+
+  // serviceWorkerRegistration.showNotification('You are subscribed to notifications', {
         //     body: 'Thanks for subscribing',
         //     icon: 'icons/icon-128x128.png',
         //     image: 'icons/icon-128x128.png',
@@ -33,7 +46,6 @@ export function useServiceWorker() {
         //     renotify: true,
         //     actions: [{ action: 'test', title: 'Test'}]
         // })
-  };
 
   return {
     isServiceWorkerSupported,

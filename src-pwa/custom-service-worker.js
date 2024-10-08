@@ -46,7 +46,6 @@ registerRoute(
  */
 self.addEventListener('notificationclick', event => {
     const notification = event.notification;
-    let action = event.action;
 
     console.error('From Service Worker, notification is: ', notification);
 
